@@ -4333,6 +4333,46 @@ async function openFeedback(){const pm=modal(`<h3>의견 보내기</h3><p class=
 if(SB.on){const baseShowMenuSB=showMenu;showMenu=function(items,...rest){if(Array.isArray(items)&&items.some(x=>x&&x.run===openBackup)){items=items.slice();const i=items.findIndex(x=>x&&x.run===openBackup);items.splice(i+1,0,{label:"의견 보내기",run:openFeedback});
     items.forEach((x,j)=>{if(x&&x.run===resetAll)items[j]=Object.assign({},x,{label:"이 기기 사본 새로 받기",danger:false})})}return baseShowMenuSB(items,...rest)}}
 
+/* ═════════ 브라우저 뒤로 가기 (2026-10-27) ═════════
+   화면 이동(내 공간·내 방·전체 글·이웃새글·검색·가입 단계)과 창 열기를 브라우저 기록에 남김.
+   뒤로 가기: 열린 대화상자/메뉴 → 맨 위 창(쓰는 중이면 평소처럼 확인) → 이전 화면 순서로 닫힘.
+   미리보기처럼 다른 화면 안에 들어가 있을 때는 끔 (여러 화면이 기록을 나눠 쓰면 꼬임). */
+const HIST={on:(()=>{try{return window.top===window&&!!history.pushState}catch(e){return false}})(),i:0,lock:0,cur:null,skip:0};
+const navKey=()=>JSON.stringify({r:ui.renderer,s:ui.space||"blog",v:ui.viewer,a:ui.onboard?auStep():null});window.__mgdNav=()=>navKey()+"|w"+wins.length;
+if(HIST.on){
+  HIST.cur=navKey();try{history.replaceState({mgd:1,i:0,n:HIST.cur},"")}catch(e){HIST.on=false}
+  const push=(extra)=>{const st=()=>Object.assign({mgd:1,i:HIST.i,n:HIST.cur},extra||{});
+    if(HIST.stale&&HIST.stale===HIST.i){HIST.stale=0;try{history.replaceState(st(),"")}catch(e){}return}   /* 막 닫힌 창 자리를 새 화면이 씀 */
+    HIST.i++;try{history.pushState(st(),"")}catch(e){}};
+  const baseRenderH=render;render=function(){const r=baseRenderH.apply(this,arguments);
+    if(!HIST.lock){const k=navKey();if(k!==HIST.cur){HIST.cur=k;push()}}return r};
+  const baseOpenWinH=openWin;openWin=function(key){const had=wins.length;const w=baseOpenWinH.apply(this,arguments);
+    const nw=wins[wins.length-1];if(!HIST.lock&&nw&&wins.length>had&&!nw._hi){push({w:String(nw.key)});nw._hi=HIST.i}return w};
+  const baseCloseWinH=closeWin;closeWin=function(w){const top=w&&w._hi&&w._hi===HIST.i&&history.state&&history.state.i===HIST.i;baseCloseWinH.apply(this,arguments);
+    if(top&&!HIST.lock&&!wins.includes(w)){HIST.stale=HIST.i;setTimeout(()=>{if(HIST.stale&&HIST.stale===HIST.i){HIST.stale=0;HIST.skip++;history.back()}},0)}};   /* 창을 X로 닫았으면 그 기록도 걷어서 뒤로 가기가 헛돌지 않게 */
+  addEventListener("popstate",e=>{const s=e.state;if(!s||!s.mgd)return;
+    if(HIST.skip){HIST.skip--;HIST.i=s.i;return}
+    const back=s.i<HIST.i;HIST.i=s.i;
+    const keep=()=>{HIST.i++;try{history.pushState(Object.assign({},s,{i:HIST.i}),"")}catch(x){}};   /* 이번 뒤로 가기는 다른 걸 닫는 데 썼으니 자리 되돌림 */
+    if(!back){ /* 앞으로 가기: 화면만 되살림 (창은 다시 열지 않음) */
+      if(s.n&&s.n!==HIST.cur)applyNav(s.n);return}
+    const sc=[...document.querySelectorAll(".scrim")].pop();if(sc&&sc._done){sc._done(null);keep();return}
+    if(menuNode){closeMenu();keep();return}
+    if(ui.spaceEdit||ui.mode==="edit"){keep();toast("편집을 마치거나 취소한 뒤에 이동해 주세요.");return}
+    const open=wins.filter(w=>w._hi&&w._hi>s.i);
+    if(open.length){const w=open[open.length-1];HIST.lock++;try{requestClose(w)}finally{HIST.lock--}
+      if(wins.includes(w)){w._hi=null;keep();w._hi=HIST.i}   /* 쓰던 글 확인 창에서 '계속 쓰기'를 고른 경우 */
+      return}
+    if(s.n&&s.n!==HIST.cur)applyNav(s.n)});
+  function applyNav(k){let n;try{n=JSON.parse(k)}catch(e){return}
+    if(!!n.a!==!!ui.onboard){HIST.cur=navKey();try{history.replaceState(Object.assign({},history.state,{n:HIST.cur}),"")}catch(e){}return}   /* 가입 전후를 넘나들지 않음 */
+    HIST.lock++;try{
+      wins.filter(w=>!String(w.key).startsWith("edit:")).forEach(closeWin);
+      if(n.v!==ui.viewer)setVisitor(n.v==="visitor");
+      if(ui.onboard){ui.authStep=n.a;render()}else{ui.space=n.s;setRenderer(n.r)}
+    }finally{HIST.lock--}HIST.cur=navKey()}
+}
+
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
