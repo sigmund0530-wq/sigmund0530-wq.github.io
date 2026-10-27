@@ -19,7 +19,7 @@ with sync_playwright() as p:
   S0=pg.evaluate(STATE);r0=json.loads(json.loads(S0)[0]);post0=r0['posts'][0]
   print('   담긴 것: 공개범위',post0['visibility'],'| 그림',len(post0.get('ink') or []),'| 덧붙임',len(post0.get('addenda') or []),'| 이전버전',len(r0['vault']['revs'].get(pid,[])),'| 음성블록',sum(1 for b in post0['bodyJson']['blocks'] if b['type']=='audio'),'| 파일',len(json.loads(json.loads(S0)[2])))
   # 내보내기
-  pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='백업 · 내보내기').click();pg.wait_for_timeout(300)
+  pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='설정').click();pg.wait_for_timeout(300);pg.locator('[data-set="backup"]').click();pg.wait_for_timeout(300)
   with pg.expect_download() as dl:pg.click('.dialog [data-ex]')
   good=dl.value.path();G=json.load(open(good));pg.click('.dialog [data-c]');pg.wait_for_timeout(200)
   # 상태 바꾸기
@@ -34,12 +34,12 @@ with sync_playwright() as p:
   bad3=copy.deepcopy(G);k=list(bad3['assets'])[0];bad3['assets'][k]['dataUrl']='javascript:alert(1)';json.dump(bad3,open('bk_asset.json','w'))
   bad4=copy.deepcopy(G);bad4['version']=9;json.dump(bad4,open('bk_ver.json','w'))
   for f in ['bk_trunc.json','bk_app.json','bk_posts.json','bk_asset.json','bk_ver.json']:
-    pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='백업 · 내보내기').click();pg.wait_for_timeout(300)
+    pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='설정').click();pg.wait_for_timeout(300);pg.locator('[data-set="backup"]').click();pg.wait_for_timeout(300)
     pg.set_input_files('.dialog [data-im]',f);pg.wait_for_timeout(400);msg=pg.locator('.toast').last.inner_text() if pg.locator('.toast').count() else ''
     if pg.locator('.dialog [data-c]').count():pg.locator('.dialog [data-c]').click();pg.wait_for_timeout(150)
     ok(f'손상 파일 {f}: 지금 내용 그대로 · 안내 "{msg[:38]}…"',pg.evaluate(STATE)==S1 and pg.locator('[data-bk-go]').count()==0)
   # 정상 파일: '지금 내용도 먼저 내보내고' 선택 → 내려받기 생기고 → 백업 내용과 똑같이
-  pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='백업 · 내보내기').click();pg.wait_for_timeout(300)
+  pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='설정').click();pg.wait_for_timeout(300);pg.locator('[data-set="backup"]').click();pg.wait_for_timeout(300)
   pg.set_input_files('.dialog [data-im]',good);pg.wait_for_timeout(400)
   ok('덮어쓴다는 안내',"합치지 않고 덮어써서" in pg.locator('.dialog').inner_text())
   with pg.expect_download() as dl2:pg.click('[data-bk-safe]')

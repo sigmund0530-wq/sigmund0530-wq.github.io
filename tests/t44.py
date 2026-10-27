@@ -25,9 +25,7 @@ with sync_playwright() as p:
     if pg.locator('.se-bar').count():ok(f'{name} blog edit hides add',pg.locator('[data-se-add]:visible').count()==0);pg.locator('[data-se-save]').click();pg.wait_for_timeout(300)
     if not mob:
       # 방문자 미리보기
-      pg.locator('.pc-nav [data-pn="acct"]').click();pg.wait_for_timeout(200)
-      if pg.locator('[data-pc="preview"]').count():pg.locator('[data-pc="preview"]').click()
-      else:pg.evaluate("1")
+      pg.locator('.pc-nav [data-pn="menu"]').click();pg.wait_for_timeout(200);pg.get_by_role('menuitem',name='내 공간 미리 보기').click()
       pg.wait_for_timeout(400)
       ok('visitor sees room entry',pg.locator('[data-go-room]').count()==1)
       if pg.locator('[data-go-room]').count():pg.locator('[data-go-room]').click();pg.wait_for_timeout(300);ok('visitor room title',"의 방" in pg.locator('.room-head h2').inner_text());pg.screenshot(path='axis_visitor_room.png')
@@ -36,6 +34,6 @@ with sync_playwright() as p:
   ctx=b.new_context(viewport={'width':1280,'height':860});pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)))
   pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
   pg.locator('.pc-nav [data-pn="room"]').click();pg.wait_for_timeout(300);pg.select_option('[data-room-vis]','private');pg.wait_for_timeout(300)
-  pg.locator('.pc-nav [data-pn="acct"]').click();pg.wait_for_timeout(200);pg.locator('[data-pc="preview"]').click();pg.wait_for_timeout(400)
+  pg.locator('.pc-nav [data-pn="menu"]').click();pg.wait_for_timeout(200);pg.get_by_role('menuitem',name='내 공간 미리 보기').click();pg.wait_for_timeout(400)
   ok('private: no entry for visitor',pg.locator('[data-go-room]').count()==0)
   print('ERR',errs)

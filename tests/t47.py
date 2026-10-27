@@ -11,7 +11,7 @@ with sync_playwright() as p:
   pg.wait_for_timeout(600);pg.click('.selbar [data-sl="line"]');pg.wait_for_timeout(200)
   pg.evaluate("document.querySelectorAll('.win .x').forEach(b=>b.click())");pg.wait_for_timeout(200)
   # 방문자: 돌아보기 탭 없음
-  pg.locator('.pc-nav [data-pn="acct"]').click();pg.wait_for_timeout(200);pg.locator('[data-pc="preview"]').click();pg.wait_for_timeout(400)
+  pg.locator('.pc-nav [data-pn="menu"]').click();pg.wait_for_timeout(200);pg.get_by_role('menuitem',name='내 공간 미리 보기').click();pg.wait_for_timeout(400)
   pg.evaluate("1");
   r=pg.evaluate("(()=>{return 1})()")
   # 방문자로 전체 글 화면 열기
@@ -51,7 +51,7 @@ with sync_playwright() as p:
   pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='전체 글').click();pg.wait_for_timeout(300);pg.click('[data-pv="words"]');pg.wait_for_timeout(200)
   ok('no 뜻 보기 / dev text',('뜻 보기' not in pg.locator('#desk').inner_text()) and ('이용 조건' not in pg.locator('#desk').inner_text()))
   # 백업
-  pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='백업 · 내보내기').click();pg.wait_for_timeout(300)
+  pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='설정').click();pg.wait_for_timeout(300);pg.locator('[data-set="backup"]').click();pg.wait_for_timeout(300)
   with pg.expect_download() as dl:pg.click('.dialog [data-ex]')
   path=dl.value.path();data=json.load(open(path));ok('export has posts+assets',data['app']=='mugadang' and len(data['records']['posts'])>=1 and 'assets' in data)
   pg.click('.dialog [data-c]');pg.wait_for_timeout(200)
@@ -59,7 +59,7 @@ with sync_playwright() as p:
   pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='글쓰기').click();pg.wait_for_timeout(300);pg.locator('.win.editor .rte-area').first.click();pg.keyboard.type('백업 뒤에 쓴 글');pg.locator('.win.editor .hpub').click();pg.wait_for_timeout(250);pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(400)
   pg.evaluate("document.querySelectorAll('.win .x').forEach(b=>b.click())");pg.wait_for_timeout(200)
   n_before=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).posts.length")
-  pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='백업 · 내보내기').click();pg.wait_for_timeout(300)
+  pg.locator('.pc-nav [data-pn="menu"]').click();pg.get_by_role('menuitem',name='설정').click();pg.wait_for_timeout(300);pg.locator('[data-set="backup"]').click();pg.wait_for_timeout(300)
   pg.set_input_files('.dialog [data-im]',path);pg.wait_for_timeout(400);pg.locator('[data-bk-go]').click();pg.wait_for_timeout(500)
   n_after=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).posts.length")
   ok(f'restore from backup ({n_before} -> {n_after})',n_after==n_before-1)

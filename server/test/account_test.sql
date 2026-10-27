@@ -1,0 +1,31 @@
+-- 계정 설정 시험 (로컬 전용): schema.sql → migrations/2026-10-28_account.sql 다음에 실행
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+insert into auth.users values ('11111111-1111-1111-1111-111111111111'),('22222222-2222-2222-2222-222222222222');
+create temp table r(n serial, what text, got text); grant all on r to authenticated, anon; grant usage on sequence r_n_seq to authenticated, anon;
+create or replace function pg_temp.t(what text, q text) returns void language plpgsql as $$ declare x text; begin
+  begin execute q into x; insert into r(what,got) values (what,coalesce(x,'(ok)')); exception when others then insert into r(what,got) values (what,'막힘: '||sqlerrm); end; end $$;
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-1111-1111-111111111111';
+select pg_temp.t('하루 공간 만들기',$q$select create_profile('haru','하루','MUGADANG-BETA')$q$);
+insert into posts(id,owner,data) values ('post-a','11111111-1111-1111-1111-111111111111','{}');
+select pg_temp.t('주소 직접 고치기',$q$update profiles set handle='hack' where id=auth.uid() returning 'changed'$q$);
+select pg_temp.t('이름은 직접 고쳐짐',$q$update profiles set display_name='하루2' where id=auth.uid() returning 'changed'$q$);
+select pg_temp.t('주소 바꾸기',$q$select change_handle('haru-new')$q$);
+select pg_temp.t('두 번째 바꾸기',$q$select change_handle('haru-3')$q$);
+set request.jwt.claim.sub='22222222-2222-2222-2222-222222222222';
+select pg_temp.t('예전 주소 쓸 수 있나',$q$select handle_available('haru')::text$q$);
+select pg_temp.t('예전 주소로 공간 만들기',$q$select create_profile('haru','민지','MUGADANG-BETA')$q$);
+select pg_temp.t('민지 공간 만들기',$q$select create_profile('minji','민지','MUGADANG-BETA')$q$);
+select pg_temp.t('묶인 주소 목록 보기',$q$select count(*)::text from released_handles$q$);
+set request.jwt.claim.sub='11111111-1111-1111-1111-111111111111';
+select pg_temp.t('하루 탈퇴',$q$select delete_my_account()$q$);
+reset role;
+select pg_temp.t('탈퇴 뒤 하루 글',$q$select count(*)::text from posts where owner='11111111-1111-1111-1111-111111111111'$q$);
+select pg_temp.t('탈퇴 뒤 하루 계정',$q$select count(*)::text from auth.users where id='11111111-1111-1111-1111-111111111111'$q$);
+select pg_temp.t('민지는 그대로',$q$select count(*)::text from profiles where handle='minji'$q$);
+select pg_temp.t('탈퇴한 주소 haru-new 묶임',$q$select handle_available('haru-new')::text$q$);
+set role anon;
+select pg_temp.t('로그인 안 하고 탈퇴 부르기',$q$select delete_my_account()$q$);
+reset role;
+select what, got from r order by n;

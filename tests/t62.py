@@ -9,7 +9,7 @@ with sync_playwright() as p:
   print('gear',g.count())
   if g.count():
     g.click();pg.wait_for_timeout(200);pg.screenshot(path='sb_menu.png');
-    pg.get_by_text('의견 보내기').click();pg.wait_for_timeout(200);pg.fill('#fb-t','사진 옮기기 좋아요');pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(500)
+    pg.get_by_role('menuitem',name='설정').click();pg.wait_for_timeout(300);pg.locator('[data-set="feedback"]').click();pg.wait_for_timeout(200);pg.fill('#fb-t','사진 옮기기 좋아요');pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(500)
     ok(len(db(pg)['tables']['feedback'])==1,'의견 저장')
   pg.locator('[data-pn="acct"]').click();pg.wait_for_timeout(200)
   pg.locator('[data-pc="logout"]').click();pg.wait_for_timeout(800)

@@ -996,6 +996,20 @@ body.sp-blog-edit .se-bar [data-se-add]{display:none}
 .pc-nav .pn-write:hover{filter:brightness(1.06)}
 .pc-nav .pn-write svg{width:15px;height:15px}
 .pc-nav .pn-write[hidden]{display:none}
+/* ═════ 설정 화면 (2026-10-28) ═════ */
+.set-page{max-width:680px!important;padding:28px max(18px,env(safe-area-inset-left,0px)) 80px!important;gap:0!important}
+.set-page h1{font-size:24px;margin:0 0 18px}
+.set-sec{display:grid;padding:18px 0 8px}
+.set-sec h2{font-size:13px;color:var(--ink-2);font-weight:600;margin:0 0 4px;letter-spacing:.02em}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--line);min-width:0}
+.set-sec .set-row:last-child{border-bottom:0}
+.set-l{display:grid;gap:3px;min-width:0}.set-l b{font-size:15px;font-weight:600}.set-l small{font-size:13px;color:var(--ink-2);overflow-wrap:anywhere;line-height:1.5}
+.set-r{flex:none;display:flex;gap:6px}
+.set-r .btn.sm{height:34px;padding:0 14px;border-radius:999px;font-size:13.5px}
+.set-sel{height:36px;border:1px solid var(--line);border-radius:999px;padding:0 12px;background:var(--chrome);color:var(--ink);font:inherit;font-size:13.5px;max-width:150px}
+.set-out .set-l b{color:var(--danger,#c0392b)}
+.set-out .btn.danger{background:none;color:var(--danger,#c0392b);border:1px solid currentColor}
+@media(max-width:520px){.set-row{flex-wrap:wrap}.set-r{margin-left:auto}}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -4370,6 +4384,104 @@ async function openFeedback(){const pm=modal(`<h3>의견 보내기</h3><p class=
 if(SB.on){const baseShowMenuSB=showMenu;showMenu=function(items,...rest){if(Array.isArray(items)&&items.some(x=>x&&x.run===openBackup)){items=items.slice();const i=items.findIndex(x=>x&&x.run===openBackup);items.splice(i+1,0,{label:"의견 보내기",run:openFeedback});
     items.forEach((x,j)=>{if(x&&x.run===resetAll)items[j]=Object.assign({},x,{label:"이 기기 사본 새로 받기",danger:false})})}return baseShowMenuSB(items,...rest)}}
 
+/* ═════════ 설정 화면 (2026-10-28) ═════════
+   흩어져 있던 계정·공개 범위·보기·백업을 '설정' 한 화면에 모음.
+   · 계정: 이메일·비밀번호 바꾸기(서버), 공간 주소 한 번 바꾸기(예전 주소는 30일 묶임), 나만 아는 질문, 로그아웃
+   · 프로필(이름·소개·사진)은 내 공간 '편집'에서만 고침. 여기는 그리로 가는 길만
+   · 탈퇴: 맨 아래 따로. 백업을 권하고, 서버에서는 비밀번호를 다시 확인한 뒤 글·사진·계정을 지움
+   들어가는 길: 오른쪽 위 내 이름 → 설정 / 내 메뉴 → 설정 / 휴대폰 메뉴 → 설정 */
+const SET_VIS=[["public","전체 공개"],["followers","이웃만"],["close","가까운 사람"],["private","나만 보기"]];
+function goSettings(){if(isVisitor())setVisitor(false);wins.slice().forEach(w=>{if(!String(w.key).startsWith("edit:"))closeWin(w)});setRenderer("settings")}
+function acctEmail(){const a=(records.settings&&records.settings.account)||{};return (SB.on&&SB.user&&SB.user.email)||a.email||""}
+function renderSettings(cv){cv.style.height="";cv.style.minHeight="100%";const pr=records.profile||{},st=settings(),a=st.account||{},srv=SB.on&&!!SB.user;
+  const mail=acctEmail(),dv=st.defaultVis&&SET_VIS.some(x=>x[0]===st.defaultVis)?st.defaultVis:"private",rv=["public","followers","private"].includes(layout.roomVis)?layout.roomVis:"public";
+  const row=(t,d,act)=>`<div class="set-row"><div class="set-l"><b>${t}</b>${d?`<small>${d}</small>`:""}</div><div class="set-r">${act||""}</div></div>`;
+  const btn=(k,t,cls)=>`<button type="button" class="btn sm${cls?" "+cls:""}" data-set="${k}">${t}</button>`;
+  const opts=(list,cur)=>list.map(([v,t])=>`<option value="${v}" ${v===cur?"selected":""}>${t}</option>`).join("");
+  cv.innerHTML=`<div class="home nv"><main class="hm-inner set-page"><h1>설정</h1>
+    <section class="set-sec"><h2>계정</h2>
+      ${row("이메일",mail?esc(mail):(a.method&&a.method!=="email"?esc((AU_NAMES[a.method]||"")+" 계정"):"아직 없어요"),(srv||a.method==="email")?btn("email","바꾸기"):"")}
+      ${(srv||a.method==="email")?row("비밀번호","로그인할 때 써요",btn("pw","바꾸기")):""}
+      ${row("공간 주소",`mugadang.com/@${esc(pr.handle||"")}${st.handleChangedAt?" · 이미 한 번 바꿨어요":" · 한 번 바꿀 수 있어요"}`,st.handleChangedAt?"":btn("handle","바꾸기"))}
+      ${row("나만 아는 질문",a.question?esc(a.question):"다른 기기에서 처음 들어올 때 반겨 주는 질문",btn("sq",a.question?"바꾸기":"정하기"))}
+      ${row("로그아웃",srv?"이 기기에서 나가요. 글은 서버에 그대로 있어요.":"",btn("logout","로그아웃"))}
+    </section>
+    <section class="set-sec"><h2>프로필</h2>
+      ${row("이름 · 소개 · 사진","내 공간 화면에서 직접 고쳐요",btn("profile","편집하러 가기"))}
+    </section>
+    <section class="set-sec"><h2>공개 범위</h2>
+      ${row("새 글의 기본 공개 범위","글을 쓸 때마다 바꿀 수 있어요",`<select class="set-sel" data-set-sel="defaultVis" aria-label="새 글의 기본 공개 범위">${opts(SET_VIS,dv)}</select>`)}
+      ${row("가까운 사람","누가 들어 있는지는 나만 알아요",btn("close","고르기"))}
+      ${row("내 방을 볼 수 있는 사람","",`<select class="set-sel" data-set-sel="roomVis" aria-label="내 방을 볼 수 있는 사람">${opts([["public","누구나"],["followers","이웃만"],["private","나만"]],rv)}</select>`)}
+    </section>
+    <section class="set-sec"><h2>보기</h2>
+      ${row("보기 설정","날짜·공개 범위 표시 등",btn("view","열기"))}
+    </section>
+    <section class="set-sec"><h2>내 기록</h2>
+      ${row("백업 · 내보내기","글·사진·음성·공간을 파일 하나로 받아요",btn("backup","열기"))}
+      ${SB.on?row("의견 보내기","불편한 점, 좋았던 점을 운영자에게",btn("feedback","보내기")):""}
+      ${row(SB.on?"이 기기 사본 새로 받기":"처음 상태로 되돌리기",SB.on?"이 기기에 저장된 사본만 지우고 서버에서 다시 불러와요":"이 브라우저에 저장된 것을 모두 지워요",btn("reset",SB.on?"새로 받기":"되돌리기"))}
+    </section>
+    <section class="set-sec set-out"><h2>탈퇴</h2>
+      ${row("무가당 떠나기","내 공간·글·사진·이웃 관계가 모두 지워지고 되돌릴 수 없어요",btn("leave","탈퇴하기","danger"))}
+    </section></main></div>`}
+async function askForm(title,body,okText,danger){const pm=modal(`<h3>${title}</h3>${body}<p class="au-err" data-for="m" hidden></p><div class="acts"><button class="btn" data-c>취소</button><button class="btn ${danger?"danger":"primary"}" data-o>${okText}</button></div>`);
+  const m=modal.cur;m.querySelector("[data-c]").onclick=()=>m._done(null);m.querySelector("[data-o]").onclick=()=>{const v={};m.querySelectorAll("input").forEach(i=>v[i.id]=i.value);m._done(v)};
+  m.querySelectorAll("input").forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing)m.querySelector("[data-o]").click()}));return pm}
+async function setEmail(){const v=await askForm("이메일 바꾸기",`<label for="s-mail">새 이메일</label><input type="email" id="s-mail" autocomplete="email" value="${esc(acctEmail())}">`,"바꾸기");if(!v)return;
+  const em=(v["s-mail"]||"").trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){toast("이메일 주소를 확인해 주세요.");return}
+  if(SB.on&&SB.user){const r=await SB.c.auth.updateUser({email:em},{emailRedirectTo:location.origin+location.pathname});if(r.error){toast(sbErr(r.error));return}
+    toast("새 주소로 확인 메일을 보냈어요. 메일의 링크를 누르면 바뀌어요.");return}
+  records.settings.account=Object.assign({},records.settings.account||{},{email:em});commit();toast("이메일을 바꿨어요.")}
+async function setPassword(){if(!(SB.on&&SB.user)){toast("서버에 연결된 무가당에서 바꿀 수 있어요.");return}
+  const v=await askForm("비밀번호 바꾸기",`<label for="s-pw0">지금 비밀번호</label><input type="password" id="s-pw0" autocomplete="current-password"><label for="s-pw1">새 비밀번호</label><input type="password" id="s-pw1" autocomplete="new-password" placeholder="8자 이상"><label for="s-pw2">새 비밀번호 확인</label><input type="password" id="s-pw2" autocomplete="new-password">`,"바꾸기");if(!v)return;
+  if((v["s-pw1"]||"").length<8){toast("새 비밀번호는 8자 이상으로 정해 주세요.");return}if(v["s-pw1"]!==v["s-pw2"]){toast("새 비밀번호가 서로 달라요.");return}
+  const ok=await SB.c.auth.signInWithPassword({email:acctEmail(),password:v["s-pw0"]||""});if(ok.error){toast("지금 비밀번호가 맞지 않아요.");return}
+  const r=await SB.c.auth.updateUser({password:v["s-pw1"]});toast(r.error?sbErr(r.error):"비밀번호를 바꿨어요.")}
+async function setHandle(){const pr=records.profile;if(settings().handleChangedAt){toast("공간 주소는 한 번만 바꿀 수 있어요.");return}
+  const v=await askForm("공간 주소 바꾸기",`<p class="hint">한 번만 바꿀 수 있어요. 예전 주소 @${esc(pr.handle||"")}는 30일 동안 아무도 쓸 수 없고, 그 뒤에는 다른 사람이 쓸 수 있어요.</p><label for="s-h">새 주소</label><div class="au-addr"><span>@</span><input type="text" id="s-h" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="영문 소문자·숫자"></div>`,"바꾸기");if(!v)return;
+  const h=(v["s-h"]||"").trim().toLowerCase();if(h===pr.handle)return;if(!HANDLE_RE.test(h)){toast("영문 소문자, 숫자, 하이픈으로 3~20자를 써 주세요.");return}
+  if(SB.on&&SB.user){const r=await SB.c.rpc("change_handle",{p_handle:h});if(r.error){const m=String(r.error.message||"");toast(/handle_changed_once/.test(m)?"공간 주소는 이미 한 번 바꿨어요.":/handle_unavailable/.test(m)?"이미 쓰이거나 쓸 수 없는 주소예요.":/change_handle|function/.test(m)?"서버 준비가 아직 안 됐어요. 운영자에게 알려 주세요.":sbErr(r.error));if(/handle_changed_once/.test(m)){records.settings.handleChangedAt=records.settings.handleChangedAt||now();commit()}return}}
+  else if(["admin","mugadang","help","settings","feed","login"].includes(h)){toast("쓸 수 없는 주소예요.");return}
+  pr.handle=h;records.settings.handleChangedAt=now();commit();toast(`이제 주소는 @${h}예요.`)}
+async function leaveMugadang(){const pr=records.profile||{},srv=SB.on&&SB.user;
+  const pm=modal(`<h3>무가당을 떠날까요?</h3><p>내 공간, 글, 사진·음성, 내 방, 이웃 관계가 <b>모두 지워지고 되돌릴 수 없어요.</b>${pr.handle?` 공간 주소 @${esc(pr.handle)}는 30일 동안 아무도 쓸 수 없어요.`:""}</p>
+    <p class="hint">떠나기 전에 백업 파일을 받아 두면, 나중에 글을 다시 볼 수 있어요.</p><button type="button" class="btn" data-bk>백업 파일 먼저 받기</button>
+    ${srv?`<label for="s-lpw">확인을 위해 비밀번호를 적어 주세요</label><input type="password" id="s-lpw" autocomplete="current-password">`:""}
+    <div class="acts"><button class="btn" data-c>그만두기</button><button class="btn danger" data-o>탈퇴하기</button></div>`);const m=modal.cur;
+  m.querySelector("[data-bk]").onclick=()=>downloadBackup("탈퇴-전");m.querySelector("[data-c]").onclick=()=>m._done(null);m.querySelector("[data-o]").onclick=()=>m._done({pw:($("#s-lpw",m)||{}).value||""});
+  const v=await pm;if(!v)return;
+  if(srv){const ok=await SB.c.auth.signInWithPassword({email:acctEmail(),password:v.pw});if(ok.error){toast("비밀번호가 맞지 않아요.");return}
+    toast("지우는 중이에요…");SB.ready=false;clearTimeout(SB.timer);
+    try{const md=await SB.c.from("media").select("path").eq("owner",SB.user.id);if(md.error)throw md.error;const paths=(md.data||[]).map(x=>x.path);
+      for(let i=0;i<paths.length;i+=100){const r=await SB.c.storage.from("media").remove(paths.slice(i,i+100));if(r.error)throw r.error}
+      const r=await SB.c.rpc("delete_my_account");if(r.error)throw r.error}
+    catch(e){SB.ready=true;toast(/delete_my_account|function/.test(String(e&&e.message))?"서버 준비가 아직 안 됐어요. 운영자에게 알려 주세요.":sbErr(e));return}
+    try{await SB.c.auth.signOut()}catch(e){}sbClearLocal();SB.user=null}
+  else{try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith("mgd2.v1."))localStorage.removeItem(k)}}catch(e){}}
+  wins.slice().forEach(closeWin);defaults();ui.renderer="desktop";ui.onboard=true;ui.authStep="start";auDraft={};persist(true);render();toast("탈퇴했어요. 그동안 고마웠어요.")}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-set]");if(!b||ui.renderer!=="settings")return;const k=b.dataset.set;
+  if(k==="email")setEmail();else if(k==="pw")setPassword();else if(k==="handle")setHandle();else if(k==="sq")sqEdit();else if(k==="logout")auLogout();
+  else if(k==="profile"){ui.space="blog";setRenderer("desktop");seBegin()}else if(k==="close")closeManager();else if(k==="view")openSettings();
+  else if(k==="backup")openBackup();else if(k==="feedback")openFeedback();else if(k==="reset")resetAll();else if(k==="leave")leaveMugadang()});
+document.addEventListener("change",e=>{const s=e.target.closest("[data-set-sel]");if(!s)return;
+  if(s.dataset.setSel==="defaultVis"){records.settings.defaultVis=s.value;commit();toast(`새 글은 ${RO(SET_VIS.find(x=>x[0]===s.value)[1])} 시작해요.`)}
+  else if(s.dataset.setSel==="roomVis"){layout.roomVis=s.value;commit();toast("내 방 공개 범위를 바꿨어요.")}});
+const baseRenderSet=render;render=function(){if(ui.renderer==="settings"&&!ui.onboard){if(isVisitor()){ui.renderer="desktop";return baseRenderSet.apply(this,arguments)}
+    const app=$("#app"),desk=$("#desk"),cv=$("#canvas");app.classList.toggle("mobile",isMobile());app.classList.toggle("editing",false);
+    try{syncNav()}catch(e){}desk.style.background="var(--chrome-2)";desk.classList.remove("dark-ink");renderSettings(cv);renderTopbar();try{syncPcNav()}catch(e){}return}
+  return baseRenderSet.apply(this,arguments)};
+/* 내 이름 팝업: 이름·주소·이메일 아래에 [설정] [로그아웃]만 */
+const baseOpenAcctS=openAcct;openAcct=function(btn){baseOpenAcctS(btn);const c=document.querySelector(".pn-card");if(!c)return;
+  c.querySelectorAll(".pn-links,.pn-nm [data-pc='logout']").forEach(n=>n.remove());const bot=c.querySelector(".pn-bot");
+  if(bot)bot.innerHTML=`<button type="button" data-pc="acctset">설정</button><button type="button" data-pc="logout">로그아웃</button>`};
+document.addEventListener("click",e=>{const b=e.target.closest('[data-pc="acctset"]');if(!b)return;e.stopPropagation();closeAcct();goSettings()},true);
+/* 메뉴들: 가까운 사람·보기 설정·백업·질문·처음 상태로 → '설정' 하나로 */
+{const MOVE=[closeManager,openSettings,openBackup,sqEdit,resetAll];const baseShowMenuS=showMenu;showMenu=function(items,...rest){
+  if(Array.isArray(items)&&items.some(x=>x&&MOVE.includes(x.run))&&!isVisitor()){let at=-1;const out=[];
+    items.forEach(x=>{if(x&&MOVE.includes(x.run)){if(at<0){at=out.length;if(!items.some(y=>y&&/미리 보기/.test(y.label||"")))out.push({label:"내 공간 미리 보기",run:()=>setVisitor(true)});out.push({label:"설정",run:goSettings})}}else out.push(x)});
+    while(out.length&&out[out.length-1]==="-")out.pop();items=out.filter((x,i)=>!(x==="-"&&out[i-1]==="-"))}
+  return baseShowMenuS(items,...rest)}}
 /* ═════════ 브라우저 뒤로 가기 (2026-10-27) ═════════
    화면 이동(내 공간·내 방·전체 글·이웃새글·검색·가입 단계)과 창 열기를 브라우저 기록에 남김.
    뒤로 가기: 열린 대화상자/메뉴 → 맨 위 창(쓰는 중이면 평소처럼 확인) → 이전 화면 순서로 닫힘.

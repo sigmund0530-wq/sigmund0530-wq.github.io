@@ -25,13 +25,17 @@ window.supabase={createClient(url,key){return {
   auth:{async getSession(){await wait();return {data:{session:sess()},error:null}},
     async signUp({email,password}){await wait();if(db.users.some(u=>u.email===email))return E("User already registered");const user={id:"u-"+Math.random().toString(36).slice(2,10)+"-0000-0000-0000-000000000000",email,password};db.users.push(user);save();const s={user:{id:user.id,email}};localStorage.setItem("mocksess",JSON.stringify(s));return {data:{user:s.user,session:s},error:null}},
     async signInWithPassword({email,password}){await wait();const u=db.users.find(u=>u.email===email&&u.password===password);if(!u)return E("Invalid login credentials");const s={user:{id:u.id,email}};localStorage.setItem("mocksess",JSON.stringify(s));return {data:{user:s.user,session:s},error:null}},
-    async signOut(){localStorage.removeItem("mocksess");return {error:null}},async resetPasswordForEmail(){return {data:{},error:null}}},
+    async signOut(){localStorage.removeItem("mocksess");return {error:null}},async updateUser(o){await wait();const u=db.users.find(x=>x.id===uidNow());if(!u)return E("JWT required");if(o.password)u.password=o.password;if(o.email)u.pendingEmail=o.email;save();return {data:{user:{id:u.id,email:u.email}},error:null}},async resetPasswordForEmail(){return {data:{},error:null}}},
   async rpc(fn,a){await wait();window.__mock.calls.push("rpc:"+fn);const u=uidNow();
     if(fn==="handle_available")return {data:!db.tables.profiles.some(p=>p.handle===a.p_handle),error:null};
     if(fn==="invite_ok")return {data:(a.p_code||"").trim().toUpperCase() in db.invites,error:null};
     if(fn==="create_profile"){if(!u)return E("not_signed_in");if(db.tables.profiles.some(p=>p.id===u))return E("already_exists");if(!((a.p_code||"").trim().toUpperCase() in db.invites))return E("invite_invalid");
       if(db.tables.profiles.some(p=>p.handle===a.p_handle))return E("handle_unavailable");
       db.tables.profiles.push({id:u,handle:a.p_handle,display_name:a.p_name||"",status:"",space_name:null,photo_id:null,look:{},data:{}});db.tables.private_docs.push({owner:u,data:{}});db.tables.rooms.push({owner:u,visibility:"public",layout:{},media_ids:[]});db.invites["MUGADANG-BETA"]++;save();return {data:null,error:null}}
+    if(fn==="change_handle"){const p=db.tables.profiles.find(x=>x.id===u);if(!p)return E("no_profile");if(p.handle===a.p_handle)return {data:"same",error:null};if(p.handle_changed_at)return E("handle_changed_once");
+      if(db.tables.profiles.some(x=>x.handle===a.p_handle)||(db.released||{})[a.p_handle])return E("handle_unavailable");db.released=db.released||{};db.released[p.handle]=1;p.handle=a.p_handle;p.handle_changed_at=new Date().toISOString();save();return {data:"ok",error:null}}
+    if(fn==="delete_my_account"){if(!u)return E("not_signed_in");const p=db.tables.profiles.find(x=>x.id===u);db.released=db.released||{};if(p)db.released[p.handle]=1;
+      for(const t of Object.keys(db.tables))db.tables[t]=db.tables[t].filter(r=>(r.owner||r.id)!==u);db.users=db.users.filter(x=>x.id!==u);save();return {data:"ok",error:null}}
     return E("no fn")},
   from:t=>new Q(t),
   storage:{from:b=>({async upload(path,blob){const u=uidNow();if(path.split("/")[0]!==u)return E("rls");if(window.__mock.fail>0){window.__mock.fail--;return E("Failed to fetch")}db.files[path]=await toData(blob);save();window.__mock.calls.push("upload");return {data:{path},error:null}},
