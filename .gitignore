@@ -1,0 +1,6 @@
+tests/*.png
+tests/bk_*.json
+tests/__pycache__/
+tests/site/app.html
+tests/site/app_sb.html
+tests/site/vendor/

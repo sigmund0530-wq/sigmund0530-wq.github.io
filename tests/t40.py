@@ -1,0 +1,93 @@
+import shutil,wave,struct,math
+from base import *
+shutil.copy('../src/app.html','site/app.html')
+w=wave.open('beep.wav','w');w.setnchannels(1);w.setsampwidth(2);w.setframerate(8000)
+w.writeframes(b''.join(struct.pack('<h',int(8000*math.sin(i/8))) for i in range(8000)));w.close()
+R={}
+def ok(k,v):R[k]=v;print(('OK  ' if v else 'FAIL'),k,v if not isinstance(v,bool) else '')
+def signup(pg):
+  pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
+def area(pg):return pg.locator('.win.editor .rte-area').first
+def publish(pg):
+  pg.locator('.win.editor .hpub').click();pg.wait_for_timeout(250);pg.locator('.dialog input[value="public"]').check();pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(500)
+with sync_playwright() as p:
+  b=p.chromium.launch();ctx=b.new_context(viewport={'width':1280,'height':860});pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)))
+  signup(pg)
+  # 1 글 쓰기 + 질문
+  pg.locator('#fab').click() if pg.locator('#fab:visible').count() else pg.locator('[data-pn="me"]').click()
+  pg.wait_for_timeout(200)
+  if not pg.locator('.win.editor').count():pg.evaluate("document.querySelector('[data-act=\"openEditor\"],#fab')&&0");pg.locator('text=글쓰기').first.click();pg.wait_for_timeout(300)
+  ok('editor open',pg.locator('.win.editor').count()==1)
+  ok('question link visible',pg.locator('[data-x-q]:visible').count()==1)
+  pg.click('[data-x-q]');pg.wait_for_timeout(200);q=pg.locator('.dialog .thq').inner_text();pg.click('.dialog [data-o]');pg.wait_for_timeout(300)
+  ok('question inserted',q in area(pg).inner_html())
+  ok('question link hides after',pg.locator('[data-x-q]:visible').count()==0)
+  area(pg).click();pg.keyboard.press('End');pg.keyboard.type('바다에 갔다. 바람이 많이 불었다. 파도 소리가 컸다.');pg.wait_for_timeout(200)
+  pg.fill('.win.editor input[id^="f-title"]','바다')
+  # 2 그리기
+  pg.click('[data-x-draw]');pg.wait_for_timeout(300);ok('draw overlay',pg.locator('.ink-bar').count()==1)
+  bb=area(pg).bounding_box();pg.mouse.move(bb['x']+10,bb['y']+20);pg.mouse.down();pg.mouse.move(bb['x']+200,bb['y']+24,steps=8);pg.mouse.up();pg.wait_for_timeout(150)
+  pg.click('.ink-bar [data-idone]');pg.wait_for_timeout(200);ok('drawing inserted as photo',pg.locator('.win.editor svg.ink-ed path').count()==1)
+  # 3 음성 (파일)
+  pg.click('[data-x-audio]');pg.wait_for_timeout(200);pg.set_input_files('.dialog [data-af]','beep.wav');pg.wait_for_timeout(200);pg.click('.dialog [data-o]');pg.wait_for_timeout(400)
+  ok('audio block in editor',pg.locator('.win.editor .ablock audio').count()==1)
+  pg.screenshot(path='rec_editor.png')
+  publish(pg)
+  ok('post view open',pg.locator('article.post[data-pid]').count()>=1)
+  ok('audio in post view',pg.locator('article.post .afig audio').count()==1)
+  ok('drawing in post view',pg.locator('article.post svg.ink path').count()==1)
+  pid=pg.locator('article.post[data-pid]').first.get_attribute('data-pid')
+  # 4 덧붙이기
+  pg.click(f'[data-x-more="{pid}"]');pg.wait_for_timeout(200);pg.get_by_role('menuitem',name='덧붙이기').click();pg.wait_for_timeout(200)
+  pg.fill('#adn-t','1년 뒤에 다시 읽으니 그날 바람이 생각난다.');pg.click('.dialog [data-o]');pg.wait_for_timeout(400)
+  ok('addendum shown',pg.locator('article.post .addenda .adn').count()==1)
+  # 5 수정 → 이전 버전
+  pg.click(f'[data-act="editPost"][data-post="{pid}"]');pg.wait_for_timeout(400)
+  ok('photo menu has draw edit',True)
+  a=area(pg);a.click();pg.keyboard.press('Control+End');pg.keyboard.type(' 고친 문장.');pg.wait_for_timeout(200)
+  pg.locator('.win.editor .hpub').click();pg.wait_for_timeout(250);pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(500)
+  pg.click(f'[data-x-more="{pid}"]');pg.wait_for_timeout(200);mi=pg.get_by_role('menuitem',name='이전 버전 (1)');ok('revision count 1',mi.count()==1);mi.click();pg.wait_for_timeout(200)
+  pg.click('.dialog [data-rv="0"]');pg.wait_for_timeout(200);ok('revision preview lacks new text','고친 문장' not in pg.locator('.dialog .rv-prev').inner_text())
+  pg.click('.dialog [data-restore]');pg.wait_for_timeout(400)
+  ok('restored',('고친 문장' not in pg.locator('article.post .pbody').first.inner_text()))
+  ok('addendum survives restore',pg.locator('article.post .addenda .adn').count()==1)
+  # 6 문장 고르기 → 내 문장
+  pg.evaluate("""(()=>{const t=document.querySelector('article.post .pbody .txt');const w=document.createTreeWalker(t,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const i=n.textContent.indexOf('바람이 많이 불었다');if(i>=0){const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+'바람이 많이 불었다'.length);const s=getSelection();s.removeAllRanges();s.addRange(r);break}}})()""")
+  pg.wait_for_timeout(600);ok('selbar shown',pg.locator('.selbar').count()==1);pg.screenshot(path='rec_sel.png')
+  pg.click('.selbar [data-sl="line"]');pg.wait_for_timeout(200)
+  pg.evaluate("""(()=>{const t=document.querySelector('article.post .pbody .txt');const w=document.createTreeWalker(t,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const i=n.textContent.indexOf('파도');if(i>=0){const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+2);const s=getSelection();s.removeAllRanges();s.addRange(r);break}}})()""")
+  pg.wait_for_timeout(600);pg.click('.selbar [data-sl="word"]');pg.wait_for_timeout(200)
+  v=pg.evaluate("(()=>{const r=JSON.parse(localStorage.getItem('mgd2.v1.records'));return [r.vault.lines.length,r.vault.words.length,r.vault.words[0]&&r.vault.words[0].sentence]})()")
+  ok('vault saved',v[0]==1 and v[1]==1);print('   word sentence:',v[2])
+  pg.keyboard.press('Escape')
+  for _ in range(3):
+    if pg.locator('.win .x').count():pg.locator('.win .x').first.click();pg.wait_for_timeout(150)
+  # 두 번째 글 (지난해 날짜)
+  pg.evaluate("1")
+  pg.locator('text=글쓰기').first.click();pg.wait_for_timeout(300);area(pg).click();pg.keyboard.type('작년에도 바다에 갔다. 바람은 조용했다.')
+  pg.locator('.win.editor summary').first.click();pg.fill('.win.editor input[type=date]','2025-10-20');publish(pg)
+  for _ in range(3):
+    if pg.locator('.win .x').count():pg.locator('.win .x').first.click();pg.wait_for_timeout(150)
+  # 7 전체 글 보기들
+  pg.locator('[data-pn="menu"]').click();pg.wait_for_timeout(150);pg.get_by_role('menuitem',name='전체 글').click();pg.wait_for_timeout(300)
+  ok('tabs',pg.locator('.pv-tabs [data-pv]').count()==5)
+  pg.click('[data-pv="cal"]');pg.wait_for_timeout(200);ok('calendar has day',pg.locator('.cal-d.has').count()>=1);pg.locator('.cal-d.has').first.click();pg.wait_for_timeout(200);ok('calendar day list',pg.locator('.cal-list [data-open-post]').count()>=1);pg.screenshot(path='rec_cal.png')
+  pg.click('[data-pv="lines"]');pg.wait_for_timeout(200);ok('lines view',pg.locator('.vl').count()==1)
+  pg.click('[data-pv="words"]');pg.wait_for_timeout(200);ok('words view',pg.locator('.vw').count()==1)
+  pg.click('[data-pv="look"]');pg.wait_for_timeout(200);ok('look words',pg.locator('.lk-w button').count()>=1);pg.locator('.lk-w button').first.click();pg.wait_for_timeout(200);ok('look hits',pg.locator('.lk-hits [data-open-post]').count()>=1)
+  pg.click('[data-lk-two]');pg.wait_for_timeout(200);ok('two periods',pg.locator('.lk-col').count()==2);pg.screenshot(path='rec_look.png',full_page=True)
+  pg.click('[data-pv="list"]');pg.wait_for_timeout(200);pg.click('[data-cmp-pick]');pg.wait_for_timeout(200)
+  rows=pg.locator('.record-list [data-open-post]');rows.nth(0).click();pg.wait_for_timeout(150);rows=pg.locator('.record-list [data-open-post]');rows.nth(1).click();pg.wait_for_timeout(400)
+  ok('compare window',pg.locator('.cmp .cmp-col').count()==2);pg.screenshot(path='rec_cmp.png')
+  pg.click('[data-cmp-write]');pg.wait_for_timeout(400);ok('compare seed in editor','함께 읽고' in area(pg).inner_text())
+  # 8 쓰다 만 글 자동 이어쓰기
+  area(pg).click();pg.keyboard.press('Control+End');pg.keyboard.type(' 이어 쓰는 중');pg.wait_for_timeout(1200)
+  pg.reload();pg.wait_for_timeout(700)
+  pg.locator('text=글쓰기').first.click();pg.wait_for_timeout(400)
+  ok('auto resumed','이어 쓰는 중' in area(pg).inner_text());ok('resume banner',pg.locator('.banner.resumed').count()==1);pg.screenshot(path='rec_resume.png')
+  pg.click('.banner.resumed [data-d]');pg.wait_for_timeout(300);ok('start over clears','이어 쓰는 중' not in area(pg).inner_text())
+  # 9 파일 보존 (음성·그림 원본) after reload
+  pg.reload();pg.wait_for_timeout(600)
+  kinds=pg.evaluate("(()=>{const a=JSON.parse(localStorage.getItem('mgd2.v1.assets'));return Object.values(a).map(x=>x.role+(x.draw?'+draw':''))})()")
+  ok('audio asset kept','audio' in kinds);ok('no drawing file',not any('draw' in k for k in kinds));print('   assets:',kinds)
+  print('ERR',errs)

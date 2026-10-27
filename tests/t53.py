@@ -1,0 +1,20 @@
+from base import *
+def ok(k,v):print(('OK  ' if v else 'FAIL'),k)
+ITEMS="""(()=>{const out=[];document.querySelectorAll('.win.editor .blocks>[data-bid]').forEach(n=>{if(n.classList.contains('pblock'))out.push('P['+[...n.querySelectorAll('img')].map(i=>(()=>{const c=document.createElement('canvas');c.width=c.height=1;const x=c.getContext('2d');x.drawImage(i,0,0,1,1);const d=x.getImageData(0,0,1,1).data;return d[0]>d[1]?'빨강':'초록'})()).join(',')+']');else if(n.classList.contains('rte-area'))out.push('T('+n.innerText.trim().slice(0,8)+')')});return out.join(' ')})()"""
+with sync_playwright() as p:
+  b=p.chromium.launch();ctx=b.new_context(viewport={'width':1280,'height':900});pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)))
+  pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-write]');pg.wait_for_timeout(400)
+  a=pg.locator('.win.editor .rte-area').first;a.click();pg.keyboard.type('첫 문단입니다.');pg.keyboard.press('Enter');pg.keyboard.type('둘째 줄.')
+  pg.set_input_files('.win.editor input[id^="f-ins"]',['pa.jpg','pb.jpg']);pg.wait_for_timeout(700)
+  pg.locator('.win.editor .rte-area').last.click();pg.keyboard.type('마지막 문단.')
+  photos=lambda:pg.locator('.win.editor .ph-item').count();assets=lambda:pg.evaluate("Object.keys(JSON.parse(localStorage.getItem('mgd2.v1.assets')||'{}')).length")
+  print('  시작:',pg.evaluate(ITEMS),'사진',photos())
+  f=pg.locator('.win.editor .ph-item');f.nth(0).drag_to(f.nth(1),target_position={'x':int(f.nth(1).bounding_box()['width']*0.8),'y':40});pg.wait_for_timeout(500)
+  s1=pg.evaluate(ITEMS);print('  1번 사진을 2번 오른쪽으로:',s1);ok('옮겨도 사진 수 그대로(2)',photos()==2)
+  pg.locator('.win.editor .ph-item').nth(0).drag_to(pg.locator('.win.editor .rte-area').first,target_position={'x':40,'y':10});pg.wait_for_timeout(600)
+  s2=pg.evaluate(ITEMS);print('  사진을 첫 문단 안으로:',s2);ok('글 사이로 옮겨도 사진 수 그대로(2)',photos()==2)
+  pg.wait_for_timeout(1000);ok(f'파일이 늘지 않음 (저장된 파일 {assets()}개)',assets()==2)
+  pg.click('[data-x-draw]');pg.wait_for_timeout(300)
+  st=pg.evaluate("(()=>{const s=document.querySelector('.blocks.inking svg.ink-ed');const c=getComputedStyle(s);return [c.outlineStyle,c.backgroundColor]})()")
+  ok(f'그리기 중 상자·바탕 없음 {st}',st[0]=='none' and st[1] in ('rgba(0, 0, 0, 0)','transparent'))
+  pg.screenshot(path='drag_ink.png');print('ERR',errs)

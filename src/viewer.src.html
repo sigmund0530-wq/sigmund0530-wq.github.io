@@ -1,0 +1,150 @@
+<title>무가당 통합 편집</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: 위에 보기 전환, 아래 무대에 PC 모니터(1280×800을 줄여서)와 휴대폰(390×800)을 나란히. 두 화면은 같은 저장소를 씀 */
+:root{
+  --bg:#e6e9ee; --panel:#f7f8fa; --line:#c8cfd9; --ink:#1b2230; --ink-2:#5b6576;
+  --accent:#2b62d9; --accent-ink:#fff; --bezel:#1d2128; --bezel-2:#2c313a;
+  --f:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14171c; --panel:#1d2128; --line:#353c48; --ink:#e7ecf3; --ink-2:#9aa5b6;
+  --accent:#7aa2ff; --accent-ink:#0d1626; --bezel:#08090b; --bezel-2:#23272e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14171c; --panel:#1d2128; --line:#353c48; --ink:#e7ecf3; --ink-2:#9aa5b6;
+  --accent:#7aa2ff; --accent-ink:#0d1626; --bezel:#08090b; --bezel-2:#23272e; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);overflow:hidden}
+*{box-sizing:border-box}
+.wrap{height:100%;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding-block:12px 10px}
+header h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.01em}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;color:var(--ink-2);padding:6px 14px;font:inherit;font-size:13px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.note{font-size:12.5px;color:var(--ink-2);flex:1;min-width:220px;margin:0}
+.stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:28px;padding-bottom:14px}
+.device{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.device[hidden]{display:none}
+.cap{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.monitor{background:var(--bezel);border-radius:12px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.phone{background:var(--bezel);border-radius:34px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.screen{position:relative;overflow:hidden;background:#fff}
+.monitor .screen{border-radius:4px}
+.phone .screen{border-radius:24px}
+.screen iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#fff}
+@media (max-width:600px){.note{display:none}}
+/* 휴대폰으로 열면: 미리보기 틀 없이 앱을 화면 가득 (실제 휴대폰 화면 그대로) */
+.solo .wrap{padding:0}.solo header{padding:6px 8px;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.solo header::-webkit-scrollbar{display:none}.solo header h1,.solo .note{display:none}.solo .seg{flex:none}.solo .seg button{padding:5px 10px;font-size:12.5px}.solo .stage{padding:0;gap:0;align-items:stretch}
+.solo .device{flex:1;gap:0}.solo .phone{padding:0;border-radius:0;background:none;box-shadow:none;flex:1;display:flex}
+.solo .phone .screen{border-radius:0;flex:1}.solo .cap{display:none}
+.phone.tablet{border-radius:34px;padding:16px}.phone.tablet .screen{border-radius:16px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>무가당 기본형 미리보기</h1>
+    <div class="seg" role="group" aria-label="기기">
+      <button type="button" data-mode="both" aria-pressed="true">나란히</button>
+      <button type="button" data-mode="pc" aria-pressed="false">PC</button>
+      <button type="button" data-mode="tablet" aria-pressed="false">태블릿</button>
+      <button type="button" data-mode="mobile" aria-pressed="false">모바일</button>
+    </div>
+    <div class="seg" role="group" aria-label="가입 상태">
+      <button type="button" data-st="before" aria-pressed="true">가입 전</button>
+      <button type="button" data-st="after" aria-pressed="false">가입 후</button>
+    </div>
+    <p class="note">같은 상태(가입 전·후)끼리는 한 공간이라, 한 화면에서 쓰거나 꾸미면 다른 기기 화면에도 반영돼요. 저장은 이 브라우저에만 돼요.</p>
+  </header>
+  <main class="stage" id="stage">
+    <section class="device" id="dev-pc" aria-label="PC 화면" hidden>
+      <div class="monitor"><div class="screen" id="scr-pc"><iframe id="f-pc" title="PC 화면 (1280×800)" width="1280" height="800"></iframe></div></div>
+      <div class="cap" id="cap-pc">PC</div>
+    </section>
+    <section class="device" id="dev-tab" aria-label="태블릿 화면" hidden>
+      <div class="phone tablet"><div class="screen" id="scr-tab"><iframe id="f-tab" title="태블릿 화면 (820×1180)" width="820" height="1180"></iframe></div></div>
+      <div class="cap" id="cap-tab">태블릿</div>
+    </section>
+    <section class="device" id="dev-mo" aria-label="모바일 화면" hidden>
+      <div class="phone"><div class="screen" id="scr-mo"><iframe id="f-mo" title="모바일 화면 (390×800)" width="390" height="800"></iframe></div></div>
+      <div class="cap" id="cap-mo">모바일</div>
+    </section>
+    <section class="device" id="dev-pc2" aria-label="PC 화면, 가입 후" hidden>
+      <div class="monitor"><div class="screen" id="scr-pc2"><iframe id="f-pc2" title="PC 화면, 가입 후 (1280×800)" width="1280" height="800"></iframe></div></div>
+      <div class="cap" id="cap-pc2">PC</div>
+    </section>
+    <section class="device" id="dev-tab2" aria-label="태블릿 화면, 가입 후" hidden>
+      <div class="phone tablet"><div class="screen" id="scr-tab2"><iframe id="f-tab2" title="태블릿 화면, 가입 후 (820×1180)" width="820" height="1180"></iframe></div></div>
+      <div class="cap" id="cap-tab2">태블릿</div>
+    </section>
+    <section class="device" id="dev-mo2" aria-label="모바일 화면, 가입 후" hidden>
+      <div class="phone"><div class="screen" id="scr-mo2"><iframe id="f-mo2" title="모바일 화면, 가입 후 (390×800)" width="390" height="800"></iframe></div></div>
+      <div class="cap" id="cap-mo2">모바일</div>
+    </section>
+  </main>
+</div>
+
+<script type="application/octet-stream" id="appsrc">@@APP@@</script>
+<script>
+(function(){
+  const SZ={pc:{w:1280,h:800},tab:{w:820,h:1180},mo:{w:390,h:800}};
+  let mode="pc",st="before";
+  try{const m=localStorage.getItem("mgd.viewer.mode");if(m)mode=m;const t=localStorage.getItem("mgd.viewer.st");if(t)st=t}catch(e){}
+  if(mode==="after"){mode="mobile";st="after"}
+  if(!["both","pc","tablet","mobile"].includes(mode))mode="pc";
+  const $=id=>document.getElementById(id);
+  let SRC=null;const getSrc=()=>{if(SRC==null){const b=atob(document.getElementById("appsrc").textContent.trim());SRC=new TextDecoder().decode(Uint8Array.from(b,c=>c.charCodeAt(0)))}return SRC};
+  /* 가입 후 화면들은 따로 저장소(mgd2after)를 함께 써서 가입 전 화면과 섞이지 않게. 처음 열 때 가입을 자동으로 마침 */
+  const done=()=>{try{const r=JSON.parse(localStorage.getItem("mgd2after.v1.records")||"null");return !!(r&&r.settings&&r.settings.account&&r.settings.onboardingComplete)}catch(e){return false}};
+  let signing=false;const queue=[];
+  const load=k=>{const f=$("f-"+k);if(f.dataset.loaded)return;f.dataset.loaded="1";
+    if(!k.endsWith("2")){f.srcdoc=getSrc();return}
+    const go=()=>{f.srcdoc=getSrc().split("mgd2.v1.").join("mgd2after.v1.")};
+    if(done()){go();return}
+    if(signing){queue.push(go);return}
+    /* 처음 여는 가입 후 화면 하나만 가입을 자동으로 마치고, 나머지는 그 뒤에 같은 계정으로 열림 */
+    signing=true;go();f.addEventListener("load",()=>autoSignup(f),{once:true});
+    const t=setInterval(()=>{if(done()){clearInterval(t);signing=false;queue.splice(0).forEach(g=>g())}},150)};
+  function autoSignup(f){const d=f.contentDocument;let n=0;
+    const q=s=>d.querySelector(s),wait=(s,cb)=>{const t=setInterval(()=>{const e=q(s);if(e){clearInterval(t);cb(e)}else if(++n>80)clearInterval(t)},60)};
+    if(done())return;
+    wait('[data-au-social="kakao"]',b=>{b.click();
+      wait("[data-au-all]",c=>{c.checked=true;c.dispatchEvent(new Event("change",{bubbles:true}));
+        wait("[data-au-next]:not([disabled])",nx=>{nx.click();
+          wait("#ob-handle",h=>{const nm=q("#ob-name");if(nm)nm.value="\uD558\uB8E8";h.value="haru";q("[data-au-make]").click();
+            wait("[data-aup-skip]",sk=>{sk.click();wait("[data-au-enter]",en=>en.click())})})})})})}
+  /* 진짜 휴대폰에서 모바일 화면을 볼 때만 틀 없이 꽉 채움. 좁은 미리보기 창에서는 보통 화면 그대로(버튼 줄바꿈) */
+  const phone=()=>innerWidth<640&&matchMedia("(pointer:coarse)").matches;
+  const solo=()=>phone()&&(mode==="mobile"||mode==="both");
+  const ALL=["pc","tab","mo","pc2","tab2","mo2"];
+  function fit(){
+    const sf=st==="after"?"2":"";
+    document.querySelectorAll("[data-mode]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mode===mode)));
+    document.querySelectorAll("[data-st]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.st===st)));
+    if(solo()){document.body.classList.add("solo");const k="mo"+sf;ALL.forEach(x=>$("dev-"+x).hidden=x!==k);load(k);
+      const f=$("f-"+k),scr=$("scr-"+k),hh=document.querySelector("header").offsetHeight,h=innerHeight-hh;f.width=innerWidth;f.height=h;f.style.width=innerWidth+"px";f.style.height=h+"px";f.style.transform="none";
+      scr.style.width=innerWidth+"px";scr.style.height=h+"px";return}
+    document.body.classList.remove("solo");
+    const st0=$("stage"),W=st0.clientWidth,H=st0.clientHeight-30;
+    const show=mode==="both"?["pc","mo"]:[{pc:"pc",tablet:"tab",mobile:"mo"}[mode]];
+    ALL.forEach(x=>$("dev-"+x).hidden=!show.map(k=>k+sf).includes(x));
+    const d={pc:{...SZ.pc},tab:SZ.tab,mo:SZ.mo};
+    if(mode==="pc"){d.pc.w=Math.max(800,W-20);d.pc.h=Math.max(600,H-20)}
+    const pad={pc:20,tab:32,mo:24},gap=28;
+    const s={};show.forEach(k=>s[k]=Math.min(1,(H-pad[k])/d[k].h,(W-pad[k])/d[k].w));
+    const used=show.reduce((a,k)=>a+d[k].w*s[k],0),fixed=show.reduce((a,k)=>a+pad[k],0)+(show.length-1)*gap;
+    if(used+fixed>W){const r=Math.max(.1,(W-fixed)/used);show.forEach(k=>s[k]*=r)}
+    show.forEach(k=>{const id=k+sf,f=$("f-"+id);f.width=d[k].w;f.height=d[k].h;f.style.width=d[k].w+"px";f.style.height=d[k].h+"px";load(id);place(id,d[k],s[k],k)});
+  }
+  function place(id,d,s,k){const scr=$("scr-"+id),f=$("f-"+id);
+    scr.style.width=Math.floor(d.w*s)+"px";scr.style.height=Math.floor(d.h*s)+"px";f.style.transform="scale("+s+")";
+    $("cap-"+id).textContent=({pc:"PC",tab:"태블릿",mo:"모바일"})[k]+(id.endsWith("2")?" · 가입 후":"")+" · "+d.w+"×"+d.h+(s<0.995?" · "+Math.round(s*100)+"%로 줄여 보임":"")}
+  const save=()=>{try{localStorage.setItem("mgd.viewer.mode",mode);localStorage.setItem("mgd.viewer.st",st)}catch(e){}};
+  document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;save();fit()});
+  document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{st=b.dataset.st;save();fit()});
+  let t;addEventListener("resize",()=>{clearTimeout(t);t=setTimeout(fit,60)});
+  fit();
+})();
+</script>
