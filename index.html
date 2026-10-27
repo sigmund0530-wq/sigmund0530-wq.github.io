@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<html lang="ko"><head><script src="vendor/supabase-2.110.1.js"></script><script>window.MGD_SB={url:"https://idahhgtpawkrdikuvfbv.supabase.co",key:"sb_publishable_lRONSNzx0aDW360_AxJwBA_NgyvxkX0"}</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>무가당</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4142,6 +4142,196 @@ function edPhotoDrag(ctx){const host=ctx.blocksEl;let src=null;
       /* 단어 한가운데서 자르지 않게: 놓은 자리의 그 줄 끝으로 */
       if(rg){let n=rg.startContainer;while(n&&n.parentNode!==a)n=n.parentNode;if(n){rg=document.createRange();rg.setStartAfter(n);rg.collapse(true)}}}
     sb.items.splice(s0.i,1);ctx.insertAt({id:uid("b"),type:"photos",items:[item]},a?a.dataset.bid:null,rg)},true)}
+
+
+/* ═════════ 서버 연결 (Supabase) — 2026-10-27 ═════════
+   window.MGD_SB = {url, key} 와 supabase 라이브러리가 있을 때만 켜짐 (미리보기에서는 지금처럼 브라우저에만 저장).
+   · 가입: 이메일 + 비밀번호 + 베타 초대 코드 → 서버에 계정과 공간(create_profile)
+   · 로그인하면 서버에서 내 글·공간·파일을 불러오고, 고칠 때마다 조용히 서버에 올림
+   · 이 기기 저장본은 '빠르게 열기 + 잠깐 끊겨도 안 잃기' 용도. 서버가 기준
+   · 순서: 새 파일 → 글·공간 → 지운 파일 (어디서 끊겨도 글이 없는 파일을 가리키지 않게) */
+const SB={on:!!(window.MGD_SB&&window.MGD_SB.url&&window.supabase&&window.supabase.createClient),c:null,user:null,ready:false,pushing:false,again:false,timer:null,retry:0,last:null,pulledAt:0};
+const SBK={owner:"mgd2.v1.sbuser",last:"mgd2.v1.sblast",dirty:"mgd2.v1.sbdirty",pending:"mgd2.v1.sbpending"};
+if(SB.on){try{SB.c=window.supabase.createClient(MGD_SB.url,MGD_SB.key,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"mgd-sb-auth"}})}catch(e){SB.on=false}}
+const lsS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,typeof v==="string"?v:JSON.stringify(v))}catch(e){}};
+const hsh=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return (h>>>0).toString(36)+":"+s.length};
+function sbErr(e){const m=String((e&&(e.message||e.error_description||e.msg))||e||"");
+  if(/invite_invalid/.test(m))return "초대 코드가 맞지 않아요.";if(/handle_unavailable/.test(m))return "이미 쓰이는 공간 주소예요.";if(/already_exists/.test(m))return "이미 공간이 있어요. 로그인해 주세요.";
+  if(/already registered|already been registered|User already/i.test(m))return "이미 가입한 이메일이에요. 로그인해 주세요.";if(/Invalid login/i.test(m))return "이메일이나 비밀번호가 맞지 않아요.";
+  if(/not confirmed/i.test(m))return "메일함에서 확인 링크를 먼저 눌러 주세요.";if(/Password should|weak/i.test(m))return "비밀번호를 더 길게 정해 주세요.";
+  if(/rate limit|too many/i.test(m))return "잠깐 너무 많이 시도했어요. 조금 뒤에 다시 해 주세요.";if(/fetch|network|Failed to/i.test(m))return "서버에 연결하지 못했어요. 인터넷을 확인해 주세요.";
+  return "서버에서 처리하지 못했어요. ("+m.slice(0,60)+")"}
+const sbOmit=(o,ks)=>{const r={};Object.keys(o||{}).forEach(k=>{if(!ks.includes(k))r[k]=o[k]});return r};
+function sbRows(uid){const pr=records.profile||{},bg=page().background||{};
+  const posts=records.posts.map(p=>({id:p.id,owner:uid,status:p.status==="published"?"published":"draft",visibility:["private","close","followers","custom","public"].includes(p.visibility)?p.visibility:"private",allow:[],
+    category_id:p.categoryId||null,recorded_at:p.recordedAt||null,first_published_at:p.firstPublishedAt||null,media_ids:[...new Set([...mediaIds(blocksOf(p)),p.coverAssetId].filter(Boolean))],data:p}));
+  const cats=records.categories.map(c=>({id:c.id,owner:uid,name:String(c.name||"이름 없음").slice(0,30),visibility:["private","close","followers","custom","public"].includes(c.visibility)?c.visibility:"private",sort:c.order||0,data:c}));
+  const profile={display_name:String(pr.displayName||"").slice(0,30),status:String(pr.status||"").slice(0,60),space_name:pr.spaceName?String(pr.spaceName).slice(0,30):null,photo_id:pr.photoAssetId||null,
+    look:{coverId:bg.type==="image"?bg.assetId:null,background:bg,mood:layout.mood||null,coverH:layout.coverH||null},data:{bio:pr.bio||""}};
+  const priv={owner:uid,data:{settings:records.settings||{},vault:records.vault||null,profilePrivate:{keepBio:pr.keepBio||undefined,bioHistory:pr.bioHistory||undefined,sq:pr.sq||undefined},rest:sbOmit(records,["posts","categories","profile","settings","vault"])}};
+  const shelfMedia=(layout.shelf||[]).map(x=>x.assetId).filter(Boolean);
+  const room={owner:uid,visibility:["public","followers","private"].includes(layout.roomVis)?layout.roomVis:"public",layout,media_ids:[...new Set([...shelfMedia,bg.type==="image"?bg.assetId:null].filter(Boolean))]};
+  return {posts,cats,profile,priv,room}}
+function sbSnap(rows){const s={posts:{},cats:{},media:{},profile:hsh(JSON.stringify(rows.profile)),priv:hsh(JSON.stringify(rows.priv)),room:hsh(JSON.stringify(rows.room))};
+  rows.posts.forEach(r=>s.posts[r.id]=hsh(JSON.stringify(r)));rows.cats.forEach(r=>s.cats[r.id]=hsh(JSON.stringify(r)));Object.entries(assets).forEach(([id,a])=>{if(a.remote)s.media[id]=a.remote});return s}
+const sbExt=m=>((m||"").split("/")[1]||"bin").split(";")[0].replace("jpeg","jpg").replace("svg+xml","svg").replace(/[^a-z0-9]/g,"").slice(0,5)||"bin";
+async function sbPush(){if(!SB.on||!SB.ready||!SB.user)return;if(SB.pushing){SB.again=true;return}SB.pushing=true;clearTimeout(SB.timer);const uid=SB.user.id;
+  try{
+    /* 1) 새 파일 먼저 */
+    let changed=false;
+    for(const [id,a] of Object.entries(assets)){if(a.remote||!a.dataUrl||!/^data:/.test(a.dataUrl))continue;
+      const blob=await (await fetch(a.dataUrl)).blob();const mime=a.mime||blob.type||"application/octet-stream";const path=`${uid}/${id}.${sbExt(mime)}`;
+      let r=await SB.c.storage.from("media").upload(path,blob,{upsert:false,contentType:mime});if(r.error&&!/exists|Duplicate|409/i.test(String(r.error.message||r.error.statusCode||"")))throw r.error;
+      r=await SB.c.from("media").upsert({id,owner:uid,path,kind:/^audio\//.test(mime)?"audio":"image",mime,width:a.width||null,height:a.height||null,bytes:blob.size});if(r.error)throw r.error;
+      const su=await SB.c.storage.from("media").createSignedUrl(path,60*60*24*7);a.remote=path;if(su&&su.data&&su.data.signedUrl)a.dataUrl=su.data.signedUrl;changed=true}
+    /* 2) 글·카테고리·프로필·개인 문서·내 방 (바뀐 것만) */
+    const rows=sbRows(uid),last=SB.last||{posts:{},cats:{},media:{}};
+    const upP=rows.posts.filter(r=>last.posts[r.id]!==hsh(JSON.stringify(r)));
+    const upC=rows.cats.filter(r=>last.cats[r.id]!==hsh(JSON.stringify(r)));
+    if(upC.length){const r=await SB.c.from("categories").upsert(upC);if(r.error)throw r.error}
+    if(upP.length){const r=await SB.c.from("posts").upsert(upP);if(r.error)throw r.error}
+    const delP=Object.keys(last.posts).filter(id=>!rows.posts.some(r=>r.id===id));if(delP.length){const r=await SB.c.from("posts").delete().in("id",delP);if(r.error)throw r.error}
+    const delC=Object.keys(last.cats).filter(id=>!rows.cats.some(r=>r.id===id));if(delC.length){const r=await SB.c.from("categories").delete().in("id",delC);if(r.error)throw r.error}
+    if(last.profile!==hsh(JSON.stringify(rows.profile))){const r=await SB.c.from("profiles").update(rows.profile).eq("id",uid);if(r.error)throw r.error}
+    if(last.priv!==hsh(JSON.stringify(rows.priv))){const r=await SB.c.from("private_docs").upsert(rows.priv);if(r.error)throw r.error}
+    if(last.room!==hsh(JSON.stringify(rows.room))){const r=await SB.c.from("rooms").upsert(rows.room);if(r.error)throw r.error}
+    /* 3) 지운 파일은 마지막에 */
+    const gone=Object.entries(last.media||{}).filter(([id])=>!assets[id]||!assets[id].remote);
+    if(gone.length){await SB.c.storage.from("media").remove(gone.map(([,p])=>p));const r=await SB.c.from("media").delete().in("id",gone.map(([id])=>id));if(r.error)throw r.error}
+    SB.last=sbSnap(rows);lsS(SBK.last,SB.last);lsS(SBK.dirty,null);SB.retry=0;
+    if(changed){SB.silent=true;try{writeAll()}finally{SB.silent=false}}
+    setStatus("saved","서버에 저장됨");
+  }catch(e){SB.retry=Math.min(SB.retry+1,5);setStatus("failed","서버에 못 올렸어요 · 잠시 뒤 다시 시도해요");clearTimeout(SB.timer);SB.timer=setTimeout(sbPush,Math.min(60000,3000*2**(SB.retry-1)));console.warn("[mgd] push",e)}
+  finally{SB.pushing=false;if(SB.again){SB.again=false;sbQueue()}}}
+addEventListener("online",()=>{if(SB.ready&&localStorage.getItem(SBK.dirty))sbQueue()});
+function sbQueue(){if(!SB.on||!SB.ready)return;clearTimeout(SB.timer);SB.timer=setTimeout(sbPush,1200)}
+const baseWriteAllSB=writeAll;writeAll=function(){const ok=baseWriteAllSB();if(ok&&SB.on&&!SB.silent&&(SB.ready||SB.booting)){lsS(SBK.dirty,"1");if(SB.ready)sbQueue()}return ok};
+addEventListener("beforeunload",e=>{if(SB.on&&SB.ready&&(SB.pushing||SB.timer)&&localStorage.getItem(SBK.dirty)){e.preventDefault();e.returnValue=""}});
+
+/* 서버에서 내 것 불러오기 */
+async function sbPull(){const uid=SB.user.id,q=t=>SB.c.from(t);
+  const [pr,pv,cs,ps,rm,md]=await Promise.all([q("profiles").select("*").eq("id",uid).maybeSingle(),q("private_docs").select("data").eq("owner",uid).maybeSingle(),
+    q("categories").select("data").eq("owner",uid),q("posts").select("data").eq("owner",uid),q("rooms").select("layout").eq("owner",uid).maybeSingle(),q("media").select("*").eq("owner",uid)]);
+  for(const r of [pr,pv,cs,ps,rm,md])if(r.error)throw r.error;
+  if(!pr.data)return "noprofile";
+  const priv=(pv.data&&pv.data.data)||{};const P=pr.data;
+  if(!priv.settings){ /* 막 가입한 공간: 이 기기에서 가입하며 만든 것을 그대로 올림 */
+    records.profile=Object.assign(records.profile||{},{displayName:P.display_name,handle:P.handle});records.settings=Object.assign({},records.settings||{},{onboardingComplete:true,loggedOut:false});
+    SB.last=null;SB.ready=true;lsS(SBK.owner,uid);baseWriteAllSB();sbPush();return "fresh"}
+  records=Object.assign({},priv.rest||{},{profile:Object.assign({},P.data||{},{id:"profile-me",displayName:P.display_name,status:P.status,handle:P.handle,photoAssetId:P.photo_id||null},P.space_name?{spaceName:P.space_name}:{},priv.profilePrivate||{}),
+    settings:Object.assign({},priv.settings,{onboardingComplete:true,loggedOut:false}),categories:(cs.data||[]).map(r=>r.data),posts:(ps.data||[]).map(r=>r.data)});
+  if(priv.vault)records.vault=priv.vault;
+  if(rm.data&&rm.data.layout&&rm.data.layout.pages)layout=rm.data.layout;
+  const rows=md.data||[];let map={};
+  if(rows.length){const s=await SB.c.storage.from("media").createSignedUrls(rows.map(r=>r.path),60*60*24*7);(s.data||[]).forEach(x=>{if(x&&x.signedUrl)map[x.path]=x.signedUrl})}
+  const old=assets;assets={};
+  rows.forEach(r=>{const o=old[r.id]||{};assets[r.id]=Object.assign({},o,{id:r.id,mime:r.mime,width:r.width,height:r.height,remote:r.path,dataUrl:map[r.path]||o.dataUrl||""})});
+  Object.entries(old).forEach(([id,a])=>{if(!assets[id]&&!a.remote&&a.dataUrl&&/^data:/.test(a.dataUrl))assets[id]=a});   /* 아직 못 올린 이 기기의 새 파일 */
+  try{migrate()}catch(e){}
+  SB.last=sbSnap(sbRows(uid));lsS(SBK.last,SB.last);SB.ready=true;SB.pulledAt=Date.now();lsS(SBK.owner,uid);
+  SB.silent=true;try{baseWriteAllSB()}finally{SB.silent=false}
+  if(Object.values(assets).some(a=>!a.remote))sbQueue();
+  return "ok"}
+function sbClearLocal(){[K.records,K.layout,K.assets,SBK.owner,SBK.last,SBK.dirty].forEach(k=>lsS(k,null));try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith(AUTOSAVE))localStorage.removeItem(k)}}catch(e){}}
+async function sbEnter(user){SB.user=user;
+  const owner=localStorage.getItem(SBK.owner);
+  if(owner&&owner!==user.id){sbClearLocal();defaults()}   /* 다른 사람이 쓰던 기기 */
+  /* 이 기기에서 못 올린 고침이 있으면 먼저 올림 */
+  if(owner===user.id&&localStorage.getItem(SBK.dirty)){SB.last=lsGet(SBK.last);SB.ready=true;SB.booting=false;await sbPush();
+    if(localStorage.getItem(SBK.dirty)){render();return}   /* 못 올렸으면 서버 것으로 덮지 않고 이 기기 것을 지킴 (잠시 뒤 다시 올림) */
+    SB.ready=false}
+  SB.booting=false;
+  const pend=lsGet(SBK.pending);
+  let r=await sbPull();
+  if(r==="noprofile"&&pend){const c=await SB.c.rpc("create_profile",{p_handle:pend.handle,p_name:pend.name,p_code:pend.code});if(c.error)throw c.error;lsS(SBK.pending,null);r=await sbPull()}
+  if(r==="noprofile"){ui.onboard=true;ui.authStep="sbnoprofile";render();return}
+  ui.onboard=false;ui.authStep=null;if(ui.renderer==="feed"&&!records.posts.length)ui.renderer="desktop";render()}
+
+/* ── 가입·로그인 화면을 서버용으로 ── */
+if(SB.on){
+  const baseRenderOnboardSB=renderOnboard;renderOnboard=function(cv){const st=auStep();
+    if(st==="sbnoprofile"){cv.style.minHeight="100%";cv.innerHTML=`<div class="onb au"><form class="onb-card au-card" onsubmit="return false"><h2>공간 만들기를 마쳐 주세요</h2>
+      <p class="au-sub">계정은 있는데 아직 공간이 없어요. 공간 주소와 초대 코드를 적어 주세요.</p>
+      <label for="ob-name">별명</label><input id="ob-name" maxlength="20" value="${esc((records.profile&&records.profile.displayName)||"")}">
+      <label for="ob-handle">공간 주소</label><div class="au-addr"><span>@</span><input id="ob-handle" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="영문 소문자·숫자"></div><p class="au-err" data-for="handle" hidden></p>
+      <label for="au-invite">초대 코드</label><input id="au-invite" autocapitalize="characters" spellcheck="false" placeholder="받은 초대 코드"><p class="au-err" data-for="invite" hidden></p>
+      <button type="button" class="btn primary onb-go" data-sb-finish>공간 만들기</button><button type="button" class="linkbtn au-back" data-sb-out>로그아웃</button></form></div>`;return}
+    baseRenderOnboardSB(cv);const card=cv.querySelector(".au-card");if(!card)return;
+    if(st==="start"){card.querySelectorAll("[data-au-social]").forEach(b=>b.remove());const or=card.querySelector(".au-or");if(or)or.remove();
+      const btns=card.querySelector(".au-btns");if(btns)btns.insertAdjacentHTML("afterbegin",`<p class="au-sub sb-beta">지금은 초대받은 분들과 함께하는 베타예요. 이메일로 가입해 주세요. 카카오·네이버 로그인은 준비 중이에요.</p>`)}
+    if(st==="terms"){const box=card.querySelector(".au-box");if(box)box.insertAdjacentHTML("afterend",`<div class="au-box sb-beta"><b>베타 안내</b><p>쓴 글과 사진은 무가당 서버(Supabase, 서울 지역)에 저장돼요. 나만 보기 글은 나만, 공개 범위를 정한 글은 그 사람들만 볼 수 있어요. 베타 때 쓴 글은 정식 서비스에도 그대로 이어져요. 언제든 ‘백업 · 내보내기’로 파일을 받을 수 있고, 탈퇴하면 지워져요.</p></div>`)}
+    if(st==="info"){const h=card.querySelector(".au-addr");const hint=h&&h.parentElement.querySelector('.au-hint');const at=hint||h;
+      if(at&&!card.querySelector("#au-invite"))at.insertAdjacentHTML("afterend",`<label for="au-invite">초대 코드</label><input type="text" id="au-invite" autocapitalize="characters" spellcheck="false" placeholder="받은 초대 코드" value="${esc(auDraft.invite||"")}"><p class="au-err" data-for="invite" hidden></p>`);
+}
+    if(st==="login"){const n=card.querySelector(".onb-note");if(n)n.textContent="가입할 때 쓴 이메일과 비밀번호로 들어와요.";card.querySelectorAll("[data-au-social]").forEach(b=>b.remove());const sm=card.querySelector(".au-sm");if(sm)sm.remove();
+      if(!card.querySelector("[data-sb-reset]"))card.querySelector("[data-au-login]").insertAdjacentHTML("afterend",`<button type="button" class="linkbtn" data-sb-reset>비밀번호를 잊었어요</button>`)}};
+  const fieldErr=(k,m)=>{const n=document.querySelector(`.au-err[data-for="${k}"]`);if(n){n.hidden=!m;n.textContent=m||"";if(m)n.scrollIntoView({block:"center"})}else if(m)toast(m)};
+  const busy=(on)=>document.querySelectorAll(".au-card .btn.primary").forEach(b=>{b.disabled=on;b.classList.toggle("busy",on)});
+  /* 정보 입력 '다음': 주소·초대 코드 확인 → 계정 만들기 → 공간 만들기 */
+  const baseAuFinishSB=auFinish;auFinish=async function(){if(ui.authStep!=="info")return baseAuFinishSB();const d=auDraft;
+    const code=(($("#au-invite")||{}).value||"").trim();d.invite=code;const pw=($("#au-pw")||{}).value||"";
+    if(!code){fieldErr("invite","초대 코드를 적어 주세요.");return}
+    busy(true);try{
+      const av=await SB.c.rpc("handle_available",{p_handle:d.handle});if(av.error)throw av.error;if(!av.data){fieldErr("handle","이미 쓰이는 주소예요.");return}
+      const iv=await SB.c.rpc("invite_ok",{p_code:code});if(iv.error)throw iv.error;if(!iv.data){fieldErr("invite","초대 코드가 맞지 않아요.");return}
+      const su=await SB.c.auth.signUp({email:d.email,password:pw});if(su.error)throw su.error;
+      if(!su.data.session){lsS(SBK.pending,{handle:d.handle,name:d.name,code});ui.authStep="login";render();
+        modal(`<h3>메일함을 확인해 주세요</h3><p>${esc(d.email)}로 확인 메일을 보냈어요. 메일의 링크를 누른 뒤, 이 화면에서 로그인하면 공간이 만들어져요.</p><div class="acts"><button class="btn primary" data-o>알겠어요</button></div>`);const m=modal.cur;m.querySelector("[data-o]").onclick=()=>m._done(null);return}
+      SB.user=su.data.user;const cp=await SB.c.rpc("create_profile",{p_handle:d.handle,p_name:d.name,p_code:code});if(cp.error)throw cp.error;
+      sbClearLocal();lsS(SBK.owner,SB.user.id);SB.last=null;
+      baseAuFinishSB()   /* → 내 공간 꾸미기 단계 */
+    }catch(e){toast(sbErr(e))}finally{busy(false)}};
+  /* 마지막 '가입하기'가 끝나면 서버에 처음 올리기 */
+  document.addEventListener("click",e=>{if(!ui.onboard)return;if(!e.target.closest("[data-aup-done],[data-aup-skip]"))return;setTimeout(()=>{if(SB.user&&!SB.ready){SB.ready=true;SB.last=null;records.settings.onboardingComplete=true;baseWriteAllSB();sbPush()}},50)});
+  document.addEventListener("click",async e=>{const t=e.target;if(!ui.onboard&&!t.closest("[data-pc='logout'],[data-sb-out]"))return;
+    if(t.closest("[data-au-login]")){e.preventDefault();e.stopImmediatePropagation();const em=(($("#au-lmail")||{}).value||"").trim(),pw=($("#au-lpw")||{}).value||"";
+      if(!em||!pw){toast("이메일과 비밀번호를 적어 주세요.");return}busy(true);
+      try{const r=await SB.c.auth.signInWithPassword({email:em,password:pw});if(r.error)throw r.error;await sbEnter(r.data.user);toast("다시 왔네요.")}catch(x){toast(sbErr(x))}finally{busy(false)}return}
+    if(t.closest("[data-sb-reset]")){e.preventDefault();const em=(($("#au-lmail")||{}).value||"").trim();if(!em){toast("이메일을 먼저 적어 주세요.");return}
+      const r=await SB.c.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});toast(r.error?sbErr(r.error):"비밀번호를 다시 정하는 메일을 보냈어요.");return}
+    if(t.closest("[data-sb-finish]")){e.preventDefault();const h=(($("#ob-handle")||{}).value||"").trim().toLowerCase(),nm=(($("#ob-name")||{}).value||"").trim(),code=(($("#au-invite")||{}).value||"").trim();
+      if(!HANDLE_RE.test(h)){fieldErr("handle","영문 소문자, 숫자, 하이픈으로 3~20자를 써 주세요.");return}if(!code){fieldErr("invite","초대 코드를 적어 주세요.");return}
+      busy(true);try{const c=await SB.c.rpc("create_profile",{p_handle:h,p_name:nm||h,p_code:code});if(c.error)throw c.error;defaults();records.settings={onboardingComplete:true};records.profile.displayName=nm||h;records.profile.handle=h;await sbEnter(SB.user)}catch(x){toast(sbErr(x))}finally{busy(false)}return}
+    if(t.closest("[data-sb-out]")){e.preventDefault();await SB.c.auth.signOut();sbClearLocal();defaults();SB.user=null;SB.ready=false;ui.onboard=true;ui.authStep="login";render();return}
+  },true);
+  /* 로그아웃: 서버에서 나가고 이 기기 저장본도 지움 */
+  auLogout=async function(){if(SB.pushing||localStorage.getItem(SBK.dirty)){try{await sbPush()}catch(e){}}
+    if(localStorage.getItem(SBK.dirty)&&!await confirmBox("아직 못 올린 고침이 있어요","지금 로그아웃하면 이 기기에서 고친 것 중 서버에 못 올린 부분이 사라져요. 그래도 나갈까요?"))return;
+    try{await SB.c.auth.signOut()}catch(e){}sbClearLocal();defaults();SB.user=null;SB.ready=false;wins.slice().forEach(closeWin);if(ui.spaceEdit)seEnd();ui.onboard=true;ui.authStep="login";render()};
+  /* '처음 상태로 되돌리기'는 서버 글을 지우지 않게: 이 기기 저장본만 지우고 다시 불러옴 */
+  resetAll=async function(){if(!await confirmBox("이 기기 저장본 새로 받기","이 기기에 저장된 사본만 지우고 서버에서 다시 불러와요. 서버의 글은 그대로예요."))return;sbClearLocal();defaults();if(SB.user)await sbEnter(SB.user)};
+  /* 다른 기기에서 고친 것 반영: 창으로 돌아올 때 (쓰는 중이 아니면) */
+  addEventListener("focus",()=>{if(!SB.user||!SB.ready||SB.pushing||localStorage.getItem(SBK.dirty)||Date.now()-SB.pulledAt<60000)return;if(wins.some(w=>String(w.key).startsWith("edit:"))||ui.spaceEdit)return;
+    sbPull().then(r=>{if(r==="ok")render()}).catch(()=>{})});
+  /* 처음 열 때: 로그인돼 있으면 불러오고, 아니면 가입·로그인 화면 */
+  {const owner=localStorage.getItem(SBK.owner);
+   if(owner&&records.settings&&records.settings.onboardingComplete&&!records.settings.loggedOut){ui.onboard=false;ui.authStep=null;SB.booting=true}   /* 이 기기 사본으로 바로 열고, 뒤에서 서버와 맞춤 */
+   else{ui.onboard=true;ui.authStep=owner?"login":"start"}}
+  SB.c.auth.getSession().then(async({data})=>{const s=data&&data.session;const owner=localStorage.getItem(SBK.owner);
+    if(!s){SB.booting=false;if(!ui.onboard){if(localStorage.getItem(SBK.dirty))toast("로그인이 끝나서 다시 들어와야 해요. 이 기기의 고침은 로그인하면 올라가요.");ui.onboard=true;ui.authStep="login";render()}return}
+    try{await sbEnter(s.user)}catch(e){toast(sbErr(e));if(owner===s.user.id){SB.user=s.user;SB.ready=true;SB.booting=false;SB.last=lsGet(SBK.last);if(localStorage.getItem(SBK.dirty))sbQueue()}}}).catch(e=>{toast(sbErr(e))});
+  /* 비밀번호 다시 정하기 메일의 링크로 들어왔을 때 */
+  if(SB.c.auth.onAuthStateChange)SB.c.auth.onAuthStateChange(ev=>{if(ev!=="PASSWORD_RECOVERY")return;setTimeout(async()=>{
+    const pm=modal(`<h3>새 비밀번호 정하기</h3><input type="password" id="sb-npw" placeholder="8자 이상" autocomplete="new-password"><div class="acts"><button class="btn" data-c>나중에</button><button class="btn primary" data-o>바꾸기</button></div>`);const m=modal.cur;
+    m.querySelector("[data-c]").onclick=()=>m._done(null);m.querySelector("[data-o]").onclick=()=>m._done($("#sb-npw",m).value);const pw=await pm;if(!pw)return;
+    if(pw.length<8){toast("8자 이상으로 정해 주세요.");return}const r=await SB.c.auth.updateUser({password:pw});toast(r.error?sbErr(r.error):"비밀번호를 바꿨어요.")},300)});
+  /* 저장 표시: 서버에 다 올라갔을 때만 '저장됨' */
+  const baseSetStatusSB=setStatus;setStatus=function(s,msg){baseSetStatusSB(s,msg);const sp=document.querySelector("#status span");if(!sp||s!=="saved")return;
+    sp.textContent=localStorage.getItem(SBK.dirty)?"서버에 올리는 중…":"저장됨"};
+  /* 백업 파일엔 서버 사진도 파일 안에 담음 (다른 곳에서도 되살릴 수 있게) */
+  const baseDownloadBackupSB=downloadBackup;downloadBackup=function(tag){const rem=Object.entries(assets).filter(([,a])=>a.remote&&!/^data:/.test(a.dataUrl||""));if(!rem.length)return baseDownloadBackupSB(tag);
+    toast("사진을 담는 중이에요…");(async()=>{const copy={};for(const [id,a] of Object.entries(assets)){copy[id]=Object.assign({},a);delete copy[id].remote}
+      try{for(const [id,a] of rem){const b=await (await fetch(a.dataUrl)).blob();copy[id].dataUrl=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(b)})}}catch(e){toast("사진을 받지 못했어요. 인터넷을 확인해 주세요.");return}
+      const keep=assets;assets=copy;try{baseDownloadBackupSB(tag)}finally{assets=keep}})();return true};
+}
+
+/* ── 의견 보내기 (베타) ── */
+async function openFeedback(){const pm=modal(`<h3>의견 보내기</h3><p class="hint">불편했던 점, 좋았던 점, 고장 난 곳을 편하게 적어 주세요. 운영자만 읽어요.</p><textarea id="fb-t" maxlength="4000" placeholder="예: 글쓰기에서 사진을 옮기다가…"></textarea>
+  <div class="acts"><button class="btn" data-c>취소</button><button class="btn primary" data-o>보내기</button></div>`);const m=modal.cur;m.querySelector("[data-c]").onclick=()=>m._done(null);m.querySelector("[data-o]").onclick=()=>m._done($("#fb-t",m).value.trim());
+  const body=await pm;if(!body)return;if(!SB.on||!SB.user){toast("서버에 연결된 무가당에서 보낼 수 있어요.");return}
+  const r=await SB.c.from("feedback").insert({owner:SB.user.id,page:ui.renderer+(ui.space?":"+ui.space:""),body});toast(r.error?sbErr(r.error):"고마워요. 잘 받았어요.")}
+if(SB.on){const baseShowMenuSB=showMenu;showMenu=function(items,...rest){if(Array.isArray(items)&&items.some(x=>x&&x.run===openBackup)){items=items.slice();const i=items.findIndex(x=>x&&x.run===openBackup);items.splice(i+1,0,{label:"의견 보내기",run:openFeedback});
+    items.forEach((x,j)=>{if(x&&x.run===resetAll)items[j]=Object.assign({},x,{label:"이 기기 사본 새로 받기",danger:false})})}return baseShowMenuSB(items,...rest)}}
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
