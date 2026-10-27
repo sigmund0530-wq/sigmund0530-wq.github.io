@@ -976,6 +976,26 @@ body.sp-blog-edit .se-bar [data-se-add]{display:none}
 .pcf-side .pcf-card{border:0!important;border-radius:0!important;background:none!important;padding:2px 0 20px!important}
 .pcfeed{column-gap:48px!important}
 }
+/* ═════ 왼쪽 칸 가볍게 (2026-10-27, 주인 선택 A): 회색 채운 버튼·가로줄을 없애고 메뉴는 글자만. 글쓰기는 오른쪽 위 막대로 ═════ */
+@media(min-width:800px){
+.nv.wide .nv-side{gap:14px!important}
+.nv.wide .nv-who b{font-size:19px;letter-spacing:-.01em}
+.nv.wide .nv-btns .btn{width:auto!important;height:auto!important;flex-basis:auto!important;background:none!important;border:0!important;padding:2px 0!important;color:var(--ink-2)!important;font-size:13px!important;justify-content:flex-start!important;gap:5px!important}
+.nv.wide .nv-btns .btn:hover{color:var(--ink)!important}
+.nv.wide .nv-btns .btn svg{width:14px;height:14px}
+.nv.wide .nv-btns [data-act="editProfile"]::after{content:none!important}
+.nv-side .pc-space-nav{border-top:0!important;padding-top:6px!important;gap:0!important}
+.nv-side .pc-space-nav>button:not(.btn){padding:7px 0!important;color:var(--ink-2)!important;background:none!important;border-radius:0!important;justify-content:flex-start!important;align-items:center;gap:8px;font-size:14.5px!important}
+.nv-side .pc-space-nav>button:not(.btn):hover{color:var(--ink)!important}
+.nv-side .pc-space-nav>button:not(.btn){position:relative}
+.nv-side .pc-space-nav>button:not(.btn)::before{content:"";position:absolute;left:-12px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:transparent}
+.nv-side .pc-space-nav>[aria-current]{color:var(--ink)!important;font-weight:700}
+.nv-side .pc-space-nav>button[aria-current]:not(.btn)::before{background:var(--ink)}
+}
+.pc-nav .pn-write{background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;height:32px;padding:0 15px;font:inherit;font-size:13.5px;font-weight:600;margin:0 2px 0 8px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.pc-nav .pn-write:hover{filter:brightness(1.06)}
+.pc-nav .pn-write svg{width:15px;height:15px}
+.pc-nav .pn-write[hidden]{display:none}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -4389,6 +4409,14 @@ if(HIST.on){
       if(ui.onboard){ui.authStep=n.a;render()}else{ui.space=n.s;setRenderer(n.r)}
     }finally{HIST.lock--}HIST.cur=navKey()}
 }
+
+/* ═════════ 글쓰기는 오른쪽 위 (2026-10-27) ═════════
+   PC·태블릿 위 막대 오른쪽(내 이름 앞)에 '글쓰기'를 늘 둠. 왼쪽 칸에 있던 글쓰기 버튼은 뺌 (같은 버튼이 두 곳에 있지 않게).
+   남의 공간을 볼 때와 가입 중에는 숨김. 휴대폰은 아래 탭의 글쓰기를 그대로 씀. */
+(function(){const n=document.querySelector(".pc-nav");if(!n||n.querySelector(".pn-write"))return;const acct=n.querySelector('[data-pn="acct"]');
+  const b=document.createElement("button");b.type="button";b.className="pn-write";b.dataset.act="newPostFeed";b.innerHTML=`${NV.pen||""}<span>글쓰기</span>`;n.insertBefore(b,acct)})();
+const baseSyncPcNavW=syncPcNav;syncPcNav=function(){baseSyncPcNavW();const b=document.querySelector(".pc-nav .pn-write");if(b)b.hidden=!!ui.onboard||isVisitor()};
+const baseRenderHomeWr=renderHome;renderHome=function(cv){baseRenderHomeWr(cv);cv.querySelectorAll('.nv-side .pc-space-nav [data-act="newPostFeed"]').forEach(x=>x.remove())};
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
