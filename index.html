@@ -938,7 +938,7 @@ body.sp-blog-edit .se-bar [data-se-add]{display:none}
 
 /* 글 위에 그리기 */
 .pbody,.blocks{position:relative}svg.ink{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:2}
-.blocks.inking svg.ink-ed{pointer-events:auto;touch-action:none;cursor:crosshair;background:color-mix(in srgb,var(--accent) 4%,transparent);outline:2px dashed color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:4px;border-radius:6px}
+.blocks.inking svg.ink-ed{pointer-events:auto;touch-action:none;cursor:crosshair}
 .blocks.inking svg.ink-ed.pan{pointer-events:none}.blocks.inking svg.ink-ed.erase{cursor:cell}.blocks.inking svg.ink-ed.erase path{pointer-events:stroke}
 .blocks.inking .rte-area{user-select:none}
 .ink-bar{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:7950;background:#22262d;color:#eee;border-radius:14px;padding:8px 10px;display:grid;gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.3);width:min(560px,calc(100vw - 20px));box-sizing:border-box}
@@ -957,6 +957,8 @@ body.sp-blog-edit .se-bar [data-se-add]{display:none}
 .nv-tile.txt small{font-size:clamp(10px,5.4cqw,11.5px);color:var(--ink-2);opacity:.8}
 .nv-tile.txt .nt-ink{position:absolute;right:8px;bottom:6px;font-style:normal;font-size:12px;color:var(--ink-2);opacity:.7}
 .nv-tile.txt:hover{background:color-mix(in srgb,var(--chrome) 80%,var(--accent) 8%)}
+.ph-item[draggable="true"]{cursor:grab}.ph-item.dragging{opacity:.35}
+.ph-item.drop-before{box-shadow:-4px 0 0 var(--accent)}.ph-item.drop-after{box-shadow:4px 0 0 var(--accent)}.rte-area.drop-text{outline:2px dashed color-mix(in srgb,var(--accent) 50%,transparent);outline-offset:4px;border-radius:4px}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -2004,7 +2006,7 @@ function openEditor(opts){
         if(fileList.length>files.length)toast(`사진은 글 하나에 ${MAX_PHOTOS}장까지 넣을 수 있어요.`);
         const ids=[];for(const f of files){try{ids.push(await addAsset(f,1000,"post",.78))}catch(e){toast(e.message)}}return ids;
       }
-      const edCtx={get draft(){return draft},syncText,drawBlocks:(a,b2)=>drawBlocks(a,b2),queueAuto:()=>queueAuto(),insertBlock:blk=>insertBlockAt(blk,lastBid,lastRange),body,M,get blocksEl(){return blocksEl}};
+      const edCtx={get draft(){return draft},syncText,drawBlocks:(a,b2)=>drawBlocks(a,b2),queueAuto:()=>queueAuto(),insertBlock:blk=>insertBlockAt(blk,lastBid,lastRange),insertAt:(blk,bid,range)=>insertBlockAt(blk,bid,range),body,M,get blocksEl(){return blocksEl}};
       drawBlocks();
       edSetup(edCtx);
 
@@ -3799,7 +3801,7 @@ async function edAudio(ctx){
   const id=await pm;if(!id)return;ctx.insertBlock({id:uid("b"),type:"audio",assetId:id,caption:""})}
 function audioEditHTML(b){const a=assets[b.assetId];return `<div class="ablock" data-bid="${b.id}"><div class="ab-in"><span class="ab-ic" aria-hidden="true">♪</span>${a?`<audio controls preload="metadata" src="${a.dataUrl}"></audio>`:`<span class="hint">음성 파일을 찾을 수 없어요</span>`}<button type="button" class="ab-m" aria-label="음성 메뉴">⋯</button></div>${b.caption?`<p class="ab-cap">${esc(b.caption)}</p>`:""}</div>`}
 function audioViewHTML(b){const a=assets[b.assetId];if(!a)return "";return `<figure class="afig" data-bid="${b.id}"><audio controls preload="metadata" src="${a.dataUrl}"></audio>${b.caption?`<figcaption>${esc(b.caption)}</figcaption>`:""}</figure>`}
-function edBindExtra(blocksEl,ctx){if(ctx.updQ)setTimeout(ctx.updQ,0);requestAnimationFrame(()=>inkEditRefresh(ctx));blocksEl.querySelectorAll(".ablock").forEach(ab=>{const btn=ab.querySelector(".ab-m");
+function edBindExtra(blocksEl,ctx){if(ctx.updQ)setTimeout(ctx.updQ,0);blocksEl.querySelectorAll(".ph-item").forEach(f=>{f.draggable=true;f.querySelectorAll("img").forEach(i=>i.draggable=false)});requestAnimationFrame(()=>inkEditRefresh(ctx));blocksEl.querySelectorAll(".ablock").forEach(ab=>{const btn=ab.querySelector(".ab-m");
   btn.onclick=()=>{const b=ctx.draft.blocks.find(x=>x.id===ab.dataset.bid);if(!b)return;const re=()=>{ctx.syncText();ctx.drawBlocks();ctx.queueAuto()};
     const mv=d=>{ctx.syncText();const bs=ctx.draft.blocks,i=bs.indexOf(b),j=i+d;if(j<0||j>=bs.length)return;[bs[i],bs[j]]=[bs[j],bs[i]];ctx.drawBlocks();ctx.queueAuto()};
     const r=btn.getBoundingClientRect();showMenu([{label:b.caption?"설명 고치기":"설명 쓰기",run:async()=>{const v=await askText("음성 설명",b.caption||"",{ok:"저장"});if(v==null)return;b.caption=v.trim();re()}},
@@ -3859,7 +3861,7 @@ async function edDraw(ctx){const id=await openDraw(null);if(!id)return;ctx.inser
 /* 글쓰기 열 때 한 번: PC 도구줄 버튼, 질문 링크 */
 function edSetup(ctx){const b=ctx.body;
   b.querySelectorAll("[data-x-draw],[data-x-audio]").forEach(x=>x.addEventListener("mousedown",e=>e.preventDefault()));
-  const d=b.querySelector("[data-x-draw]");if(d)d.onclick=()=>inkMode(ctx);if(window.ResizeObserver)new ResizeObserver(()=>inkEditRefresh(ctx)).observe(ctx.blocksEl);
+  edPhotoDrag(ctx);const d=b.querySelector("[data-x-draw]");if(d)d.onclick=()=>inkMode(ctx);if(window.ResizeObserver)new ResizeObserver(()=>inkEditRefresh(ctx)).observe(ctx.blocksEl);
   const a=b.querySelector("[data-x-audio]");if(a)a.onclick=()=>edAudio(ctx);
   const q=b.querySelector("[data-x-q]");if(q){q.onclick=()=>edAskQ(ctx);
     const upd=()=>{const empty=!ctx.draft.blocks.some(x=>x.type!=="text"||!isBlankHtml(ctx.blocksEl.querySelector(`.rte-area[data-bid="${x.id}"]`)?.innerHTML||x.html));q.parentElement.hidden=!empty};
@@ -4121,6 +4123,25 @@ async function openBackup(){const posts=records.posts.length,media=Object.keys(a
     if(!writeAll()){[records,layout,assets]=old;writeAll();toast("저장 공간이 모자라 되살리지 못했어요. 지금 내용은 그대로예요.");return}
     wins.slice().forEach(closeWin);ui.renderer="desktop";render();toast("백업으로 되살렸어요.")};
   await pm}
+
+/* 글쓰기: 사진을 끌어 옮기기 (복사가 아니라 이동). 다른 사진 옆에 놓으면 그 줄로, 글 사이에 놓으면 그 자리에 새 줄로 */
+function edPhotoDrag(ctx){const host=ctx.blocksEl;let src=null;
+  const clear=()=>host.querySelectorAll(".dragging,.drop-before,.drop-after,.drop-text").forEach(n=>n.classList.remove("dragging","drop-before","drop-after","drop-text"));
+  host.addEventListener("dragstart",e=>{const fig=e.target.closest&&e.target.closest(".ph-item");if(!fig){if(e.target.tagName==="IMG")e.preventDefault();return}
+    src={bid:fig.closest(".pblock").dataset.bid,i:+fig.dataset.i};e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/x-mgd-photo","1");setTimeout(()=>fig.classList.add("dragging"),0)},true);
+  host.addEventListener("dragend",()=>{src=null;clear()},true);
+  host.addEventListener("dragover",e=>{if(!src)return;e.preventDefault();e.stopPropagation();e.dataTransfer.dropEffect="move";clear();
+    const fig=e.target.closest(".ph-item");if(fig){const r=fig.getBoundingClientRect();fig.classList.add(e.clientX>r.left+r.width/2?"drop-after":"drop-before")}else{const a=e.target.closest(".rte-area");if(a)a.classList.add("drop-text")}},true);
+  host.addEventListener("drop",e=>{if(!src)return;e.preventDefault();e.stopImmediatePropagation();const s0=src;src=null;clear();ctx.syncText();
+    const bs=ctx.draft.blocks,sb=bs.find(b=>b.id===s0.bid);if(!sb||!sb.items[s0.i])return;const item=sb.items[s0.i];
+    const fig=e.target.closest(".ph-item");
+    if(fig){const tb=bs.find(b=>b.id===fig.closest(".pblock").dataset.bid);if(!tb)return;let j=+fig.dataset.i;const r=fig.getBoundingClientRect();if(e.clientX>r.left+r.width/2)j++;
+      if(tb===sb&&j>s0.i)j--;sb.items.splice(s0.i,1);tb.items.splice(j,0,item);ctx.drawBlocks();ctx.queueAuto();return}
+    const a=e.target.closest(".rte-area");let rg=null;
+    if(a){if(document.caretRangeFromPoint)rg=document.caretRangeFromPoint(e.clientX,e.clientY);else if(document.caretPositionFromPoint){const cp=document.caretPositionFromPoint(e.clientX,e.clientY);if(cp){rg=document.createRange();rg.setStart(cp.offsetNode,cp.offset);rg.collapse(true)}}if(rg&&!a.contains(rg.startContainer))rg=null;
+      /* 단어 한가운데서 자르지 않게: 놓은 자리의 그 줄 끝으로 */
+      if(rg){let n=rg.startContainer;while(n&&n.parentNode!==a)n=n.parentNode;if(n){rg=document.createRange();rg.setStartAfter(n);rg.collapse(true)}}}
+    sb.items.splice(s0.i,1);ctx.insertAt({id:uid("b"),type:"photos",items:[item]},a?a.dataset.bid:null,rg)},true)}
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
