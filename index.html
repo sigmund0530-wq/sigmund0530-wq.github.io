@@ -959,6 +959,23 @@ body.sp-blog-edit .se-bar [data-se-add]{display:none}
 .nv-tile.txt:hover{background:color-mix(in srgb,var(--chrome) 80%,var(--accent) 8%)}
 .ph-item[draggable="true"]{cursor:grab}.ph-item.dragging{opacity:.35}
 .ph-item.drop-before{box-shadow:-4px 0 0 var(--accent)}.ph-item.drop-after{box-shadow:4px 0 0 var(--accent)}.rte-area.drop-text{outline:2px dashed color-mix(in srgb,var(--accent) 50%,transparent);outline-offset:4px;border-radius:4px}
+/* ═════ 내 공간 상자 없애기 (2026-10-27, 주인 선택 C): PC·태블릿에서 테두리 카드와 바깥 바탕을 걷고, 커버는 화면 끝까지,
+   프로필과 글 사이 세로줄 없이 간격만. 글이 끊김 없이 중심에 오게 ═════ */
+@media(min-width:800px){
+.home.nv.wide{padding:0 0 70px;background:var(--chrome);min-height:100%;box-sizing:border-box}
+.home.nv.wide .hm-inner{border:0;border-radius:0;max-width:none;overflow:visible}
+.nv.wide .nv-body{max-width:1180px;margin:0 auto;width:100%;box-sizing:border-box;grid-template-columns:230px minmax(0,1fr);column-gap:40px;padding:0 24px}
+.nv.wide .nv-side{border-right:0}
+.nv.wide .nv-cover{height:220px}
+.nv.wide .nv-cover h1{padding-left:max(24px,calc((100% - 1180px)/2 + 24px))}
+.home.nv:not(.wide) .hm-inner{border:0;border-radius:0}.home.nv:not(.wide){background:var(--chrome)!important}
+#canvas:has(>.home.nv.wide){display:flex;flex-direction:column}.home.nv.wide{flex:1 0 auto}   /* 글이 적어도 아래까지 같은 바탕 */
+/* 이웃새글·전체 글·검색·알림도 같은 바탕, 상자 없이 */
+#desk:has(.home.nv,.feed.nvfeed){background:var(--chrome)!important}
+.feed.nvfeed .fmain{border:0!important;border-radius:0!important;box-shadow:none!important}
+.pcf-side .pcf-card{border:0!important;border-radius:0!important;background:none!important;padding:2px 0 20px!important}
+.pcfeed{column-gap:48px!important}
+}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
