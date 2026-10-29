@@ -67,6 +67,8 @@ with sync_playwright() as p:
     old=next(x for x in rec(pg)['posts'] if x['id']==saved['id'])
     assert old['functions'][0]['fields'][0]['value']=='<img src=x onerror=alert(1)>' and len(old['functions'][0]['fields'])==3
     newer=next(x for x in rec(pg)['posts'] if x['id']!=saved['id'])
+    assert newer['functions'][0]['schemaId']==old['functions'][0]['schemaId'], 'template reuse retains schema identity'
+    assert newer['functions'][0]['fields'][0]['key']==old['functions'][0]['fields'][0]['key'], 'field identity survives reuse'
     assert newer['functions'][0]['fields'][1]['value']=='다른 글의 값' and newer['functions'][0]['fields'][3]['value']=='0'
     assert rec(pg)['settings']['pfRecent'][0]=='물건 기록'
     assert not pg.errs,pg.errs

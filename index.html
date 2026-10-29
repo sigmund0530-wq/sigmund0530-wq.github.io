@@ -1113,6 +1113,17 @@ video.wf-live{object-fit:cover}
 .wf-help{display:grid;gap:6px;padding-top:10px;border-top:1px solid var(--line)}.wf-help b{font-size:13px}.wf-help p{margin:0;font-size:13px;line-height:1.6;color:var(--ink)}
 .wf-help .btn{justify-self:start;border-radius:999px;height:32px;padding:0 14px;font-size:13px;background:none;border:1px solid var(--line);color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.wf-live{transition:none}}
+
+/* 블록 필터: 기존 검색에 조건만 추가 (2026-10-29) */
+.pf-filter{padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:16px}
+.pf-filter-controls,.pf-filter-row{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin:8px 0}
+.pf-filter label{display:grid;gap:5px;color:var(--ink-2);font-size:12.5px;max-width:100%;flex:1;min-width:120px}
+.pf-filter input,.pf-filter select{width:100%;min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--chrome);color:var(--ink);font:inherit;font-size:16px}
+.pf-filter .pf-clear{background:none;border:0;color:var(--ink-2);font-size:13px;padding:8px;min-height:34px}
+.pf-filter .btn{border-radius:999px;min-height:34px}
+.pf-filter-note{color:var(--ink-2);font-size:12.5px}
+@media(max-width:480px){.pf-filter-row label{flex-basis:42%}.pf-filter-row label:last-of-type{flex-basis:72%}}
+
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -3597,7 +3608,7 @@ function renderSearch(cv){cv.style.height="";cv.style.minHeight="100%";const q0=
       res.innerHTML=`<p class="hint">이름이나 공간 주소(@)로 사람을 찾고, 글 내용으로 글을 찾아요. 추천이나 인기 목록은 보여 주지 않아요.</p>${fl.length?`<h2 class="srch-h">팔로잉</h2>${fl.map(personRow).join("")}`:""}`;return}
     const people=[{me:true,id:"me",name:records.profile.displayName,handle:records.profile.handle,status:records.profile.status},...SAMPLE_AUTHORS.map(a=>({...a,handle:SAMPLE_HANDLES[a.id]}))]
       .filter(a=>(a.name||"").toLowerCase().includes(q)||(a.handle||"").includes(q));
-    const posts=[...samples().filter(x=>((x.title||"")+" "+(x.text||"")).toLowerCase().includes(q)),...records.posts.filter(p=>p.status==="published"&&postVisible(p)&&(titleOf(p)+" "+textOfPost(p)).toLowerCase().includes(q)).map(p=>({key:"m:"+p.id,mine:true,title:titleOf(p),text:textOfPost(p),author:{name:records.profile.displayName},date:dateOf(p)}))].slice(0,30);
+    const posts=[...samples().filter(x=>((x.title||"")+" "+(x.text||"")).toLowerCase().includes(q)),...records.posts.filter(p=>p.status==="published"&&postVisible(p)&&(titleOf(p)+" "+textOfPost(p)+" "+pfSearchText(p)).toLowerCase().includes(q)).map(p=>({key:"m:"+p.id,mine:true,title:titleOf(p),text:textOfPost(p),author:{name:records.profile.displayName},date:dateOf(p)}))].slice(0,30);
     res.innerHTML=`${people.length?`<h2 class="srch-h">사람</h2>${people.map(personRow).join("")}`:""}${posts.length?`<h2 class="srch-h">글</h2>${posts.map(x=>`<button type="button" class="srch-post" data-feed="${x.key}"><b>${esc(x.title||(x.text||"").slice(0,30))}</b><span>${esc((x.text||"").replace(/\s+/g," ").slice(0,80))}</span><small>${esc(x.author.name)}${x.date?" · "+fmtDay(x.date):""}</small></button>`).join("")}`:""}${!people.length&&!posts.length?`<p class="empty">‘${esc(raw)}’에 맞는 사람이나 글이 없어요.</p>`:""}`};
   inp.oninput=draw;draw();setTimeout(()=>inp.focus(),30)}
 function personRow(a){const h=a.handle||SAMPLE_HANDLES[a.id];return `<button type="button" class="srch-person" ${a.me?'data-act="goMySpace"':`data-act="authorSpace" data-author="${a.id}"`}>${a.me?`<span class="me-photo sp-av">${photoHTML()}</span>`:avatarHTML(a,40)}<span><b>${esc(a.name)}${a.me?" <small>나</small>":""}</b>${h?`<small>@${esc(h)}</small>`:""}${a.status?`<em>${esc(a.status)}</em>`:""}</span></button>`}
@@ -4638,19 +4649,20 @@ const baseRenderHomeWr=renderHome;renderHome=function(cv){baseRenderHomeWr(cv);c
    글은 그대로 쓰고 필요한 정보만 선택적으로 추가. 내 기능에는 값 없이 구조만 저장한다.
    글의 기능은 글과 같은 공개 범위, 재사용 정의는 private_docs의 개인 자료로 동기화. */
 const PF_TYPES={text:"텍스트",number:"숫자",date:"날짜",select:"선택"};
-function pfClean(list,limit=12){return (Array.isArray(list)?list:[]).slice(0,limit).filter(g=>g&&typeof g==='object').map(g=>({id:String(g.id||uid('pf')),name:String(g.name||'붙인 정보').slice(0,40),fields:(Array.isArray(g.fields)?g.fields:[]).slice(0,20).filter(f=>f&&typeof f==='object').map(f=>({id:String(f.id||uid('pff')),name:String(f.name||'항목').slice(0,40),type:Object.hasOwn(PF_TYPES,f.type)?f.type:'text',options:(Array.isArray(f.options)?f.options:[]).slice(0,20).map(x=>String(x).slice(0,60)),value:String(f.value??'').slice(0,2000)}))}))}
-const pfBlank=g=>{const n=pfClean([g])[0];n.id=uid('pf');n.fields.forEach(f=>{f.id=uid('pff');f.value=''});return n};
+function pfClean(list,limit=12){return (Array.isArray(list)?list:[]).slice(0,limit).filter(g=>g&&typeof g==='object').map(g=>({id:String(g.id||uid('pf')),name:String(g.name||'붙인 정보').slice(0,40),schemaId:String(g.schemaId||'').slice(0,120),fields:(Array.isArray(g.fields)?g.fields:[]).slice(0,20).filter(f=>f&&typeof f==='object').map(f=>({id:String(f.id||uid('pff')),name:String(f.name||'항목').slice(0,40),key:String(f.key||'').slice(0,120),type:Object.hasOwn(PF_TYPES,f.type)?f.type:'text',options:(Array.isArray(f.options)?f.options:[]).slice(0,20).map(x=>String(x).slice(0,60)),value:String(f.value??'').slice(0,2000)}))}))}
+const pfBlank=g=>{const n=pfClean([g])[0];n.schemaId=n.schemaId||g.id||'preset:'+n.name;n.id=uid('pf');n.fields.forEach((f,i)=>{f.key=f.key||n.schemaId+':'+i;f.id=uid('pff');f.value=''});return n};
 const pfPresets=[{name:'물건 정보',fields:[{name:'구매한 날',type:'date'},{name:'보관 장소',type:'text'}]}, {name:'독서 기록',fields:[{name:'책 이름',type:'text'},{name:'읽은 상태',type:'select',options:['읽고 싶음','읽는 중','다 읽음']},{name:'기억할 문장',type:'text'}]}, {name:'직접 만들기',fields:[{name:'',type:'text'}]}];
 function pfTemplateSave(group){return askText('자주 쓰기에 넣기',group.name,{hint:'이름과 칸 구성만 넣어요. 이 글에 적은 내용은 들어가지 않아요. 다음에 붙이기를 누르면 맨 위에 보여요.',ok:'넣기'}).then(name=>{if(name==null||!name.trim())return;const before=clone(records.functionTemplates||[]);if(before.length>=40){toast('자주 쓰기는 40개까지 넣을 수 있어요. 쓰지 않는 것을 먼저 빼 주세요.');return}const t=pfBlank(group);t.name=name.trim().slice(0,40);records.functionTemplates=[...before,t];if(!writeAll()){records.functionTemplates=before;toast('저장하지 못했어요. 다시 시도해 주세요.');return}toast('자주 쓰기에 넣었어요. 다른 글에서 붙이기를 누르면 먼저 보여요.')})}
 function pfConfigure(source){const g=pfClean([source])[0];return new Promise(resolve=>{const task=modal(`<h3>직접 고치기</h3><p class="hint">붙인 정보는 이 글을 볼 수 있는 사람에게 함께 보여요.</p><label>이름 <input data-pf-name maxlength="40" value="${esc(g.name)}"></label><div class="pf-config"></div><button class="btn" data-pf-field>칸 추가</button><p class="pf-error" role="alert"></p><div class="acts"><button class="btn" data-c>취소</button><button class="btn primary" data-pf-apply>적용</button></div>`);const m=modal.cur,box=m.querySelector('.pf-config');
  const draw=()=>{box.innerHTML=g.fields.map((f,i)=>`<div class="pf-field" data-i="${i}"><label>칸 이름<input data-name maxlength="40" value="${esc(f.name)}"></label><label>형식<select data-type>${Object.entries(PF_TYPES).map(([v,l])=>`<option value="${v}" ${f.type===v?'selected':''}>${l}</option>`).join('')}</select></label><label ${f.type==='select'?'':'hidden'} data-choices>선택지 (쉼표로 구분)<input data-options maxlength="1200" value="${esc(f.options.join(', '))}"></label><button class="btn" data-remove>이 칸 빼기</button></div>`).join('');box.querySelectorAll('.pf-field').forEach(row=>{const f=g.fields[+row.dataset.i];row.querySelector('[data-name]').oninput=e=>f.name=e.target.value;row.querySelector('[data-options]').oninput=e=>f.options=e.target.value.split(',').map(x=>x.trim()).filter(Boolean);row.querySelector('[data-type]').onchange=e=>{f.type=e.target.value;f.value='';row.querySelector('[data-choices]').hidden=f.type!=='select'};row.querySelector('[data-remove]').onclick=()=>{g.fields.splice(+row.dataset.i,1);draw()}})};draw();
- m.querySelector('[data-pf-field]').onclick=()=>{if(g.fields.length>=20)return;g.fields.push({id:uid('pff'),name:'',type:'text',options:[],value:''});draw();box.lastElementChild.querySelector('input').focus()};
+ m.querySelector('[data-pf-field]').onclick=()=>{if(g.fields.length>=20)return;g.fields.push({id:uid('pff'),key:uid('field'),name:'',type:'text',options:[],value:''});draw();box.lastElementChild.querySelector('input').focus()};
  m.querySelector('[data-c]').onclick=()=>m._done(null);m.querySelector('[data-pf-apply]').onclick=()=>{g.name=m.querySelector('[data-pf-name]').value.trim();const error=!g.name?'이름을 적어 주세요.':!g.fields.length?'칸을 하나 이상 넣어 주세요.':g.fields.some(f=>!f.name.trim())?'칸 이름을 적어 주세요.':g.fields.some(f=>f.type==='select'&&(!f.options.length||f.options.length>20))?'선택지는 1개에서 20개까지 적어 주세요.':'';m.querySelector('.pf-error').textContent=error;if(error)return;g.fields.forEach(f=>{f.name=f.name.trim();f.options=[...new Set(f.options)];if(f.type==='select'&&!f.options.includes(f.value))f.value=''});m._done(pfClean([g])[0])};task.then(resolve)})}
 /* ── 붙이기 (2026-10-29): 설정 창 대신 입력 → 제안 → 바로 붙음 ──
    떠오르는 말을 치면(구매, 샀다, ㄷㅅ…) 맞는 제안이 좁혀지고, 누르면 글에 붙고 첫 칸에 커서가 감.
    제안 순서: 자주 쓰기에 넣은 것 → 최근 붙인 것 → 기본 제안. 다른 사람들의 사용량으로 정렬하지 않음.
    항목 이름·형식 바꾸기는 '직접 고치기'로만. */
 const PF_SUGGEST=[
+ {name:'중고 판매',keys:['판매','중고','팔','장터'],fields:[{name:'물건',type:'text'},{name:'가격',type:'number'},{name:'판매 상태',type:'select',options:['판매 중','예약 중','판매 완료']}]},
  {name:'구매 정보',keys:['구매','샀','산 것','가격','쇼핑','구입','결제','영수증','얼마'],fields:[{name:'구매한 날',type:'date'},{name:'가격',type:'number'},{name:'구매처',type:'text'}]},
  {name:'독서 기록',keys:['책','독서','읽','소설','도서','작가'],fields:[{name:'책 이름',type:'text'},{name:'지은이',type:'text'},{name:'읽은 상태',type:'select',options:['읽고 싶음','읽는 중','다 읽음']},{name:'기억할 문장',type:'text'}]},
  {name:'물건 정리',keys:['물건','정리','보관','수납','이사','짐','버릴'],fields:[{name:'물건 이름',type:'text'},{name:'보관 장소',type:'text'},{name:'상태',type:'select',options:['새것','쓰는 중','고장','버릴 것']}]},
@@ -4674,26 +4686,26 @@ function pfScore(sug,q){if(!q)return 1;const n=pfNorm(sug.name),words=[sug.name,
   return 0}
 const pfRecent=()=>(records.settings&&records.settings.pfRecent)||[];
 function pfMarkRecent(name){const l=[name,...pfRecent().filter(x=>x!==name)].slice(0,8);records.settings=Object.assign({},records.settings||{},{pfRecent:l})}
-function pfSuggestions(raw){const q=pfNorm(raw),mine=pfClean(records.functionTemplates,40).map((g,i)=>({name:g.name,keys:[],fields:g.fields,mine:i})),rec=pfRecent();
-  let all=[...mine,...PF_SUGGEST.filter(s=>!mine.some(m=>m.name===s.name))].map(s=>({s,sc:pfScore(s,q)+(s.mine!=null?15:0)+(rec.includes(s.name)?10-rec.indexOf(s.name):0)})).filter(x=>x.sc>(q?0:-1));
-  if(!q){const top=all.filter(x=>x.s.mine!=null||rec.includes(x.s.name));const base=all.filter(x=>!top.includes(x)&&['구매 정보','독서 기록','오늘의 기분','맛집·카페'].includes(x.s.name));all=[...top.sort((a,b)=>b.sc-a.sc),...base].slice(0,6)}
+function pfSuggestions(raw){const q=pfNorm(raw),mine=pfClean(records.functionTemplates,40).map((g,i)=>({name:g.name,schemaId:g.schemaId||g.id,keys:[],fields:g.fields,mine:i})),rec=pfRecent();
+  let all=[...mine,...PF_SUGGEST.filter(s=>!mine.some(m=>m.name===s.name))].filter(s=>!q||pfScore(s,q)>0).map(s=>({s,sc:pfScore(s,q)+(s.mine!=null?15:0)+(rec.includes(s.name)?10-rec.indexOf(s.name):0)})).filter(x=>x.sc>(q?0:-1));
+  if(!q){const top=all.filter(x=>x.s.mine!=null||rec.includes(x.s.name));const base=all.filter(x=>!top.includes(x)&&['중고 판매','구매 정보','독서 기록','오늘의 기분','맛집·카페'].includes(x.s.name));all=[...top.sort((a,b)=>b.sc-a.sc),...base].slice(0,6)}
   else all=all.filter(x=>x.sc>=(x.s.mine!=null?16:1)).sort((a,b)=>b.sc-a.sc).slice(0,6);
   return all.map(x=>x.s)}
 const pfPreview=f=>f.map(x=>esc(x.name||'항목')).join(' · ');
 const pfBaseSetup=edSetup;edSetup=function(ctx){pfBaseSetup(ctx);ctx.draft.functions=pfClean(ctx.draft.functions);const host=document.createElement('section');host.className='pf-editor';
- host.innerHTML='<div data-pf-groups></div><div class="pf-attach" hidden><input type="text" class="pf-q" data-pf-q maxlength="40" placeholder="무엇을 붙일까요? 예: 구매, 책, 기분" autocomplete="off" aria-label="붙일 것 찾기"><div class="pf-sugs" role="listbox"></div></div><p class="pf-undo" hidden></p><button class="btn pf-add" type="button" data-pf-add>＋ 붙이기</button>';
+ host.innerHTML='<div data-pf-groups></div><div class="pf-attach" hidden><input type="text" class="pf-q" data-pf-q maxlength="40" placeholder="무엇을 붙일까요? · 판매, 책, 기분…" autocomplete="off" aria-label="붙일 것 찾기"><div class="pf-sugs" role="listbox"></div></div><p class="pf-undo" hidden></p><button class="btn pf-add" type="button" data-pf-add>＋ 붙이기</button>';
  ctx.body.querySelector('form').appendChild(host);const list=host.querySelector('[data-pf-groups]'),box=host.querySelector('.pf-attach'),qi=host.querySelector('[data-pf-q]'),sugs=host.querySelector('.pf-sugs'),undo=host.querySelector('.pf-undo'),addBtn=host.querySelector('[data-pf-add]');let cur=0,shown=[],undoT;
  const draw=()=>{list.innerHTML=ctx.draft.functions.map((g,i)=>`<section class="pf-card" data-pf-index="${i}" data-pf-id="${esc(g.id)}"><div class="pf-head"><strong class="pf-name">${esc(g.name)}</strong><button type="button" class="btn" data-config>직접 고치기</button><button type="button" class="btn" data-template>자주 쓰기에 넣기</button><button type="button" class="btn" data-delete>빼기</button></div><div class="pf-fields">${g.fields.map((f,j)=>`<label>${esc(f.name)}${f.type==='select'?`<select data-value="${j}"><option value="">고르기</option>${f.options.map(o=>`<option value="${esc(o)}" ${f.value===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`:`<input data-value="${j}" type="${f.type==='text'?'text':f.type}" ${f.type==='number'?'step="any" inputmode="decimal"':''} maxlength="2000" value="${esc(f.value)}">`}</label>`).join('')}</div></section>`).join('');
   list.querySelectorAll('[data-pf-index]').forEach(card=>{const i=+card.dataset.pfIndex,g=ctx.draft.functions[i];card.querySelectorAll('[data-value]').forEach(input=>{input.oninput=input.onchange=()=>{g.fields[+input.dataset.value].value=input.value;ctx.queueAuto()}});
    card.querySelector('[data-config]').onclick=async()=>{const updated=await pfConfigure(g);if(!updated||!host.isConnected)return;ctx.draft.functions[i]=updated;draw();ctx.queueAuto()};card.querySelector('[data-template]').onclick=()=>pfTemplateSave(g);card.querySelector('[data-delete]').onclick=()=>{ctx.draft.functions.splice(i,1);draw();ctx.queueAuto()}})};
  const close=()=>{box.hidden=true;addBtn.hidden=false;qi.value=''};
- const drawSugs=()=>{const q=qi.value.trim();shown=pfSuggestions(q);cur=Math.min(cur,Math.max(0,shown.length-1));const exact=shown.some(s=>pfNorm(s.name)===pfNorm(q));
+ const drawSugs=()=>{const q=qi.value.trim();shown=pfSuggestions(q);const exact=shown.some(s=>pfNorm(s.name)===pfNorm(q));cur=Math.min(cur,Math.max(0,shown.length+(q&&!exact?1:0)-1));
   sugs.innerHTML=shown.map((s,i)=>`<div class="pf-sug${i===cur?' on':''}" role="option" aria-selected="${i===cur}" data-sug="${i}"><span class="pf-sug-t"><b>${esc(s.name)}</b>${s.mine!=null?'<em>자주 쓰기</em>':''}<small>${pfPreview(s.fields)}</small></span>${s.mine!=null?`<button type="button" class="btn pf-sug-del" data-sug-del="${s.mine}" aria-label="${esc(s.name)} 자주 쓰기에서 빼기">빼기</button>`:''}</div>`).join('')
-   +(q&&!exact?`<div class="pf-sug pf-new${shown.length===0?' on':''}" role="option" data-sug-new><span class="pf-sug-t"><b>‘${esc(q)}’ 이름으로 붙이기</b><small>내용 칸 하나로 시작해요. 나중에 직접 고칠 수 있어요.</small></span></div>`:'')
+   +(q&&!exact?`<div class="pf-sug pf-new${cur===shown.length?' on':''}" role="option" data-sug-new><span class="pf-sug-t"><b>‘${esc(q)}’ 이름으로 붙이기</b><small>내용 칸 하나로 시작해요. 나중에 직접 고칠 수 있어요.</small></span></div>`:'')
    +(!q&&!shown.length?'<p class="hint">떠오르는 말을 적어 보세요.</p>':'');
   sugs.querySelectorAll('[data-sug]').forEach(el=>{el.onmousedown=e=>{if(e.target.closest('[data-sug-del]'))return;e.preventDefault();pick(shown[+el.dataset.sug])}});
   sugs.querySelectorAll('[data-sug-del]').forEach(b=>b.onmousedown=e=>{e.preventDefault();e.stopPropagation();const before=clone(records.functionTemplates||[]);records.functionTemplates=before.filter((_,i)=>i!==+b.dataset.sugDel);if(!writeAll()){records.functionTemplates=before;toast('빼지 못했어요.');return}toast('자주 쓰기에서 뺐어요. 글에 붙인 것은 그대로예요.');drawSugs()});
-  const nw=sugs.querySelector('[data-sug-new]');if(nw)nw.onmousedown=e=>{e.preventDefault();pick({name:q.slice(0,40),fields:[{name:'내용',type:'text'}]})}};
+  const nw=sugs.querySelector('[data-sug-new]');if(nw)nw.onmousedown=e=>{e.preventDefault();pick({schemaId:uid('schema'),name:q.slice(0,40),fields:[{name:'내용',type:'text'}]})}};
  const pick=s=>{if(!s)return;if(ctx.draft.functions.length>=12){toast('한 글에는 12개까지 붙일 수 있어요.');return}const g=pfBlank(s);ctx.draft.functions.push(g);pfMarkRecent(g.name);close();draw();ctx.queueAuto();
   const card=list.querySelector(`[data-pf-id="${CSS.escape(g.id)}"]`);if(card){card.classList.add('pf-new-card');const f=card.querySelector('input[data-value]:not([type=date])');if(f)setTimeout(()=>{f.focus();try{f.scrollIntoView({block:'nearest'})}catch(e){}},30)}
   clearTimeout(undoT);undo.innerHTML=`‘${esc(g.name)}’을 붙였어요 <button type="button" class="btn" data-undo>되돌리기</button>`;undo.hidden=false;undo.querySelector('[data-undo]').onclick=()=>{ctx.draft.functions=ctx.draft.functions.filter(x=>x.id!==g.id);undo.hidden=true;draw();ctx.queueAuto()};undoT=setTimeout(()=>{undo.hidden=true},6000)};
@@ -4858,6 +4870,35 @@ const baseSyncPcNavWF=syncPcNav;syncPcNav=function(){baseSyncPcNavWF();const b=d
   const t=document.querySelector('#tabbar [data-tab2="follow"]');if(t)t.setAttribute("aria-label","피드")};
 /* 화면을 떠나면 움직이던 위젯은 멈춤 */
 const baseSetRendererWF=setRenderer;setRenderer=function(r){wfDeactivate();return baseSetRendererWF(r)};
+
+
+/* ═════════ 블록: 재사용 양식 + 글 검색 조건 (2026-10-29) ═════════
+   공개 가능한 글에서만 항목과 선택지를 만든다. 필터는 같은 블록 안에서 모두 만족해야 한다.
+   schemaId/key로 이름 변경과 재사용을 추적한다. 옛 데이터는 이름·유형으로 분리한다. */
+function pfSearchText(p){return pfClean(p.functions).map(g=>g.name+' '+g.fields.map(f=>f.name+' '+f.value).join(' ')).join(' ')}
+function pfGroupKey(g){return g.schemaId||'legacy:'+g.name}
+function pfFieldKey(f){return (f.key||'legacy:'+f.name)+'|'+f.type}
+function pfMatchValue(f,op,value){if(!f||f.value===''||value==='')return false;
+ if(f.type==='number'){const a=Number(f.value),b=Number(value);if(!Number.isFinite(a)||!Number.isFinite(b))return false;return op==='lte'?a<=b:op==='gte'?a>=b:a===b}
+ if(f.type==='date'){if(!/^\d{4}-\d{2}-\d{2}$/.test(f.value)||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;return op==='lte'?f.value<=value:op==='gte'?f.value>=value:f.value===value}
+ return op==='contains'?pfNorm(f.value).includes(pfNorm(value)):f.value===value}
+function pfMatches(p,group,conditions){return pfClean(p.functions).some(g=>pfGroupKey(g)===group&&conditions.every(c=>pfMatchValue(g.fields.find(f=>pfFieldKey(f)===c.field),c.op,c.value)))}
+const pfSearchBase=renderSearch;renderSearch=function(cv){pfSearchBase(cv);
+ const inp=cv.querySelector('#srch-q'),res=cv.querySelector('.srch-res'),baseDraw=inp.oninput;
+ const allowed=()=>records.posts.filter(p=>p.status==='published'&&postVisible(p));
+ const schemas=new Map();allowed().forEach(p=>pfClean(p.functions).forEach(g=>{const key=pfGroupKey(g);if(!schemas.has(key))schemas.set(key,{name:g.name,fields:new Map()});const target=schemas.get(key);g.fields.forEach(f=>{const k=pfFieldKey(f);if(!target.fields.has(k))target.fields.set(k,{...f,options:[...f.options]});else target.fields.get(k).options=[...new Set([...target.fields.get(k).options,...f.options])];})}));
+ const box=document.createElement('section');box.className='pf-filter';box.setAttribute('aria-label','붙인 정보로 찾기');box.innerHTML='<div class="pf-filter-controls"><label>붙인 정보<select data-pf-filter><option value="">전체 글</option></select></label><button type="button" class="btn" data-pf-condition hidden>조건 추가</button><button type="button" class="pf-clear" data-pf-reset hidden>조건 지우기</button></div><div data-pf-conditions></div><p class="pf-filter-note" data-pf-note></p>';
+ res.before(box);const sel=box.querySelector('[data-pf-filter]'),rows=box.querySelector('[data-pf-conditions]'),add=box.querySelector('[data-pf-condition]'),reset=box.querySelector('[data-pf-reset]'),note=box.querySelector('[data-pf-note]');let conditions=[];
+ schemas.forEach((v,k)=>{const o=document.createElement('option');o.value=k;o.textContent=v.name;sel.append(o)});
+ const draw=()=>{if(!sel.value){note.textContent=schemas.size?'붙인 정보를 고르면 그 항목으로 좁혀 볼 수 있어요.':'글에 정보를 붙이면 여기서 그 항목으로 찾을 수 있어요.';baseDraw();return}
+   const q=inp.value.trim().toLowerCase();ui.searchQ=inp.value;const active=conditions.filter(c=>c.value!=='');const posts=allowed().filter(p=>pfMatches(p,sel.value,active)&&(!q||(titleOf(p)+' '+textOfPost(p)+' '+pfSearchText(p)).toLowerCase().includes(q)));
+   note.textContent='입력한 조건을 모두 만족하는 글을 보여줘요. 빈 조건은 적용하지 않아요.';
+   res.innerHTML=posts.length?posts.map(p=>`<button type="button" class="srch-post" data-feed="m:${esc(p.id)}"><b>${esc(titleOf(p))}</b><span>${esc(textOfPost(p).replace(/\s+/g,' ').slice(0,80))}</span><small>${esc(pfClean(p.functions).filter(g=>pfGroupKey(g)===sel.value).map(g=>g.fields.filter(f=>f.value!=='').map(f=>f.name+': '+f.value).join(' · ')).join(' / '))}</small></button>`).join(''):'<p class="empty">이 조건에 맞는 글이 없어요.</p>'};
+ const drawRows=()=>{rows.replaceChildren();const schema=schemas.get(sel.value);if(!schema)return;
+ conditions.forEach((c,index)=>{const row=document.createElement('div');row.className='pf-filter-row';const fields=[...schema.fields];const f=schema.fields.get(c.field);const ordered=f.type==='number'||f.type==='date';
+ row.innerHTML=`<label>항목<select data-field>${fields.map(([k,v])=>`<option value="${esc(k)}" ${k===c.field?'selected':''}>${esc(v.name)}</option>`).join('')}</select></label><label>조건<select data-op>${(ordered?[['eq','같음'],['gte',f.type==='date'?'이후·당일':'이상'],['lte',f.type==='date'?'이전·당일':'이하']]:f.type==='text'?[['contains','포함'],['eq','일치']]:[['eq','일치']]).map(([k,n])=>`<option value="${k}" ${c.op===k?'selected':''}>${n}</option>`).join('')}</select></label><label>값${f.type==='select'?`<select data-val><option value="">고르기</option>${f.options.map(v=>`<option value="${esc(v)}" ${c.value===v?'selected':''}>${esc(v)}</option>`).join('')}</select>`:`<input data-val type="${f.type}" ${f.type==='number'?'step="any"':''} value="${esc(c.value)}">`}</label><button type="button" class="pf-clear" data-remove aria-label="조건 삭제">삭제</button>`;
+ row.querySelector('[data-field]').onchange=e=>{c.field=e.target.value;c.value='';c.op=schema.fields.get(c.field).type==='text'?'contains':'eq';drawRows();draw()};row.querySelector('[data-op]').onchange=e=>{c.op=e.target.value;draw()};const v=row.querySelector('[data-val]');v.oninput=v.onchange=()=>{c.value=v.value;draw()};row.querySelector('[data-remove]').onclick=()=>{conditions.splice(index,1);drawRows();draw()};rows.append(row)});add.disabled=conditions.length>=12};
+ sel.onchange=()=>{conditions=[];rows.replaceChildren();add.hidden=reset.hidden=!sel.value;add.disabled=false;draw()};add.onclick=()=>{const fields=schemas.get(sel.value)?.fields;if(!fields?.size||conditions.length>=12)return;const [key,f]=fields.entries().next().value;conditions.push({field:key,op:f.type==='text'?'contains':'eq',value:''});drawRows();rows.lastElementChild.querySelector('select').focus();draw()};reset.onclick=()=>{sel.value='';sel.onchange()};inp.oninput=draw;draw()};
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
