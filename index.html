@@ -1055,6 +1055,64 @@ body.sp-blog-edit .se-bar [data-se-add]{display:none}
 @keyframes pfIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .pf-new-card{animation:pfIn .22s ease-out}
 @media (prefers-reduced-motion:reduce){.pf-new-card{animation:none}}
+/* ═════ 위젯 피드 (2026-10-29): 상자 없이, 위젯 자체가 주인공. 정보는 아래 작은 글씨 ═════ */
+.wf-kind{display:inline-flex;gap:2px;background:var(--chrome-2);border-radius:999px;padding:4px;margin:0 0 14px}
+.wf-kind button{border:0;background:none;border-radius:999px;padding:7px 20px;font:inherit;font-size:14.5px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.wf-kind [aria-selected=true]{background:var(--chrome);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.fcol>.wf-kind{justify-self:start}
+.wfeed .fmain{max-width:1040px!important}
+.wf-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 22px;flex-wrap:wrap}
+.wf-scope{display:flex;gap:16px}.wf-scope button{border:0;background:none;padding:4px 0;font:inherit;font-size:14px;color:var(--ink-2);cursor:pointer}.wf-scope [aria-pressed=true]{color:var(--ink);font-weight:700}
+.wf-add{height:36px;border-radius:999px;padding:0 16px;font-size:13.5px}
+.wf-grid{columns:3 280px;column-gap:22px}
+.wf-card{break-inside:avoid;margin:0 0 26px;display:block}
+.wf-frame{position:relative;border-radius:20px;overflow:hidden;background:var(--chrome-2);cursor:pointer;aspect-ratio:1}
+.wf-s-w .wf-frame{aspect-ratio:16/9}.wf-s-l .wf-frame{aspect-ratio:4/5}
+.wf-frame:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wf-thumb{width:100%;height:100%;object-fit:cover;display:block}
+.wf-auto{position:absolute;inset:0;display:grid;align-content:end;gap:4px;padding:18px}.wf-auto b{font-size:19px;letter-spacing:-.01em}.wf-auto small{font-size:12.5px;opacity:.75}
+.wf-live{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:var(--chrome);opacity:0;transition:opacity .18s}
+.wf-frame.live .wf-live{opacity:1}
+video.wf-live{object-fit:cover}
+.wf-open{position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border-radius:50%;border:0;background:rgba(20,24,32,.45);color:#fff;font-size:15px;cursor:pointer;opacity:.85}
+.wf-open:hover{opacity:1}
+.wf-meta-btn{cursor:pointer}
+.wf-audio{position:absolute;right:14px;bottom:14px;width:44px;height:44px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-size:15px;cursor:pointer}
+.wf-meta{display:grid;gap:3px;margin-top:10px}.wf-t{font-size:15px;font-weight:600}.wf-by{font-size:12.5px;color:var(--ink-2)}.wf-d{margin:2px 0 0;font-size:14px;line-height:1.55;color:var(--ink)}
+.wf-empty{padding:40px 0;text-align:center}.wf-empty p{margin:6px 0}
+.wf-foot{font-size:13px;color:var(--ink-2);margin:10px 0 40px}
+/* 크게 보기 */
+.wf-big{display:grid;gap:12px;padding:4px 2px 10px}
+.wf-stage{position:relative;border-radius:18px;overflow:hidden;background:var(--chrome-2);aspect-ratio:1;max-height:62vh}
+.wf-big.wf-s-w .wf-stage{aspect-ratio:16/9}.wf-big.wf-s-l .wf-stage{aspect-ratio:4/5}
+.wf-stage iframe,.wf-stage img,.wf-stage video{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain;background:var(--chrome)}
+.wf-stage audio{position:absolute;left:16px;right:16px;bottom:16px;width:calc(100% - 32px)}
+.wf-note{font-size:12.5px;color:var(--ink-2);margin:0}
+.wf-acts{display:flex;gap:14px}.wf-acts .btn{background:none;border:0;padding:2px 0;color:var(--ink-2);font-size:13px;height:auto;min-height:0}.wf-acts .wf-del{color:var(--danger,#c0392b)}
+/* 올리기 창 */
+.wf-modal .dialog{width:min(860px,calc(100vw - 32px))!important;max-width:none!important;box-sizing:border-box}
+.wf-pv-box .wf-live,.wf-stage .wf-live{opacity:1}
+.wf-lab input[type=file]::file-selector-button{border:1px solid var(--line);border-radius:999px;background:none;padding:6px 12px;margin-right:10px;color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.wf-up{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px}
+@media(max-width:720px){.wf-up{grid-template-columns:1fr}}
+.wf-up-l,.wf-up-r{display:grid;gap:10px;align-content:start;min-width:0}
+.wf-lab{display:grid;gap:6px;font-size:12.5px;color:var(--ink-2)}.wf-lab .opt{font-size:11.5px}
+.wf-lab input[type=text],.wf-lab select,.wf-lab textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--chrome);color:var(--ink);padding:10px 12px;font:inherit;font-size:14.5px}
+.wf-lab textarea{min-height:150px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;resize:vertical}
+.wf-lab input[type=file]{font-size:13px;color:var(--ink)}
+.wf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wf-tabs{display:flex;gap:6px}.wf-tabs .btn{border-radius:999px;height:34px;padding:0 14px;font-size:13.5px;background:none;border:1px solid var(--line);color:var(--ink-2)}.wf-tabs [aria-pressed=true]{color:var(--ink);border-color:var(--ink)}
+.wf-hint,.wf-file-n{font-size:12.5px;color:var(--ink-2);margin:0}
+.wf-pv-h{font-size:13px}
+.wf-pv{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:start}
+.wf-pv small{display:block;font-size:11.5px;color:var(--ink-2);margin-bottom:4px}
+.wf-pv-box{position:relative;border-radius:14px;overflow:hidden;background:var(--chrome-2);aspect-ratio:1}
+.wf-pv-box.wf-s-w{aspect-ratio:16/9}.wf-pv-box.wf-s-l{aspect-ratio:4/5}
+.wf-pv-box iframe,.wf-pv-box img,.wf-pv-box video{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover}
+.wf-pv-empty{position:absolute;inset:0;display:grid;place-items:center;padding:10px;text-align:center;font-size:12px;color:var(--ink-2)}
+.wf-help{display:grid;gap:6px;padding-top:10px;border-top:1px solid var(--line)}.wf-help b{font-size:13px}.wf-help p{margin:0;font-size:13px;line-height:1.6;color:var(--ink)}
+.wf-help .btn{justify-self:start;border-radius:999px;height:32px;padding:0 14px;font-size:13px;background:none;border:1px solid var(--line);color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.wf-live{transition:none}}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -3828,7 +3886,7 @@ function vault(){records.vault=records.vault||{};const v=records.vault;v.lines=v
 /* 글에 쓰인 파일(사진·음성·그림 원본)을 모두 — 정리할 때 지우지 않게 */
 function mediaIds(bs){const out=[];(bs||[]).forEach(b=>{if(b.type==="photos")b.items.forEach(x=>out.push(x.assetId));else if(b.type==="audio"&&b.assetId)out.push(b.assetId)});
   out.slice().forEach(id=>{const a=assets&&assets[id];if(a&&a.draw&&a.draw.baseId)out.push(a.draw.baseId)});return out}
-function extraUsedIds(){const out=[];const v=(records&&records.vault)||{};Object.values(v.revs||{}).forEach(L=>L.forEach(r=>out.push(...mediaIds(r.blocks))));return out}
+function extraUsedIds(){const out=[];const v=(records&&records.vault)||{};((records&&Array.isArray(records.widgets))?records.widgets:[]).forEach(w=>{w&&w.assetId&&out.push(w.assetId);w&&w.thumbId&&out.push(w.thumbId)});   /* 위젯 파일도 지킴 (불러올 때 치우기보다 먼저 쓰여서 여기 둠) */Object.values(v.revs||{}).forEach(L=>L.forEach(r=>out.push(...mediaIds(r.blocks))));return out}
 
 /* ── 이전 버전: 고쳐 저장할 때 바로 전 모습을 본인만 볼 수 있게 남김 (최대 20개, 지울 수 있음) ── */
 function revPush(p){const v=vault();const L=v.revs[p.id]=v.revs[p.id]||[];L.unshift({id:uid("rv"),at:p.updatedAt||now(),title:p.title||"",blocks:clone(blocksOf(p)),ink:clone(p.ink||[])});if(L.length>20)L.length=20}
@@ -4192,7 +4250,7 @@ function backupProblem(d){
   if(typeof a!=="object"||Array.isArray(a))return "사진·음성 정보가 이상해요.";
   const ids=new Set();for(const p of r.posts){if(!p||typeof p.id!=="string"||ids.has(p.id))return "글 목록이 이상해요.";ids.add(p.id);
     if(p.bodyJson&&!Array.isArray(p.bodyJson.blocks))return "글 내용이 이상해요."}
-  for(const [k,v] of Object.entries(a)){if(!v||typeof v.dataUrl!=="string"||!/^data:(image|audio)\//.test(v.dataUrl))return "사진·음성 파일 중 깨진 것이 있어요."}
+  for(const [k,v] of Object.entries(a)){if(!v||typeof v.dataUrl!=="string"||!/^data:(image|audio|video)\//.test(v.dataUrl))return "사진·음성 파일 중 깨진 것이 있어요."}
   return null}
 const lsBytes=()=>{let n=0;try{[K.records,K.layout,K.assets].forEach(k=>{n+=(localStorage.getItem(k)||"").length*2})}catch(e){}return n};
 const mb=n=>(n/1048576).toFixed(1)+"MB";
@@ -4649,6 +4707,157 @@ const pfBaseSetup=edSetup;edSetup=function(ctx){pfBaseSetup(ctx);ctx.draft.funct
  qi.addEventListener('blur',()=>setTimeout(()=>{if(!host.contains(document.activeElement)&&!qi.value.trim())close()},150));
  draw()};
 const pfBaseBody=renderBody;renderBody=function(p){return pfBaseBody(p)+pfClean(p?.functions).filter(g=>g.fields.some(f=>f.value!=='')).map(g=>`<section class="pf-card pf-view"><strong>${esc(g.name)}</strong><dl>${g.fields.filter(f=>f.value!=='').map(f=>`<dt>${esc(f.name)}</dt><dd>${esc(f.value)}</dd>`).join('')}</dl></section>`).join('')};
+
+
+/* ═════════ 위젯 피드 1단계 (2026-10-29) ═════════
+   피드를 '글 | 위젯' 두 갈래로. 위젯 피드에는 내가 올린 위젯과 무가당 예시가 흘러감.
+   · 평소엔 썸네일, PC는 마우스를 올리면 / 휴대폰은 화면 가운데 오면 그 자리에서 실제로 움직임(한 번에 하나)
+   · 사용자 코드는 격리된 iframe(sandbox="allow-scripts", allow-same-origin 없음) + 인터넷 차단(CSP)에서만 실행
+   · 올리기: HTML 파일·코드 붙여 넣기(1MB까지) / 그림·GIF·SVG·영상·소리 파일. 필수는 파일과 제목뿐
+   · 지금은 내 위젯만 내 계정에 저장돼요. 이웃·다른 사람의 위젯은 서버 2단계(다른 사람 불러오기)에서 열려요.
+   · 숫자(본 수·담은 수)는 없음. 순서는 최신순 또는 무작위 */
+const WF_CATS=[["play","놀이"],["tool","도구"],["sound","소리"],["art","그림"],["story","이야기"]];
+const WF_HOW=[["self","직접"],["with","AI와 함께"],["ai","AI로 만듦"]];
+const WF_SIZE=[["s","작게"],["w","넓게"],["l","크게"]];
+const WF_MAX_CODE=1024*1024,WF_MAX_MEDIA=3*1024*1024;
+const WF_PROMPT="무가당 위젯을 만들어 줘. HTML 파일 하나에 CSS와 자바스크립트를 모두 넣고, 외부 파일이나 인터넷 연결은 쓰지 마. 받은 칸 크기에 맞춰 늘었다 줄었다 하게 만들어 줘. 정사각형 칸과 가로로 긴 칸에서 모두 보기 좋게 해 줘.";
+const WF_CSP="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' data: blob:; style-src 'unsafe-inline' data:; img-src data: blob:; media-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'";
+const wfLabel=(L,k)=>(L.find(x=>x[0]===k)||L[0])[1];
+const wfList=()=>Array.isArray(records.widgets)?records.widgets:(records.widgets=[]);
+/* 사용자 코드를 격리 상자에 넣을 문서로: 인터넷 차단 규칙을 맨 앞(head)에 넣고, 칸에 꽉 차게 */
+function wfDoc(code){const meta=`<meta http-equiv="Content-Security-Policy" content="${WF_CSP}"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;overflow:hidden}</style>`;
+  let c=String(code||"");if(/<head[^>]*>/i.test(c))return c.replace(/<head[^>]*>/i,m=>m+meta);
+  if(/<!doctype[^>]*>/i.test(c))return c.replace(/<!doctype[^>]*>/i,m=>m+"<head>"+meta+"</head>");
+  return "<!doctype html><html><head>"+meta+"</head><body>"+c+"</body></html>"}
+function wfFrame(code,title){const f=document.createElement("iframe");f.className="wf-live";f.setAttribute("sandbox","allow-scripts");f.setAttribute("referrerpolicy","no-referrer");
+  f.setAttribute("allow","");f.setAttribute("loading","eager");f.title=(title||"위젯")+" (만든 사람의 위젯)";f.srcdoc=wfDoc(code);return f}
+/* 무가당 예시: 진짜 사람 이름을 쓰지 않고 '무가당 예시'로 표시 */
+const WF_EX=[
+ {id:"ex-clock",title:"조용한 시계",desc:"초가 흐르는 것만 보이는 시계",cat:"tool",how:"with",size:"s",bg:"#101318",
+  code:`<style>body{display:grid;place-items:center;background:#101318;color:#fff;font:200 18vmin system-ui;letter-spacing:.04em}</style><div id=t></div><script>const t=document.getElementById('t');setInterval(()=>{const d=new Date();t.textContent=d.toTimeString().slice(0,8)},250)<\/script>`},
+ {id:"ex-rain",title:"빗소리 라디오",desc:"누르면 빗소리가 나요",cat:"sound",how:"ai",size:"w",bg:"#151820",
+  code:`<style>body{display:grid;place-items:center;background:#151820;color:#dfe6f3;font:15px system-ui}button{all:unset;cursor:pointer;display:flex;gap:12px;align-items:center}i{width:56px;height:56px;border-radius:50%;background:radial-gradient(#333 30%,#0c0d10 31%);border:5px solid #23262f;transition:transform 2s linear}.on i{animation:s 3s linear infinite}@keyframes s{to{transform:rotate(360deg)}}</style><button id=b><i></i><span>빗소리 켜기</span></button><script>let ctx,src;b.onclick=()=>{if(src){src.stop();src=null;b.classList.remove('on');b.lastChild.textContent='빗소리 켜기';return}ctx=ctx||new AudioContext();const n=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),d=n.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;l=(l+0.02*w)/1.02;d[i]=l*3.5}src=ctx.createBufferSource();src.buffer=n;src.loop=true;const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=1200;src.connect(f).connect(ctx.destination);src.start();b.classList.add('on');b.lastChild.textContent='빗소리 끄기'}<\/script>`},
+ {id:"ex-word",title:"오늘의 낱말",desc:"누를 때마다 우리말 하나",cat:"story",how:"self",size:"s",bg:"#fbf5ec",
+  code:`<style>body{display:grid;place-content:center;gap:6px;padding:16px;background:#fbf5ec;color:#2a2620;font:14px system-ui;cursor:pointer;text-align:center}b{font-size:30px}</style><small>오늘의 낱말</small><b id=w></b><small id=m></small><script>const L=[['윤슬','햇빛이나 달빛에 비쳐 반짝이는 잔물결'],['너울','바다의 크고 사나운 물결'],['여우비','볕이 난 날 잠깐 오다가 그치는 비'],['도담도담','어린아이가 탈 없이 잘 자라는 모양'],['그린내','연인'],['나비잠','갓난아이가 두 팔을 머리 위로 벌리고 자는 잠']];let i=Math.floor(Math.random()*L.length);const s=()=>{w.textContent=L[i][0];m.textContent=L[i][1]};s();document.body.onclick=()=>{i=(i+1)%L.length;s()}<\/script>`},
+ {id:"ex-pick",title:"점심 뽑기",desc:"고민될 때 한 번 눌러 보기",cat:"play",how:"with",size:"s",bg:"#eef3ff",
+  code:`<style>body{display:grid;place-content:center;gap:12px;background:#eef3ff;color:#1d2b4a;font:15px system-ui;text-align:center}b{font-size:28px;min-height:1.3em}button{font:inherit;border:0;border-radius:999px;padding:10px 18px;background:#2b63d9;color:#fff;cursor:pointer}</style><b id=o>?</b><button id=b>뽑기</button><script>const L=['김치찌개','짜장면','비빔밥','칼국수','샌드위치','돈가스','떡볶이','쌀국수'];b.onclick=()=>{let n=0;const t=setInterval(()=>{o.textContent=L[Math.floor(Math.random()*L.length)];if(++n>12)clearInterval(t)},60)}<\/script>`},
+ {id:"ex-waves",title:"물결 그리기",desc:"움직이는 물결 그림",cat:"art",how:"ai",size:"w",bg:"#cfe3f3",
+  code:`<style>body{background:#cfe3f3}canvas{width:100%;height:100%;display:block}</style><canvas id=c></canvas><script>const c=document.getElementById('c'),x=c.getContext('2d');function r(){c.width=innerWidth*devicePixelRatio;c.height=innerHeight*devicePixelRatio}addEventListener('resize',r);r();let t=0;function f(){t+=.012;x.clearRect(0,0,c.width,c.height);for(let k=0;k<4;k++){x.beginPath();x.moveTo(0,c.height);for(let i=0;i<=c.width;i+=8){x.lineTo(i,c.height*(.45+k*.12)+Math.sin(i/(90+k*30)+t*(1+k*.3))*c.height*.05)}x.lineTo(c.width,c.height);x.fillStyle='rgba(63,115,163,'+(.18+k*.14)+')';x.fill()}requestAnimationFrame(f)}f()<\/script>`},
+];
+WF_EX.forEach(w=>{w.kind="html";w.example=true;w.createdAt="2026-10-29T00:00:00Z"});
+function wfItems(){const mine=wfList().map(w=>Object.assign({mine:true},w));return {mine,all:[...mine,...WF_EX]}}
+let wfShuffleSeed=Math.random();
+function wfShuffled(list){const seed=wfShuffleSeed;return list.map((w,i)=>({w,k:Math.sin((i+1)*9301*seed+String(w.id).length)})).sort((a,b)=>a.k-b.k).map(x=>x.w)}
+const wfColor=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return `hsl(${h} 32% 86%)`};
+function wfThumb(w){const th=w.thumbId&&assets[w.thumbId];if(th&&th.dataUrl)return `<img class="wf-thumb" src="${th.dataUrl}" alt="">`;
+  if(w.kind==="image"&&assets[w.assetId])return `<img class="wf-thumb" src="${assets[w.assetId].dataUrl}" alt="">`;
+  const bg=w.bg||wfColor(w.title);const dark=/^#1|^#0/.test(bg);
+  return `<span class="wf-auto" style="background:${esc(bg)};color:${dark?"#fff":"#1d2230"}"><b>${esc(w.title)}</b><small>${esc(wfLabel(WF_CATS,w.cat))}${w.kind==="audio"?" · 눌러서 듣기":""}</small></span>`}
+const wfMeta=w=>{const parts=[w.example?"무가당 예시":esc((records.profile&&records.profile.displayName)||"나")];if(!w.example)parts.push(esc(localDay(w.createdAt||now()).replace(/-/g,".")));parts.push(esc(wfLabel(WF_HOW,w.how)));if(!w.example&&w.vis&&w.vis!=="public")parts.push(w.vis==="private"?"나만":"이웃만");
+  return `<div class="wf-meta"><b class="wf-t">${esc(w.title)}</b><span class="wf-by">${parts.join(" · ")}</span>${w.desc?`<p class="wf-d">${esc(w.desc)}</p>`:""}</div>`};
+/* 재생: 한 번에 하나만 살아 움직임 */
+let wfActive=null;
+function wfActivate(card){if(wfActive===card)return;wfDeactivate();const w=wfFind(card.dataset.wf);if(!w)return;const box=card.querySelector(".wf-frame");if(!box)return;wfActive=card;
+  if(w.kind==="html"){const f=wfFrame(w.code,w.title);box.appendChild(f);requestAnimationFrame(()=>box.classList.add("live"))}
+  else if(w.kind==="video"&&assets[w.assetId]){const v=document.createElement("video");v.className="wf-live";v.src=assets[w.assetId].dataUrl;v.muted=true;v.loop=true;v.playsInline=true;box.appendChild(v);v.play().catch(()=>{});box.classList.add("live")}}
+function wfDeactivate(){if(!wfActive)return;const box=wfActive.querySelector(".wf-frame");if(box){box.classList.remove("live");box.querySelectorAll(".wf-live").forEach(n=>n.remove())}wfActive=null}
+function wfFind(id){return WF_EX.find(x=>x.id===id)||wfList().find(x=>x.id===id)}
+let wfIO=null;
+function wfBind(root){const coarse=isMobile()||matchMedia("(hover:none)").matches;
+  root.querySelectorAll(".wf-card").forEach(card=>{const box=card.querySelector(".wf-frame");
+    if(!coarse){box.addEventListener("pointerenter",()=>wfActivate(card));card.addEventListener("pointerleave",()=>{if(wfActive===card)wfDeactivate()})}
+    const openIt=e=>{if(e.target.closest(".wf-audio"))return;e.stopPropagation();const id=card.dataset.wf;setTimeout(()=>wfOpen(id),0)};box.addEventListener("click",openIt);card.querySelectorAll("[data-wf-open]").forEach(n=>{if(!box.contains(n))n.addEventListener("click",openIt)});   /* 움직이는 중엔 위젯을 직접 만지고, 크게 보기는 ⤢나 제목으로 */
+    const au=card.querySelector(".wf-audio");if(au)au.onclick=e=>{e.stopPropagation();const w=wfFind(card.dataset.wf);if(!w||!assets[w.assetId])return;let a=card._audio;if(!a){a=card._audio=new Audio(assets[w.assetId].dataUrl)}if(a.paused){document.querySelectorAll(".wf-card").forEach(c=>{if(c!==card&&c._audio)c._audio.pause()});a.play();au.textContent="❚❚"}else{a.pause();au.textContent="▶"}}});
+  if(wfIO)wfIO.disconnect();
+  if(coarse&&"IntersectionObserver"in window){wfIO=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting)wfActivate(en.target);else if(wfActive===en.target)wfDeactivate()})},{root:null,rootMargin:"-42% 0px -42% 0px",threshold:0});
+    root.querySelectorAll(".wf-card").forEach(c=>wfIO.observe(c))}}
+/* 크게 보기: 제대로 써 보기 */
+function wfOpen(id){const w=wfFind(id);if(!w)return;wfDeactivate();
+  openWin("widget:"+id,{title:w.title,wide:true,render(body,foot){const mine=!!wfList().find(x=>x.id===id);
+    body.innerHTML=`<div class="wf-big wf-s-${esc(w.size||"s")}"><div class="wf-stage"></div>${wfMeta(Object.assign({mine},w))}<p class="wf-note">이 위젯은 무가당과 떨어진 상자 안에서 움직여요. 인터넷에 연결하거나 내 계정 정보를 볼 수 없어요.</p>${mine?`<div class="wf-acts"><button type="button" class="btn" data-wf-edit>고치기</button><button type="button" class="btn wf-del" data-wf-del>지우기</button></div>`:""}</div>`;
+    const st=body.querySelector(".wf-stage");
+    if(w.kind==="html")st.appendChild(wfFrame(w.code,w.title));
+    else if(assets[w.assetId]){const u=assets[w.assetId].dataUrl;st.innerHTML=w.kind==="image"?`<img src="${u}" alt="${esc(w.title)}">`:w.kind==="video"?`<video src="${u}" controls playsinline loop></video>`:`<audio src="${u}" controls></audio>`}
+    const ed=body.querySelector("[data-wf-edit]");if(ed)ed.onclick=()=>wfUpload(wfList().find(x=>x.id===id));
+    const del=body.querySelector("[data-wf-del]");if(del)del.onclick=async()=>{if(!await confirmBox("위젯 지우기",`‘${w.title}’을 지울까요? 되돌릴 수 없어요.`,"지우기",true))return;
+      const before=clone(wfList());records.widgets=wfList().filter(x=>x.id!==id);if(!writeAll()){records.widgets=before;toast("지우지 못했어요.");return}
+      const wn=wins.find(x=>x.key==="widget:"+id);if(wn)closeWin(wn);render();toast("위젯을 지웠어요.")}}})}
+/* 올리기 */
+async function wfUpload(edit){const e=edit||{};let kind=e.kind||"html",code=e.code||"",mediaId=e.assetId||null,thumbId=e.thumbId||null,tab=e.kind&&e.kind!=="html"?"file":(e.code?"paste":"file");
+  const opt=(L,cur)=>L.map(([v,t])=>`<option value="${v}" ${v===cur?"selected":""}>${t}</option>`).join("");
+  const pm=modal(`<h3>${edit?"위젯 고치기":"위젯 올리기"}</h3>
+    <div class="wf-up">
+     <div class="wf-up-l">
+      <div class="wf-tabs"><button type="button" class="btn" data-wt="file">파일 올리기</button><button type="button" class="btn" data-wt="paste">코드 붙여 넣기</button></div>
+      <div data-wp="file"><label class="wf-lab">위젯 파일<input type="file" id="wf-file" accept=".html,.htm,text/html,image/png,image/jpeg,image/webp,image/gif,image/svg+xml,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/x-m4a,audio/aac"></label><p class="wf-hint">HTML(1MB까지), 그림·GIF·SVG, 영상·소리(3MB까지)</p><p class="wf-file-n"></p></div>
+      <div data-wp="paste" hidden><label class="wf-lab">코드<textarea id="wf-code" spellcheck="false" placeholder="AI가 만들어 준 HTML 코드를 그대로 붙여 넣어요">${esc(kind==="html"?code:"")}</textarea></label></div>
+      <label class="wf-lab">제목<input type="text" id="wf-title" maxlength="40" value="${esc(e.title||"")}"></label>
+      <label class="wf-lab"><span>한 줄 설명 <small class="opt">· 선택</small></span><input type="text" id="wf-desc" maxlength="80" placeholder="예: 바다 산책 가기 전에 보려고 만들었어요" value="${esc(e.desc||"")}"></label>
+      <div class="wf-row"><label class="wf-lab">쓰임새<select id="wf-cat">${opt(WF_CATS,e.cat||"play")}</select></label><label class="wf-lab">만든 방법<select id="wf-how">${opt(WF_HOW,e.how||"with")}</select></label></div>
+      <div class="wf-row"><label class="wf-lab">칸 크기<select id="wf-size">${opt(WF_SIZE,e.size||"s")}</select></label><label class="wf-lab">보는 사람<select id="wf-vis">${opt([["public","전체"],["followers","이웃만"],["private","나만"]],e.vis||"public")}</select></label></div>
+      <label class="wf-lab"><span>썸네일 그림 <small class="opt">· 선택</small></span><input type="file" id="wf-thumb" accept="image/*"></label><p class="wf-hint">없으면 제목과 색으로 자동 카드를 만들어요.</p>
+     </div>
+     <div class="wf-up-r"><b class="wf-pv-h">미리보기</b><div class="wf-pv"><div class="wf-pv-m"><small>휴대폰</small><div class="wf-pv-box" data-pv="m"></div></div><div class="wf-pv-p"><small>PC</small><div class="wf-pv-box" data-pv="p"></div></div></div>
+      <div class="wf-help"><b>AI에게 이렇게 부탁하세요</b><p>${esc(WF_PROMPT)}</p><button type="button" class="btn" data-wf-copy>문구 복사</button></div></div>
+    </div><p class="au-err" data-for="wf" hidden></p>
+    <div class="acts"><button class="btn" data-c>취소</button><button class="btn primary" data-o>${edit?"저장":"올리기"}</button></div>`,true);
+  const m=modal.cur;m.classList.add("wf-modal");const err=t=>{const n=m.querySelector('[data-for="wf"]');n.hidden=!t;n.textContent=t||""};
+  const setTab=t=>{tab=t;m.querySelectorAll("[data-wt]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.wt===t)));m.querySelectorAll("[data-wp]").forEach(p=>p.hidden=p.dataset.wp!==t);if(t==="paste"){kind="html";code=m.querySelector("#wf-code").value}pv()};
+  const size=()=>m.querySelector("#wf-size").value;
+  const pv=()=>{m.querySelectorAll("[data-pv]").forEach(b=>{b.className="wf-pv-box wf-s-"+size();b.innerHTML="";
+    if(kind==="html"&&code.trim())b.appendChild(wfFrame(code,"미리보기"));
+    else if(mediaId&&assets[mediaId]){const u=assets[mediaId].dataUrl;b.innerHTML=kind==="image"?`<img src="${u}" alt="">`:kind==="video"?`<video src="${u}" muted loop autoplay playsinline></video>`:`<span class="wf-auto"><b>소리</b><small>피드에서 눌러서 들어요</small></span>`}
+    else b.innerHTML=`<span class="wf-pv-empty">파일이나 코드를 넣으면 여기서 움직여요</span>`})};
+  m.querySelectorAll("[data-wt]").forEach(b=>b.onclick=()=>setTab(b.dataset.wt));setTab(tab);
+  m.querySelector("#wf-size").onchange=pv;let pvT;m.querySelector("#wf-code").addEventListener("input",ev=>{if(ev.isComposing)return;clearTimeout(pvT);pvT=setTimeout(()=>{code=ev.target.value;kind="html";pv()},400)});
+  m.querySelector("[data-wf-copy]").onclick=async()=>{try{await navigator.clipboard.writeText(WF_PROMPT);toast("복사했어요. AI에게 붙여 넣으세요.")}catch(x){toast("복사하지 못했어요. 문구를 길게 눌러 복사해 주세요.")}};
+  m.querySelector("#wf-file").onchange=async ev=>{const f=ev.target.files[0];if(!f)return;err("");const ty=f.type||"",nm=f.name||"";
+    if(/html?$/i.test(nm)||ty==="text/html"){if(f.size>WF_MAX_CODE){err("HTML 파일은 1MB까지 올릴 수 있어요.");return}code=await f.text();kind="html";mediaId=null}
+    else if(/^(image|video|audio)\//.test(ty)){if(f.size>WF_MAX_MEDIA){err("그림·영상·소리 파일은 3MB까지 올릴 수 있어요.");return}
+      const url=await blobToUrl(f);const id=uid("asset");assets[id]={id,role:"widget",mime:ty,dataUrl:url};mediaId=id;kind=ty.startsWith("image/")?"image":ty.startsWith("video/")?"video":"audio";code=""}
+    else{err("이 형식은 아직 올릴 수 없어요. HTML, 그림, 영상, 소리 파일을 골라 주세요.");return}
+    m.querySelector(".wf-file-n").textContent=nm;if(!m.querySelector("#wf-title").value.trim())m.querySelector("#wf-title").value=nm.replace(/\.[^.]+$/,"").slice(0,40);pv()};
+  m.querySelector("#wf-thumb").onchange=async ev=>{const f=ev.target.files[0];if(!f)return;try{thumbId=await addAsset(f,720,"widget-thumb")}catch(x){err(x.message)}};
+  m.querySelector("[data-c]").onclick=()=>m._done(null);
+  m.querySelector("[data-o]").onclick=()=>{if(tab==="paste"){code=m.querySelector("#wf-code").value;kind="html"}
+    const title=m.querySelector("#wf-title").value.trim();
+    if(kind==="html"&&!code.trim())return err("위젯 파일을 고르거나 코드를 붙여 넣어 주세요.");
+    if(kind!=="html"&&!(mediaId&&assets[mediaId]))return err("위젯 파일을 골라 주세요.");
+    if(kind==="html"&&new Blob([code]).size>WF_MAX_CODE)return err("코드는 1MB까지 올릴 수 있어요.");
+    if(!title)return err("제목을 적어 주세요.");
+    m._done({kind,code:kind==="html"?code:"",assetId:kind==="html"?null:mediaId,thumbId,title,desc:m.querySelector("#wf-desc").value.trim(),cat:m.querySelector("#wf-cat").value,how:m.querySelector("#wf-how").value,size:size(),vis:m.querySelector("#wf-vis").value})};
+  const v=await pm;
+  if(!v){/* 취소: 새로 넣은 파일은 치움 */[mediaId,thumbId].forEach(id=>{if(id&&id!==e.assetId&&id!==e.thumbId)delete assets[id]});return}
+  const before=clone(wfList());
+  if(edit){Object.assign(wfList().find(x=>x.id===edit.id),v,{updatedAt:now()})}
+  else wfList().unshift(Object.assign({id:uid("wg"),createdAt:now()},v));
+  if(!writeAll()){records.widgets=before;toast("저장하지 못했어요. 이 기기 저장 공간이 부족할 수 있어요.");return}
+  ui.feedKind="widget";ui.wfScope="mine";if(ui.renderer!=="feed")setRenderer("feed");else render();
+  if(edit){const wn=wins.find(x=>x.key==="widget:"+edit.id);if(wn)closeWin(wn)}
+  toast(edit?"위젯을 고쳤어요.":"위젯을 올렸어요. 피드에서 움직여 보세요.")}
+/* 쓰지 않는 파일 치우기에서 위젯 파일은 지키기 */
+/* (위젯 파일 지키기는 extraUsedIds 본문에 넣었어요) */
+/* 피드 그리기: 맨 위 '글 | 위젯' */
+function wfKindHTML(){const k=ui.feedKind==="widget"?"widget":"post";return `<div class="wf-kind" role="tablist" aria-label="피드 종류"><button type="button" role="tab" data-feed-kind="post" aria-selected="${k==="post"}">글</button><button type="button" role="tab" data-feed-kind="widget" aria-selected="${k==="widget"}">위젯</button></div>`}
+function renderWidgetFeed(cv){cv.style.height="";const {mine,all}=wfItems();const sc=ui.wfScope||"random";
+  const list=sc==="mine"?mine:wfShuffled(all);
+  cv.innerHTML=`<div class="feed nvfeed wfeed"><main class="fmain">${wfKindHTML()}
+    <div class="wf-bar"><div class="wf-scope"><button type="button" data-wf-scope="random" aria-pressed="${sc!=="mine"}">무작위</button><button type="button" data-wf-scope="mine" aria-pressed="${sc==="mine"}">내 위젯</button></div>${isVisitor()?"":`<button type="button" class="btn primary wf-add" data-wf-add>＋ 위젯 올리기</button>`}</div>
+    ${list.length?`<div class="wf-grid">${list.map(w=>`<article class="wf-card wf-s-${esc(w.size||"s")}" data-wf="${esc(w.id)}"><div class="wf-frame" role="button" tabindex="0" aria-label="${esc(w.title)} 크게 보기">${wfThumb(w)}${w.kind==="audio"?`<button type="button" class="wf-audio" aria-label="듣기">▶</button>`:""}<button type="button" class="wf-open" data-wf-open aria-label="${esc(w.title)} 크게 보기" title="크게 보기">⤢</button></div><div class="wf-meta-btn" data-wf-open>${wfMeta(w)}</div></article>`).join("")}</div>`
+      :`<div class="wf-empty"><p>아직 올린 위젯이 없어요.</p><p class="hint">AI에게 작은 위젯을 만들어 달라고 해서 올려 보세요. 시계, 타이머, 뽑기, 그림, 소리 무엇이든 돼요.</p></div>`}
+    <p class="wf-foot">이웃과 다른 사람들의 위젯은 곧 여기에 함께 흘러와요. 지금은 내 위젯과 무가당 예시가 보여요.</p></main></div>`;
+  wfBind(cv)}
+const baseRenderFeedWF=renderFeed;renderFeed=function(cv){wfDeactivate();if(ui.feedKind==="widget")return renderWidgetFeed(cv);baseRenderFeedWF(cv);
+  const m=cv.querySelector(".fmain");if(m&&!m.querySelector(".wf-kind")){const at=cv.querySelector(".fcol")||m;at.insertAdjacentHTML("afterbegin",wfKindHTML())}};
+document.addEventListener("click",e=>{const k=e.target.closest("[data-feed-kind]");if(k){ui.feedKind=k.dataset.feedKind;render();return}
+  const s=e.target.closest("[data-wf-scope]");if(s){ui.wfScope=s.dataset.wfScope;wfShuffleSeed=Math.random();render();return}
+  if(e.target.closest("[data-wf-add]")){wfUpload();return}});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.classList&&e.target.classList.contains("wf-frame")){e.preventDefault();wfOpen(e.target.closest(".wf-card").dataset.wf)}});
+/* '이웃새글' → '피드' */
+const baseSyncPcNavWF=syncPcNav;syncPcNav=function(){baseSyncPcNavWF();const b=document.querySelector('.pc-nav [data-pn="feed"]');if(b&&b.textContent!=="피드")b.textContent="피드";
+  const t=document.querySelector('#tabbar [data-tab2="follow"]');if(t)t.setAttribute("aria-label","피드")};
+/* 화면을 떠나면 움직이던 위젯은 멈춤 */
+const baseSetRendererWF=setRenderer;setRenderer=function(r){wfDeactivate();return baseSetRendererWF(r)};
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
