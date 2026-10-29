@@ -1013,6 +1013,31 @@ body.sp-blog-edit .se-bar [data-se-add]{display:none}
 /* 글의 선택 기능: 본문은 유지하고, 추가한 정보만 조용히 표시 */
 .pf-editor{margin-top:20px;border-top:1px solid var(--line,#ddd);padding-top:12px}.pf-card{border:1px solid var(--line,#ddd);border-radius:12px;padding:14px;margin:10px 0}.pf-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pf-head strong{flex:1}.pf-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}.pf-fields label,.pf-config label{display:grid;gap:5px;font-size:13px}.pf-fields input,.pf-fields select,.pf-config input,.pf-config select{width:100%;min-width:0;box-sizing:border-box;padding:9px;font:inherit}.pf-config [hidden]{display:none!important}.pf-config{max-height:55vh;overflow:auto;padding:2px}.pf-config .pf-field{border-top:1px solid var(--line,#ddd);padding:12px 0;display:grid;gap:8px}.pf-options{display:flex;gap:8px;flex-wrap:wrap}.pf-view{margin-top:20px;font-size:14px}.pf-view dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(80px,1fr) 2fr;gap:8px}.pf-view dt{opacity:.65}.pf-view dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.pf-error{color:#b23434;min-height:1.4em}.pf-name{overflow-wrap:anywhere}@media(max-width:600px){.pf-fields{grid-template-columns:1fr}.pf-head .btn{min-height:40px}.pf-config{max-height:50vh}}
 
+/* ═════ 글의 기능: 무가당 디자인 언어에 맞춤 (2026-10-29) ═════
+   상자 테두리 없이 간격과 글씨로만 나눔. 버튼은 글자 버튼·둥근 알약, 입력칸은 가입·설정 화면과 같은 모양 */
+.pf-editor{border-top:0;margin-top:28px;padding-top:0}
+.pf-card{border:0;border-radius:0;padding:0;margin:0 0 24px}
+.pf-head{gap:4px 14px}
+.pf-head strong{font-size:15px;font-weight:700}
+.pf-head .btn{background:none!important;border:0!important;padding:2px 0!important;min-height:0!important;height:auto!important;color:var(--ink-2)!important;font-size:13px;border-radius:0}
+.pf-head .btn:hover{color:var(--ink)!important}
+.pf-head [data-delete],.pf-head [data-del]{color:var(--danger,#c0392b)!important}
+.pf-fields{gap:12px 14px;margin-top:10px}
+.pf-fields label,.pf-config label{font-size:12.5px;color:var(--ink-2);gap:6px}
+.pf-fields input,.pf-fields select,.pf-config input,.pf-config select,.dialog [data-pf-name]{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--chrome);color:var(--ink);padding:10px 12px;font:inherit;font-size:14.5px}
+.pf-fields input:focus,.pf-fields select:focus,.pf-config input:focus,.pf-config select:focus,.dialog [data-pf-name]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.dialog label:has([data-pf-name]){display:grid;gap:6px;font-size:12.5px;color:var(--ink-2);margin:4px 0 10px}
+.pf-config .pf-field{border-top:1px solid var(--line);padding:14px 0;gap:10px}
+.pf-config .pf-field .btn{justify-self:start;background:none;border:0;padding:2px 0;color:var(--danger,#c0392b);font-size:13px;min-height:0;height:auto}
+.dialog [data-pf-field]{margin-top:12px;border-radius:999px;height:34px;padding:0 14px;font-size:13.5px}
+.pf-editor [data-pf-add]{border-radius:999px;height:34px;padding:0 14px;font-size:13.5px;background:none;border:1px solid var(--line);color:var(--ink)}
+.pf-options{gap:6px}.pf-options .btn,.dialog .pf-head .pf-name{border-radius:999px;height:34px;padding:0 14px;font-size:13.5px}
+.dialog .pf-head{padding:4px 0}
+.pf-view{margin:30px 0 0;padding:0;font-size:14.5px}
+.pf-view strong{display:block;font-size:13px;color:var(--ink-2);font-weight:600}
+.pf-view dl{margin:8px 0 0;grid-template-columns:minmax(90px,auto) 1fr;gap:6px 18px}
+.pf-view dt{opacity:1;color:var(--ink-2)}
+.pf-view dd{color:var(--ink)}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
