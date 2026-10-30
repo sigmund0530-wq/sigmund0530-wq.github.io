@@ -1159,6 +1159,28 @@ video.wf-live{object-fit:cover}
 .pf-again .btn{border:0;background:none;padding:0;height:auto;min-height:0;font:inherit;font-size:12.5px;color:var(--accent);font-weight:600}
 .pf-to{font-style:normal;color:var(--accent);font-size:12px;margin-left:6px;font-weight:500}
 @media(max-width:600px){.pfc-in{padding:18px 16px}.pfc-tabs{gap:16px}.pfc-tabs button{font-size:17px}}
+/* ═════ 글 속 단어에 붙이기 (2026-10-30): 본문의 단어에 옅은 점선, 메뉴·카드는 작게 ═════ */
+.rte-area mark[data-pf],.txt mark[data-pf],mark[data-pf]{background:none;color:inherit;padding:0 1px;border-bottom:1.5px dotted var(--accent);cursor:pointer}
+.rte-area mark[data-pf]{background:var(--select);border-radius:3px}
+.pfw-pop,.pfw-card{position:fixed;z-index:100000;width:min(300px,calc(100vw - 24px));background:var(--chrome);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 6px 24px rgba(0,0,0,.16);display:grid;gap:1px;font-size:14px}
+.pfw-h{margin:0;padding:6px 8px 4px;font-size:12.5px;color:var(--ink-2)}.pfw-h b{color:var(--ink);font-weight:600}
+.pfw-sg{display:grid;gap:1px;text-align:left;border:0;background:none;color:var(--ink);font:inherit;padding:8px 10px;border-radius:10px;cursor:pointer}
+.pfw-sg b{font-weight:600}.pfw-sg small{font-size:12px;color:var(--ink-2)}
+.pfw-sg:hover,.pfw-sg:focus-visible,.pfw-sg.on{background:var(--chrome-2);outline:none}
+.pfw-own{display:flex;gap:6px;padding:6px 4px 2px}
+.pfw-own input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;background:var(--chrome);color:var(--ink);padding:8px 10px;font:inherit;font-size:13.5px}
+.pfw-own .btn{border:1px solid var(--line);background:none;color:var(--ink);border-radius:999px;height:34px;padding:0 12px;font-size:13px}
+.pfw-pop.mini{width:auto;display:flex;align-items:center;border-radius:999px;padding:4px}
+.pfw-pop.mini span{font-size:12px;color:var(--ink-2);padding:0 8px}
+.pfw-pop.mini button{border:0;background:none;font:inherit;font-size:13px;padding:6px 11px;border-radius:999px;cursor:pointer;color:var(--ink)}
+.pfw-pop.mini button.danger{color:var(--danger)}
+.pfw-card{padding:12px 14px;gap:6px}.pfw-card .k{margin:0;font-size:12.5px;color:var(--ink-2)}
+.pfw-card dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0}.pfw-card dt{color:var(--ink-2);font-size:12.5px}.pfw-card dd{margin:0}
+.pfw-card .linkbtn{justify-self:start!important;text-align:left!important;border:0;background:none;padding:2px 0;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer}
+.pfw-list{display:flex;flex-wrap:wrap;gap:4px 14px;margin:26px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-2)}
+.pfw-list span{color:var(--ink-2)}.pfw-list button{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer}
+.pfw-tip{font-size:12.5px;color:var(--ink-2);margin-left:10px}
+.pf-card.pf-anch{margin-bottom:14px}.pf-card.pf-anch .pf-name{font-size:14.5px}.pf-card.pf-anch .pf-name small{font-size:12.5px;color:var(--ink-2);font-weight:500;margin-left:4px}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -4752,6 +4774,7 @@ const pfBaseSetup=edSetup;edSetup=function(ctx){pfBaseSetup(ctx);ctx.draft.funct
   list.querySelectorAll('[data-pf-index]').forEach(card=>{const i=+card.dataset.pfIndex,g=ctx.draft.functions[i];card.querySelectorAll('[data-value]').forEach(input=>{input.oninput=input.onchange=()=>{g.fields[+input.dataset.value].value=input.value;ctx.queueAuto()}});
    const details=card.querySelector('.pf-extra');if(details)details.ontoggle=()=>{if(details.open)expanded.add(g.id);else expanded.delete(g.id)};
    card.querySelector('[data-config]').onclick=async()=>{const updated=await pfConfigure(g);if(!updated||!host.isConnected)return;ctx.draft.functions[i]=updated;draw();ctx.queueAuto()};card.querySelector('[data-template]').onclick=()=>pfTemplateSave(g);card.querySelector('[data-delete]').onclick=()=>{ctx.draft.functions.splice(i,1);draw();ctx.queueAuto()}})};
+ ctx.pfDraw=()=>draw();   /* 글 속 단어에 붙이기에서 다시 그릴 때 씀 */
  const close=()=>{box.hidden=true;addBtn.hidden=false;qi.value=''};
  const drawSugs=()=>{const q=qi.value.trim();shown=pfSuggestions(q);const exact=shown.some(s=>pfNorm(s.name)===pfNorm(q));cur=Math.min(cur,Math.max(0,shown.length+(q&&!exact?1:0)-1));
   sugs.innerHTML=shown.map((s,i)=>`<div class="pf-sug${i===cur?' on':''}" role="option" aria-selected="${i===cur}" data-sug="${i}"><span class="pf-sug-t"><b>${esc(s.name)}</b>${s.mine!=null?'<em>자주 쓰기</em>':''}<small>${pfPreview(s.fields)}</small></span>${s.mine!=null?`<button type="button" class="btn pf-sug-del" data-sug-del="${s.mine}" aria-label="${esc(s.name)} 자주 쓰기에서 빼기">빼기</button>`:''}</div>`).join('')
@@ -5019,6 +5042,105 @@ const pfcPosts=renderPosts;renderPosts=function(cv){pfcPosts(cv);if(isVisitor())
 const pfcHome=renderHome;renderHome=function(cv){pfcHome(cv);if(isVisitor())return;const nav=cv.querySelector('.pc-space-nav');if(nav&&!nav.querySelector('[data-pf-go]')){const b=document.createElement('button');b.type='button';b.dataset.pfGo='';b.textContent='모아 보기';nav.append(b);
     /* 붙인 정보가 카테고리처럼 저절로 생김(나만 보임) */const vs=[...new Set(pfEntries().map(e=>e.view))];if(vs.length){const sec=document.createElement('div');sec.className='pfc-side';sec.innerHTML=`<p>붙인 정보로 · 나만 보기</p>${vs.map(v=>`<button type="button" data-pf-go="${esc(v)}">${esc(v)}</button>`).join('')}`;nav.after(sec)}}
   if(isMobile()){const hv=cv.querySelector('[data-act="homeView"]');const row=hv&&hv.parentElement;if(row&&!row.querySelector('.pfc-m')){const b=document.createElement('button');b.type='button';b.className='linkbtn pfc-m';b.dataset.pfGo='';b.textContent='모아 보기 ›';row.append(b)}}};
+
+/* ═════════ 글 속 단어에 붙이기 (2026-10-30, 주인 결정) ═════════
+   주인: "글 아래 칸에 채우면 템플릿 같아 보인다. 텍스트에 속성을 붙이는 게 블록이다."
+   · 본문에서 단어를 드래그하면 작은 메뉴: 드래그한 말 + 같은 문장 속 말로 맞는 제안이 먼저(다른 사람 사용량은 안 씀).
+   · 고르면 그 단어가 정보의 대상(물건·책 이름·가게 이름…)이 되고, 같은 문장의 '5만 원' 같은 값은 미리 채움.
+   · 본문에는 <mark data-pf="정보 id">단어</mark>로 남음(글자는 그대로). 글 아래에는 작은 줄, 나머지 칸은 '더 적기 · 선택'.
+   · 읽는 화면: 단어에 옅은 점선, 누르면 작은 카드. 표 모양 정보는 숨김. 공개 범위는 글과 같음.
+   · 글 아래 '＋ 붙이기'(글 전체에 붙이는 템플릿)는 그대로 둠. */
+/* 본문 정리(sanitize)는 속성을 모두 지우므로, 붙인 단어 표시만 살려서 통과시킴 */
+const pfwSan=sanitize;sanitize=function(html){html=String(html||'').replace(/[-]/g,'');if(html.indexOf('data-pf')<0)return pfwSan(html);
+  const doc=new DOMParser().parseFromString(`<body>${html}</body>`,'text/html');
+  doc.body.querySelectorAll('mark[data-pf]').forEach(m=>{const id=m.getAttribute('data-pf')||'';if(!/^[\w-]{1,80}$/.test(id)){m.replaceWith(...m.childNodes);return}m.replaceWith(doc.createTextNode(''+id+''+m.textContent+''))});
+  return pfwSan(doc.body.innerHTML).replace(/([\w-]{1,80})([^-]*)/g,(x,id,w)=>w?`<mark data-pf="${id}">${w}</mark>`:'').replace(/[-]/g,'')};
+const PFW_PRICE=/(\d[\d,]*(?:\.\d+)?)\s?(만\s?원|천\s?원|원)/;
+const pfwNum=m=>{let n=parseFloat(m[1].replace(/,/g,''));if(/만/.test(m[2]))n*=10000;else if(/천/.test(m[2]))n*=1000;return String(Math.round(n))};
+function pfwTargetIdx(g){const v=pfViewOf(g);if(v.target)return g.fields.indexOf(v.target);return g.fields.findIndex(f=>f.type==='text')}
+function pfwMake(s,word,sent){const g=pfBlank(s);let ti=pfwTargetIdx(g);
+  if(ti<0){g.fields.unshift({id:uid('pff'),key:g.schemaId+':target',name:/구매|산/.test(g.name)?'물건':'이름',type:'text',options:[],value:''});ti=0}
+  g.fields[ti].value=word;const auto=[];
+  g.fields.forEach((f,i)=>{if(i===ti||f.value)return;
+    if(f.type==='number'&&/가격|금액|원/.test(f.name)){const m=sent.match(PFW_PRICE);if(m){f.value=pfwNum(m);auto.push(f.name)}}
+    else if(f.type==='select'){const o=f.options.find(o=>o&&sent.includes(o));if(o){f.value=o;auto.push(f.name)}}});
+  return {g,auto}}
+/* 문장 속 말끝까지 보는 추가 단서(기본 제안 키워드는 그대로 두고 여기서만 더함). 값(가격)이 있으면 가격 칸이 있는 제안을 조금 앞으로 */
+const PFW_KEYS={'중고 판매':['팔아','팝니다','팔게','팔려','내놓'],'구매 정보':['샀다','샀어','사버','구매했','주문'],'독서 기록':['읽었','읽는','읽고'],'맛집·카페':['먹었','마셨','갔다'],'영화·드라마':['봤다','봤어']};
+function pfwRank(word,sent){const w=pfNorm(word),sn=pfNorm(sent),rec=pfRecent();const mine=pfClean(records.functionTemplates,40).map(g=>({name:g.name,schemaId:g.schemaId||g.id,keys:[],fields:g.fields,mine:1}));
+  return [...mine,...PF_SUGGEST.filter(s=>!mine.some(m=>m.name===s.name))].map((s,i)=>{let sc=0;[s.name,...(s.keys||[])].map(pfNorm).filter(k=>k.length>0).forEach(k=>{if(w===k||(k.length>1&&w.includes(k)))sc+=5;else if(w.includes(k))sc+=1;if(k.length>1&&sn.includes(k))sc+=2;else if(sn.includes(k))sc+=.5});(PFW_KEYS[s.name]||[]).forEach(k=>{if(sn.includes(pfNorm(k)))sc+=2});if(PFW_PRICE.test(sent)&&(s.fields||[]).some(f=>f.type==='number'&&/가격|금액/.test(f.name)))sc+=2;if(s.mine)sc+=1;if(rec.includes(s.name))sc+=1;return {s,sc,i}}).sort((a,b)=>b.sc-a.sc||a.i-b.i).slice(0,5).map(x=>x.s)}
+const pfwSent=(text,word)=>{const parts=String(text).split(/(?<=[.!?。])\s+|\n/);return parts.find(x=>x.includes(word))||text};
+let pfwPop=null,pfwCard=null;
+function pfwHide(){if(pfwPop){pfwPop.remove();pfwPop=null}}
+function pfwHideCard(){if(pfwCard){pfwCard.remove();pfwCard=null}}
+function pfwPlace(el,rect){document.body.appendChild(el);const w=el.offsetWidth,h=el.offsetHeight,vw=innerWidth,vh=innerHeight;let x=Math.max(12,Math.min(rect.left+rect.width/2-w/2,vw-w-12));let y=rect.bottom+8;if(y+h>vh-12)y=Math.max(12,rect.top-h-8);el.style.left=x+'px';el.style.top=y+'px'}
+const pfwCtxOf=n=>{for(let x=n&&(n.nodeType===1?n:n.parentElement);x;x=x.parentElement)if(x._pfwCtx)return x._pfwCtx;return null};
+function pfwShow(ctx,range){const area=(range.startContainer.parentElement||{}).closest?.('.rte-area');if(!area)return;
+  const word=range.toString().trim().replace(/[,.!?·…]+$/,'');if(!word||word.length>40||/\n/.test(word))return pfwHide();
+  const sent=pfwSent(area.innerText||area.textContent,word),list=pfwRank(word,sent);pfwHide();
+  const el=document.createElement('div');el.className='pfw-pop';el.setAttribute('role','dialog');el.setAttribute('aria-label','단어에 붙이기');
+  el.innerHTML=`<p class="pfw-h"><b>‘${esc(word.length>16?word.slice(0,15)+'…':word)}’</b>에 붙이기</p>${list.map((s,i)=>{const v=(PF_VIEWS[s.name]||[])[0];return `<button type="button" class="pfw-sg${i===0?' on':''}" data-i="${i}"><b>${esc(s.name)}</b><small>${v?'→ '+esc(v):pfPreview(s.fields)}</small></button>`}).join('')}<div class="pfw-own"><input type="text" maxlength="20" placeholder="다른 이름으로 붙이기" aria-label="다른 이름으로 붙이기"><button type="button" class="btn">붙이기</button></div>`;
+  const keep=range.cloneRange();el.addEventListener('mousedown',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
+  el.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>pfwAttach(ctx,keep,list[+b.dataset.i]));
+  const inp=el.querySelector('input'),go=()=>{const v=inp.value.trim();if(v)pfwAttach(ctx,keep,{schemaId:uid('schema'),name:v.slice(0,40),fields:[{name:'내용',type:'text'}]})};
+  el.querySelector('.pfw-own .btn').onclick=go;inp.onkeydown=e=>{if(e.isComposing)return;if(e.key==='Enter'){e.preventDefault();go()}if(e.key==='Escape')pfwHide()};
+  pfwPop=el;el._kind='sel';pfwPlace(el,range.getBoundingClientRect())}
+function pfwAttach(ctx,range,s){if(!s)return;if(ctx.draft.functions.length>=12){toast('한 글에는 12개까지 붙일 수 있어요.');return}
+  const sc=range.startContainer;if(sc!==range.endContainer||sc.nodeType!==3||!sc.isConnected){pfwHide();return}
+  const area=sc.parentElement.closest('.rte-area'),full=range.toString(),word=full.trim().replace(/[,.!?·…]+$/,''),lead=full.length-full.trimStart().length,tail=full.slice(lead+word.length);
+  const {g,auto}=pfwMake(s,word,pfwSent(area.innerText||area.textContent,word));
+  range.deleteContents();const m=document.createElement('mark');m.dataset.pf=g.id;m.textContent=word;
+  if(tail)range.insertNode(document.createTextNode(tail));range.insertNode(m);if(lead)range.insertNode(document.createTextNode(full.slice(0,lead)));area.normalize();
+  ctx.draft.functions.push(g);pfMarkRecent(g.name);ctx.syncText();ctx.queueAuto();if(ctx.pfDraw)ctx.pfDraw();
+  try{getSelection().removeAllRanges()}catch(e){}pfwHide();
+  toast(`‘${word.length>12?word.slice(0,11)+'…':word}’에 ${g.name}을 붙였어요${auto.length?' · '+auto.join(', ')+'은 글에서 채웠어요':''}`)}
+function pfwMarkMenu(ctx,m){const g=ctx.draft.functions.find(x=>x.id===m.dataset.pf);if(!g)return;pfwHide();
+  const el=document.createElement('div');el.className='pfw-pop mini';el.innerHTML=`<span>${esc(g.name)}</span><button type="button" data-k="see">칸 보기</button><button type="button" data-k="off" class="danger">빼기</button>`;
+  el.addEventListener('mousedown',e=>e.preventDefault());
+  el.querySelector('[data-k=see]').onclick=()=>{pfwHide();const card=ctx.body.querySelector(`.pf-card[data-pf-id="${CSS.escape(g.id)}"]`);if(card){const d=card.querySelector('details');if(d)d.open=true;card.scrollIntoView({block:'nearest',behavior:'smooth'})}};
+  el.querySelector('[data-k=off]').onclick=()=>{pfwHide();ctx.draft.functions=ctx.draft.functions.filter(x=>x.id!==g.id);m.replaceWith(document.createTextNode(m.textContent));ctx.syncText();ctx.queueAuto();if(ctx.pfDraw)ctx.pfDraw();toast(`${g.name}을 뺐어요 · 글자는 그대로예요`)};
+  pfwPop=el;el._kind='mark';pfwPlace(el,m.getBoundingClientRect())}
+let pfwT=0,pfwComposing=false;
+document.addEventListener('compositionstart',()=>pfwComposing=true,true);document.addEventListener('compositionend',()=>pfwComposing=false,true);
+document.addEventListener('selectionchange',()=>{clearTimeout(pfwT);pfwT=setTimeout(()=>{if(pfwComposing)return;const s=getSelection();if(!s.rangeCount)return;const r=s.getRangeAt(0);
+  if(pfwPop&&pfwPop.contains(document.activeElement))return;
+  if(s.isCollapsed){if(pfwPop&&pfwPop._kind==='sel')pfwHide();return}
+  const sc=r.startContainer;if(sc!==r.endContainer||sc.nodeType!==3||sc.parentElement.closest('mark')||!sc.parentElement.closest('.rte-area'))return pfwHide();
+  const ctx=pfwCtxOf(sc);if(!ctx||!ctx.body.querySelector('.pf-editor'))return;pfwShow(ctx,r)},260)});
+document.addEventListener('mousedown',e=>{if(pfwPop&&!pfwPop.contains(e.target)&&!e.target.closest('.rte-area mark[data-pf]'))pfwHide();if(pfwCard&&!pfwCard.contains(e.target)&&!e.target.closest('mark[data-pf]'))pfwHideCard()},true);
+addEventListener('scroll',()=>{pfwHide();pfwHideCard()},true);addEventListener('resize',()=>{pfwHide();pfwHideCard()});
+const pfwSetup=edSetup;edSetup=function(ctx){pfwSetup(ctx);const host=ctx.body.querySelector('.pf-editor');if(!host)return;ctx.body._pfwCtx=ctx;const list=host.querySelector('[data-pf-groups]');
+  const add=host.querySelector('[data-pf-add]');if(add&&!host.querySelector('.pfw-tip')){const t=document.createElement('span');t.className='pfw-tip';t.textContent='또는 글에서 단어를 드래그해 붙여요';add.after(t);new MutationObserver(()=>{t.hidden=add.hidden}).observe(add,{attributes:true,attributeFilter:['hidden']})}
+  const marks=()=>[...(ctx.blocksEl||ctx.body).querySelectorAll('.rte-area mark[data-pf]')];
+  /* 단어에 붙은 정보는 글 아래에서 작게: 제목 대신 '단어 · 이름', 대상 칸은 숨김(본문의 단어가 곧 값) */
+  const tidy=()=>{let changed=false;marks().forEach(m=>{if(!ctx.draft.functions.some(g=>g.id===m.dataset.pf)){m.replaceWith(document.createTextNode(m.textContent));changed=true}});if(changed){ctx.syncText();ctx.queueAuto()}
+    list.querySelectorAll('.pf-card[data-pf-id]').forEach(card=>{const g=ctx.draft.functions.find(x=>x.id===card.dataset.pfId);const m=g&&marks().find(x=>x.dataset.pf===g.id);card.classList.toggle('pf-anch',!!m);if(!m)return;
+      const ti=pfwTargetIdx(pfClean([g])[0]);const nm=card.querySelector('.pf-name');if(nm&&!nm.dataset.anch){nm.dataset.anch=1;nm.innerHTML=`‘${esc(m.textContent)}’ <small>${esc(g.name)}</small>`}
+      const inp=card.querySelector(`[data-value="${ti}"]`);const lab=inp&&inp.closest('label');if(lab)lab.hidden=true;
+      const det=card.querySelector('details.pf-extra'),vis=[...card.querySelectorAll('.pf-fields > label')].filter(l=>!l.hidden);
+      if(det&&!vis.length&&!card.querySelector('.pf-fields > label:not([hidden])')){det.open=det.open||false}})};
+  new MutationObserver(tidy).observe(list,{childList:true});
+  const area=ctx.blocksEl||ctx.body;
+  area.addEventListener('click',e=>{const m=e.target.closest('.rte-area mark[data-pf]');if(m&&getSelection().isCollapsed)pfwMarkMenu(ctx,m)});
+  const sync=()=>{if(pfwComposing)return;let redraw=false;marks().forEach(m=>{const g=ctx.draft.functions.find(x=>x.id===m.dataset.pf);if(!g)return;const ti=pfwTargetIdx(pfClean([g])[0]);const t=m.textContent.trim();
+      if(!t){m.remove();return}if(ti>=0&&g.fields[ti].value!==t){g.fields[ti].value=t;redraw=true}});
+    if(redraw){list.querySelectorAll('.pf-card.pf-anch .pf-name').forEach(n=>{delete n.dataset.anch});tidy();ctx.queueAuto()}};
+  area.addEventListener('input',()=>{clearTimeout(area._pfwS);area._pfwS=setTimeout(sync,300)});area.addEventListener('compositionend',()=>setTimeout(sync,0));
+  tidy()};
+/* 읽는 화면: 단어에 붙은 정보는 표 대신 점선 단어 + 맨 아래 조용한 한 줄. 누르면 작은 카드 */
+function pfwAnchored(p){const s=new Set();blocksOf(p).forEach(b=>{if(b.type==='text'&&b.html)(String(b.html).match(/data-pf="[\w-]+"/g)||[]).forEach(x=>s.add(x.slice(9,-1)))});return s}
+const pfwBody=renderBody;renderBody=function(p){let html=pfwBody(p);if(!p)return html;const an=pfwAnchored(p);if(!an.size)return html;
+  const gs=pfClean(p.functions).filter(g=>g.fields.some(f=>f.value!==''));let i=0;
+  html=html.replace(/<section class="pf-card pf-view">[\s\S]*?<\/section>/g,m=>{const g=gs[i++];return g&&an.has(g.id)?'':m});
+  const ls=gs.filter(g=>an.has(g.id));if(ls.length)html+=`<p class="pfw-list"><span>붙인 정보</span>${ls.map(g=>`<button type="button" data-pfw-g="${esc(g.id)}">‘${esc((g.fields[pfwTargetIdx(g)]||{}).value||'')}’ · ${esc(g.name)}</button>`).join('')}</p>`;
+  return html};
+function pfwShowCard(id,anchor){const p=records.posts.find(p=>pfClean(p.functions).some(g=>g.id===id));if(!p||(isVisitor()&&(p.status!=='published'||!postVisible(p))))return;
+  const g=pfClean(p.functions).find(g=>g.id===id),ti=pfwTargetIdx(g),t=(g.fields[ti]||{}).value||'',v=pfViewOf(g),rows=g.fields.filter((f,i)=>i!==ti&&f.value!=='');pfwHideCard();
+  const el=document.createElement('div');el.className='pfw-card';el.setAttribute('role','dialog');
+  el.innerHTML=`<p class="k">${esc(g.name)} · ‘${esc(t)}’</p>${rows.length?`<dl>${rows.map(f=>`<dt>${esc(f.name)}</dt><dd>${esc(f.type==='number'&&/가격|금액/.test(f.name)&&isFinite(+f.value)?(+f.value).toLocaleString('ko-KR')+'원':f.value)}</dd>`).join('')}</dl>`:''}${!isVisitor()&&p.status==='published'?`<button type="button" class="linkbtn" data-pf-go="${esc(v.view)}" data-pf-target="${esc(t)}">‘${esc(v.view)}’에서 보기 ›</button>`:''}`;
+  pfwCard=el;pfwPlace(el,anchor.getBoundingClientRect())}
+document.addEventListener('click',e=>{const m=e.target.closest('mark[data-pf]');if(m&&!m.closest('.rte-area')){e.preventDefault();pfwShowCard(m.dataset.pf,m);return}
+  const b=e.target.closest('[data-pfw-g]');if(b){e.preventDefault();pfwShowCard(b.dataset.pfwG,b)}});
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
