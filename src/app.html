@@ -1198,6 +1198,22 @@ video.wf-live{object-fit:cover}
 .pf-extra-field{min-width:0}.pf-field-remove{background:none;border:0;color:var(--ink-2);font:inherit;font-size:12px;padding:6px 0;cursor:pointer}
 .ed-file-over{outline:2px dashed var(--accent);outline-offset:-4px}.ed-file-over:after{content:'사진·그림 이미지 또는 음성 파일 놓기';position:sticky;bottom:76px;display:block;padding:12px;background:var(--chrome);color:var(--accent);text-align:center;pointer-events:none}
 
+/* ═════ 그림 단위로 고르고 옮기기 (2026-10-31): 고를 때만 테두리·손잡이·작은 막대 ═════ */
+.ink-sel{position:absolute;z-index:4;border:1.5px dashed var(--accent);border-radius:6px;cursor:move;touch-action:none;box-sizing:border-box}
+.ink-h{position:absolute;width:14px;height:14px;background:var(--chrome);border:2px solid var(--accent);border-radius:50%;touch-action:none}
+.ink-h.nw{left:-8px;top:-8px;cursor:nwse-resize}.ink-h.ne{right:-8px;top:-8px;cursor:nesw-resize}.ink-h.sw{left:-8px;bottom:-8px;cursor:nesw-resize}.ink-h.se{right:-8px;bottom:-8px;cursor:nwse-resize}
+@media(pointer:coarse){.ink-h{width:22px;height:22px}.ink-h.nw{left:-12px;top:-12px}.ink-h.ne{right:-12px;top:-12px}.ink-h.sw{left:-12px;bottom:-12px}.ink-h.se{right:-12px;bottom:-12px}}
+.ink-sel-bar{position:absolute;left:0;bottom:calc(100% + 10px);display:flex;gap:2px;background:var(--chrome);border:1px solid var(--line);border-radius:999px;padding:3px;box-shadow:0 4px 16px rgba(0,0,0,.14);white-space:nowrap;cursor:default}
+.ink-sel-bar.below{bottom:auto;top:calc(100% + 10px)}
+.ink-sel-bar button{border:0;background:none;color:var(--ink);font:inherit;font-size:13px;padding:6px 10px;border-radius:999px;cursor:pointer}
+.ink-sel-bar button:hover,.ink-sel-bar button:focus-visible{background:var(--chrome-2);outline:none}
+.ink-sel-bar button.danger{color:var(--danger)}
+.ink-peek{position:absolute;z-index:3;border:1.5px dashed var(--accent);border-radius:6px;pointer-events:none;animation:inkpeek 2.6s ease forwards}
+@keyframes inkpeek{0%,70%{opacity:1}100%{opacity:0}}
+.ink-undo{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:9000;background:var(--ink);color:var(--chrome);border-radius:999px;padding:9px 18px;font-size:13.5px;display:flex;gap:14px;align-items:center}
+.ink-undo button{border:0;background:none;color:var(--chrome);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0}
+.ink-what{font-size:12px;color:#cfd6e4;padding:0 6px}
+@media (prefers-reduced-motion:reduce){.ink-peek{animation:none}}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -4318,7 +4334,7 @@ function inkMode(ctx){if(ctx._ink){ctx._ink.done();return}
   const done=()=>{up();ctx._inkPrefs={tool,color,size};host.classList.remove("inking");bar.remove();document.removeEventListener("keydown",kd,true);host.removeEventListener("pointerdown",down);host.removeEventListener("pointermove",move);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);ctx._ink=null;inkLayout(host,d.ink,"ink-ed").classList.remove("erase","pan");
     const btn=ctx.body.querySelector("[data-x-draw]");if(btn)btn.classList.remove("on")};
   bar.querySelector("[data-idone]").onclick=done;ctx._ink={done};const btn=ctx.body.querySelector("[data-x-draw]");if(btn)btn.classList.add("on");
-  if(!d.ink.length)toast("본문 위에 바로 그려요. ‘글쓰기’를 누르면 이어 쓰고, ‘그림 수정’으로 다시 고칠 수 있어요.")}
+  if(!d.ink.length)toast("본문 위에 바로 그려요. ‘글쓰기’를 누르면 이어 쓰고, 그린 그림은 눌러서 옮기거나 고칠 수 있어요.")}
 /* 글쓰기에서 본문이 다시 그려지거나 글자가 늘면 선 자리도 다시 */
 function inkEditRefresh(ctx){const host=ctx.blocksEl;if(!host)return;const d=ctx.draft;if(!(d.ink&&d.ink.length)&&!ctx._ink){const s=[...host.children].find(n=>n.tagName==="svg");if(s)s.remove();return}inkLayout(host,d.ink,"ink-ed")}
 
@@ -5275,6 +5291,80 @@ const edSetupBeforeInputs=edSetup;edSetup=function(ctx){edSetupBeforeInputs(ctx)
    }catch(err){toast('파일을 넣지 못했어요. 파일을 확인하고 다시 시도해 주세요.')}finally{busy=false}
  },true)
 };
+
+/* ═════════ 그림 단위로 고르고 옮기기 (2026-10-31, 주인 승인 · Codex 인계 문서) ═════════
+   · 그림 묶음: '그리기'를 한 번 시작해서 '글쓰기'로 마칠 때까지 그은 선이 그림 하나(post.ink의 각 선에 g=묶음 id).
+     예전에 저장된 묶음 없는 선은 경계를 짐작하지 않고 통째로 '예전 그림' 하나로 묶음(선은 하나도 지우지 않음).
+   · 고르기: 글쓰기에서 그림의 선을 누르면 그 그림만 테두리와 모서리 손잡이. 겹쳐 있으면 같은 자리를 다시 누를 때 아래 그림으로.
+     끌면 옮기기, 모서리를 끌면 비율 그대로 크기 조절. 작은 막대: 그림 고치기 · 복제 · 앞으로 · 뒤로 · 지우기. 두 번 누르면 그림 고치기.
+     바깥을 누르면 선택이 풀리고 글쓰기를 계속함. 레이어 목록은 늘 보이지 않음.
+   · 그림 고치기: 그 그림에만 선을 더하고, 지우개도 그 그림의 선만 지움. 새 그리기는 새 묶음.
+   · 저장은 선 좌표를 직접 바꾸는 방식이라 보는 화면·예전 버전은 그대로 그려짐(새 필드는 g 하나). */
+let inkLocked=null;const inkNearBaseG=inkStrokeNear;inkStrokeNear=function(points,p,r){if(inkLocked&&inkLocked.has(points))return false;return inkNearBaseG(points,p,r)};
+function inkBoxes(host){const cr=host.getBoundingClientRect(),box={};host.querySelectorAll('[data-bid]').forEach(el=>{if(el.closest('svg')||el.closest('.ink-sel'))return;if(box[el.dataset.bid]==null){const b=cbox(el);box[el.dataset.bid]={x:b.l-cr.left,y:b.t-cr.top+host.scrollTop,w:b.w}}});return box}
+const inkPx=(s,b)=>s.p.map(q=>[b.x+q[0]*b.w,b.y+q[1]*b.w]);
+function inkLegacy(d){if(!(d.ink||[]).some(s=>!s.g))return;const lg='ig-old-'+uid('g');d.ink.forEach(s=>{if(!s.g)s.g=lg})}
+function inkGroups(d){const order=[];(d.ink||[]).forEach(s=>{if(s.g&&!order.includes(s.g))order.push(s.g)});return order}
+function inkBBox(ctx,gid){const box=inkBoxes(ctx.blocksEl);let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;(ctx.draft.ink||[]).forEach(s=>{if(s.g!==gid)return;const b=box[s.b];if(!b)return;const hw=Math.max(2,s.s*b.w*(s.t==='hl'?1.3:.5));inkPx(s,b).forEach(([x,y])=>{x1=Math.min(x1,x-hw);y1=Math.min(y1,y-hw);x2=Math.max(x2,x+hw);y2=Math.max(y2,y+hw)})});return x1===Infinity?null:{x:x1,y:y1,w:x2-x1,h:y2-y1}}
+/* 누른 자리에 있는 그림들(위에 그린 것부터) */
+function inkHits(ctx,X,Y){const box=inkBoxes(ctx.blocksEl),d=ctx.draft,hit=[];for(let i=(d.ink||[]).length-1;i>=0;i--){const s=d.ink[i],b=box[s.b];if(!b||hit.includes(s.g))continue;const r=Math.max(10,s.s*b.w*(s.t==='hl'?1.3:.5)+4);if(inkNearBaseG(inkPx(s,b),[X,Y],r))hit.push(s.g)}return hit}
+function inkSnap(ctx){const h=ctx._inkHistory||(ctx._inkHistory={undo:[],redo:[]});h.undo.push(JSON.stringify(ctx.draft.ink||[]));if(h.undo.length>80)h.undo.shift();h.redo.length=0;(ctx._selUndo=ctx._selUndo||[]).push(JSON.stringify(ctx.draft.ink||[]));if(ctx._selUndo.length>40)ctx._selUndo.shift()}
+function inkMap(ctx,snap,map,k){const box=inkBoxes(ctx.blocksEl);snap.forEach(({i,s})=>{const b=box[s.b],t=ctx.draft.ink[i];if(!b||!t)return;t.p=s.p.map(q=>{const [X,Y]=map(b.x+q[0]*b.w,b.y+q[1]*b.w);return [+((X-b.x)/b.w).toFixed(4),+((Y-b.y)/b.w).toFixed(4)]});t.s=+(s.s*k).toFixed(5)})}
+function inkSelClear(ctx){if(!ctx)return;ctx._sel=null;ctx.blocksEl&&ctx.blocksEl.querySelectorAll('.ink-sel,.ink-peek').forEach(n=>n.remove())}
+function inkRedraw(ctx){inkLayout(ctx.blocksEl,ctx.draft.ink,'ink-ed')}
+function inkSel(ctx,gid){const host=ctx.blocksEl;host.querySelectorAll('.ink-sel,.ink-peek').forEach(n=>n.remove());ctx._sel=gid;const bb=inkBBox(ctx,gid);if(!bb){ctx._sel=null;return}
+  const el=document.createElement('div');el.className='ink-sel';el.setAttribute('role','group');el.setAttribute('aria-label','고른 그림');el.style.cssText=`left:${bb.x-4}px;top:${bb.y-4}px;width:${bb.w+8}px;height:${bb.h+8}px`;
+  el.innerHTML=`${['nw','ne','sw','se'].map(c=>`<span class="ink-h ${c}" data-h="${c}"></span>`).join('')}<div class="ink-sel-bar"><button type="button" data-a="edit">그림 고치기</button><button type="button" data-a="dup">복제</button><button type="button" data-a="up">앞으로</button><button type="button" data-a="down">뒤로</button><button type="button" data-a="del" class="danger">지우기</button></div>`;
+  host.appendChild(el);const bar=el.querySelector('.ink-sel-bar');if(bb.y<44)bar.classList.add('below');
+  el.addEventListener('mousedown',e=>e.preventDefault());
+  bar.onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a;if(a)inkAct(ctx,gid,a)};
+  el.addEventListener('dblclick',e=>{if(!e.target.closest('.ink-sel-bar'))inkAct(ctx,gid,'edit')});
+  /* 끌기: 몸통 = 옮기기, 모서리 = 크기(비율 유지) */
+  el.addEventListener('pointerdown',e=>{if(e.target.closest('.ink-sel-bar'))return;e.preventDefault();e.stopPropagation();const h=e.target.dataset.h,b0=inkBBox(ctx,gid);if(!b0)return;
+    const snap=[];ctx.draft.ink.forEach((s,i)=>{if(s.g===gid)snap.push({i,s:JSON.parse(JSON.stringify(s))})});const before=JSON.stringify(ctx.draft.ink);let moved=false;const sx=e.clientX,sy=e.clientY;
+    const ax=h&&h.includes('w')?b0.x+b0.w:b0.x,ay=h&&h.includes('n')?b0.y+b0.h:b0.y;try{el.setPointerCapture(e.pointerId)}catch(x){}
+    const mv=ev=>{const dx=ev.clientX-sx,dy=ev.clientY-sy;if(!moved&&Math.abs(dx)+Math.abs(dy)<3)return;moved=true;
+      if(!h)inkMap(ctx,snap,(X,Y)=>[X+dx,Y+dy],1);
+      else{const sgx=h.includes('w')?-1:1,sgy=h.includes('n')?-1:1;
+        const kx=(b0.w+sgx*dx)/b0.w,ky=(b0.h+sgy*dy)/b0.h,k=Math.max(Math.min(8,Math.max(kx,ky)),Math.max(.1,16/Math.max(b0.w,b0.h)));inkMap(ctx,snap,(X,Y)=>[ax+(X-ax)*k,ay+(Y-ay)*k],k)}
+      inkRedraw(ctx);const nb=inkBBox(ctx,gid);if(nb){el.style.left=nb.x-4+'px';el.style.top=nb.y-4+'px';el.style.width=nb.w+8+'px';el.style.height=nb.h+8+'px'}};
+    const up=()=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
+      if(moved){const h2=ctx._inkHistory||(ctx._inkHistory={undo:[],redo:[]});h2.undo.push(before);h2.redo.length=0;(ctx._selUndo=ctx._selUndo||[]).push(before);ctx.queueAuto();inkSel(ctx,gid)}};
+    el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)})}
+let inkUndoT=0;
+function inkAct(ctx,gid,a){const d=ctx.draft;
+  if(a==='edit'){inkSelClear(ctx);ctx._inkEditGroup=gid;inkMode(ctx);return}
+  inkSnap(ctx);
+  if(a==='dup'){const ng=uid('ig'),box=inkBoxes(ctx.blocksEl),add=[];d.ink.forEach(s=>{if(s.g!==gid)return;const b=box[s.b];const o=b?16/b.w:.02;add.push({...JSON.parse(JSON.stringify(s)),g:ng,p:s.p.map(q=>[+(q[0]+o).toFixed(4),+(q[1]+o).toFixed(4)])})});d.ink.push(...add);inkRedraw(ctx);ctx.queueAuto();inkSel(ctx,ng);toast('그림을 복제했어요');return}
+  if(a==='up'||a==='down'){const mine=d.ink.filter(s=>s.g===gid),rest=d.ink.filter(s=>s.g!==gid);d.ink=a==='up'?[...rest,...mine]:[...mine,...rest];inkRedraw(ctx);ctx.queueAuto();inkSel(ctx,gid);toast(a==='up'?'맨 앞으로 옮겼어요':'맨 뒤로 옮겼어요');return}
+  if(a==='del'){d.ink=d.ink.filter(s=>s.g!==gid);inkSelClear(ctx);inkRedraw(ctx);ctx.queueAuto();ctx._inkResume&&ctx._inkResume();
+    let bar=document.querySelector('.ink-undo');if(bar)bar.remove();bar=document.createElement('div');bar.className='ink-undo';bar.setAttribute('role','status');bar.innerHTML='그림을 지웠어요 <button type="button">되돌리기</button>';document.body.appendChild(bar);
+    bar.querySelector('button').onclick=()=>{inkUndoSel(ctx);bar.remove()};clearTimeout(inkUndoT);inkUndoT=setTimeout(()=>bar.remove(),6000)}}
+function inkUndoSel(ctx){const j=(ctx._selUndo||[]).pop();if(j==null)return;ctx.draft.ink=JSON.parse(j);inkRedraw(ctx);ctx.queueAuto();ctx._inkResume&&ctx._inkResume();if(ctx._sel&&inkBBox(ctx,ctx._sel))inkSel(ctx,ctx._sel);else inkSelClear(ctx)}
+/* 그리기 모드: 이번에 그은 선은 한 묶음, 지우개는 이 묶음의 선만 */
+const inkModeG=inkMode;inkMode=function(ctx){if(ctx._ink)return inkModeG(ctx);inkSelClear(ctx);const d=ctx.draft;d.ink=d.ink||[];inkLegacy(d);
+  const gid=ctx._inkEditGroup||uid('ig');ctx._inkEditGroup=null;inkModeG(ctx);if(!ctx._ink)return;const host=ctx.blocksEl;
+  const tag=()=>{(ctx.draft.ink||[]).forEach(s=>{if(!s.g)s.g=gid})};const lock=()=>{inkLocked=new WeakSet((ctx.draft.ink||[]).filter(s=>s.g!==gid).map(s=>s.p))};
+  host.addEventListener('pointerdown',lock,true);addEventListener('pointerup',tag);addEventListener('pointercancel',tag);
+  const done=ctx._ink.done;ctx._ink.done=()=>{done();tag();host.removeEventListener('pointerdown',lock,true);removeEventListener('pointerup',tag);removeEventListener('pointercancel',tag);inkLocked=null;
+    if((ctx.draft.ink||[]).some(s=>s.g===gid))requestAnimationFrame(()=>inkSel(ctx,gid))};
+  const bar=document.querySelector('.ink-bar');if(bar&&(d.ink||[]).some(s=>s.g===gid)){const t=document.createElement('span');t.className='ink-what';t.textContent='이 그림만 고쳐요';bar.querySelector('.ink-row')?.prepend(t)}};
+const inkSelSetup=edSetup;edSetup=function(ctx){inkSelSetup(ctx);const host=ctx.blocksEl;if(!host)return;inkLegacy(ctx.draft);
+  host.addEventListener('pointerdown',e=>{if(ctx._ink||e.target.closest('.ink-sel')||e.button>0)return;const cr=host.getBoundingClientRect();const X=e.clientX-cr.left,Y=e.clientY-cr.top+host.scrollTop;
+    const hits=inkHits(ctx,X,Y);if(!hits.length){if(ctx._sel)inkSelClear(ctx);return}
+    e.preventDefault();const i=ctx._sel?hits.indexOf(ctx._sel):-1;inkSel(ctx,hits[(i+1)%hits.length])},true);
+  /* '그림 수정' 버튼: 그림이 하나면 바로 고르고, 여럿이면 어디 있는지 잠깐 보여 줌 */
+  const rb=ctx.body.querySelector('[data-ink-resume]');if(rb){rb.textContent='✎ 그림 고르기';rb.onclick=()=>{const gs=inkGroups(ctx.draft).filter(g=>inkBBox(ctx,g));if(!gs.length){inkMode(ctx);return}if(gs.length===1){inkSel(ctx,gs[0]);return}
+    host.querySelectorAll('.ink-peek').forEach(n=>n.remove());gs.forEach(g=>{const bb=inkBBox(ctx,g);const p=document.createElement('div');p.className='ink-peek';p.style.cssText=`left:${bb.x-4}px;top:${bb.y-4}px;width:${bb.w+8}px;height:${bb.h+8}px`;host.appendChild(p)});
+    toast('고칠 그림을 눌러 고르세요');setTimeout(()=>host.querySelectorAll('.ink-peek').forEach(n=>n.remove()),2600)}}
+  /* 본문이 다시 그려지면 선택 상자도 다시 */
+  new MutationObserver(()=>{if(ctx._sel&&!host.querySelector('.ink-sel')&&!ctx._ink){const g=ctx._sel;requestAnimationFrame(()=>{if(ctx._sel===g&&inkBBox(ctx,g))inkSel(ctx,g)})}}).observe(host,{childList:true});
+  const kd=e=>{if(!ctx._sel||ctx._ink||!host.isConnected)return;const ae=document.activeElement,typing=ae&&(ae.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName));
+    if(e.key==='Escape'){inkSelClear(ctx);return}const mod=IS_MAC?e.metaKey:e.ctrlKey;
+    if(!typing&&(e.key==='Delete'||e.key==='Backspace')){e.preventDefault();inkAct(ctx,ctx._sel,'del')}else if(!typing&&mod&&e.key.toLowerCase()==='z'){e.preventDefault();inkUndoSel(ctx)}};
+  document.addEventListener('keydown',kd,true);
+  const win=ctx.body.closest('.win'),w=wins.find(x=>x.node===win);if(w){const old=w.opts.onClose;w.opts.onClose=()=>{document.removeEventListener('keydown',kd,true);inkSelClear(ctx);old?.()}}};
+document.addEventListener('pointerdown',e=>{if(e.target.closest('.ink-sel,.blocks,.ink-bar'))return;document.querySelectorAll('.blocks .ink-sel').forEach(el=>{const c=pfwCtxOf(el);if(c)inkSelClear(c);else el.remove()})},true);
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
