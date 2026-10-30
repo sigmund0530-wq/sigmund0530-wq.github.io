@@ -1,0 +1,16 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync('src/app.html','utf8');
+const cut=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b,html.indexOf(a)));
+const ctx=vm.createContext({uid:()=> 'new',textOf:s=>s.replace(/<[^>]*>/g,''),pfNorm:s=>s.toLowerCase().replace(/\s/g,'')});
+vm.runInContext(cut('const blankText=','function draftToBlocks')+cut('function inkStrokeNear','async function pfOwnField'),ctx);
+ctx.bs=[{id:'draw',type:'text',html:''},{id:'text',type:'text',html:'hello'}];ctx.ink=[{b:'draw'}];
+assert.equal(vm.runInContext('normBlocks(bs,ink)[0].id',ctx),'draw');
+assert.equal(vm.runInContext('finalBlocks(bs,ink)[0].id',ctx),'draw');
+assert.equal(vm.runInContext('finalBlocks(bs).length',ctx),1);
+assert.equal(vm.runInContext('inkStrokeNear([[0,0],[1,0]],[.5,.01],.02)',ctx),true);
+assert.equal(vm.runInContext('inkStrokeNear([[0,0],[1,0]],[.5,.1],.02)',ctx),false);
+ctx.g={name:'중고 판매',fields:[{name:'브랜드'}]};
+assert.equal(vm.runInContext("pfExtraChoices(g).some(f=>f.name==='브랜드')",ctx),false);
+assert.equal(vm.runInContext("pfExtraChoices(g).some(f=>f.name==='상품 상태'&&f.type==='select')",ctx),true);
+ctx.g={name:'나만의 기록',fields:[]};assert.equal(vm.runInContext('pfExtraChoices(g).length',ctx),3);
+console.log('PASS: drawing anchors survive normalization/save, segment eraser, field options and duplicate prevention');
