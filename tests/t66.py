@@ -40,6 +40,7 @@ with sync_playwright() as p:
     # 물건 정리 → 직접 고치기 → 값 입력(이스케이프 확인용)
     pg.locator('[data-pf-add]').click();typeq(pg,'물건');pg.keyboard.press('Enter')
     pg.locator('[data-config]').click();pg.locator('[data-pf-name]').fill('나의 물건');pg.locator('[data-pf-apply]').click()
+    pg.locator('.pf-extra summary').click()
     pg.locator('[data-value="0"]').fill('<img src=x onerror=alert(1)>');pg.locator('[data-value="1"]').fill('서랍')
     # 직접 고치기 취소는 바꾸지 않음
     pg.locator('[data-config]').click();pg.locator('[data-pf-name]').fill('취소할 이름');pg.locator('.dialog [data-c]').click()
@@ -59,6 +60,7 @@ with sync_playwright() as p:
     pg.locator('[data-pf-add]').click();assert sugs(pg)[0]=='물건 기록',sugs(pg)
     assert pg.locator('.pf-sug').first.locator('em').inner_text()=='자주 쓰기'
     pg.keyboard.press('Enter');assert pg.locator('[data-value="0"]').input_value()=='' and pg.locator('[data-value="1"]').input_value()==''
+    pg.locator('.pf-extra summary').click()
     pg.locator('[data-value="1"]').fill('다른 글의 값')
     pg.locator('[data-config]').click();pg.locator('[data-pf-field]').click();row=pg.locator('.pf-field').last
     row.locator('[data-name]').fill('가격');row.locator('[data-type]').select_option('number');pg.locator('[data-pf-apply]').click()
