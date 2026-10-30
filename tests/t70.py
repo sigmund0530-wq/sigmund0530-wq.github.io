@@ -10,6 +10,8 @@ with sync_playwright() as p:
     pg.keyboard.type('이사 가면서 원목 책상을 5만 원에 팔아요, 아직 판매 중이에요.')
     assert pg.locator('.pfw-tip').is_visible()
     assert pg.evaluate(SEL,'원목 책상');pg.wait_for_timeout(450)
+    assert pg.locator('.pfw-pill').count()==1,'only a small pill; OS menu stays'
+    pg.locator('.pfw-pill button').click();pg.wait_for_timeout(150)
     assert pg.locator('.pfw-pop').count()==1
     first=pg.locator('.pfw-pop .pfw-sg').first.locator('b').inner_text()
     assert first=='중고 판매',first
@@ -25,7 +27,7 @@ with sync_playwright() as p:
     pg.evaluate("()=>{const m=document.querySelector('.win .rte-area mark[data-pf]');m.textContent='원목 책상 세트';m.closest('.rte-area').dispatchEvent(new Event('input',{bubbles:true}))}");pg.wait_for_timeout(450)
     assert '원목 책상 세트' in card.locator('.pf-name').inner_text()
     # 다른 이름으로 붙이기
-    assert pg.evaluate(SEL,'이사');pg.wait_for_timeout(450)
+    assert pg.evaluate(SEL,'이사');pg.wait_for_timeout(450);pg.locator('.pfw-pill button').click();pg.wait_for_timeout(150)
     pg.locator('.pfw-own input').fill('이사 준비');pg.locator('.pfw-own .btn').click();pg.wait_for_timeout(200)
     assert pg.locator('.win .rte-area mark[data-pf]').count()==2
     # 발행

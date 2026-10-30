@@ -1176,11 +1176,22 @@ video.wf-live{object-fit:cover}
 .pfw-pop.mini button.danger{color:var(--danger)}
 .pfw-card{padding:12px 14px;gap:6px}.pfw-card .k{margin:0;font-size:12.5px;color:var(--ink-2)}
 .pfw-card dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0}.pfw-card dt{color:var(--ink-2);font-size:12.5px}.pfw-card dd{margin:0}
-.pfw-card .linkbtn{justify-self:start!important;text-align:left!important;border:0;background:none;padding:2px 0;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer}
+.pfw-card .linkbtn{justify-self:start!important;text-align:left!important;margin:0!important;width:auto!important;border:0;background:none;padding:2px 0;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer}
 .pfw-list{display:flex;flex-wrap:wrap;gap:4px 14px;margin:26px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-2)}
 .pfw-list span{color:var(--ink-2)}.pfw-list button{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer}
 .pfw-tip{font-size:12.5px;color:var(--ink-2);margin-left:10px}
 .pf-card.pf-anch{margin-bottom:14px}.pf-card.pf-anch .pf-name{font-size:14.5px}.pf-card.pf-anch .pf-name small{font-size:12.5px;color:var(--ink-2);font-weight:500;margin-left:4px}
+/* ═════ 사진에 붙이기 (2026-10-30): 사진 위 작은 점, 모아 보기 썸네일 ═════ */
+.ph-item [data-phm]{position:relative}
+.prow .pfig{position:relative}
+.pfp-dot{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:2px solid #fff;background:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.35);padding:0;cursor:pointer;z-index:2}
+.pfp-dot::after{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff}
+.ph-item.pfp-pinning [data-phm]{cursor:crosshair;outline:2px solid var(--accent);outline-offset:2px}
+.pfp-hint{position:absolute;left:0;bottom:0;box-sizing:border-box;padding:8px 10px;font-size:12.5px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.6));text-align:left;z-index:3}
+.pfp-hint u{cursor:pointer}
+.pfc-row.has-th{position:relative;padding-right:100px;min-height:108px}
+.pfc-th{position:absolute;right:0;top:12px;width:84px;height:84px;object-fit:cover;border-radius:10px}
+.pfw-pill button{font-weight:600}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5106,7 +5117,7 @@ document.addEventListener('selectionchange',()=>{clearTimeout(pfwT);pfwT=setTime
   if(pfwPop&&pfwPop.contains(document.activeElement))return;
   if(s.isCollapsed){if(pfwPop&&pfwPop._kind==='sel')pfwHide();return}
   const sc=r.startContainer;if(sc!==r.endContainer||sc.nodeType!==3||sc.parentElement.closest('mark')||!sc.parentElement.closest('.rte-area'))return pfwHide();
-  const ctx=pfwCtxOf(sc);if(!ctx||!ctx.body.querySelector('.pf-editor'))return;pfwShow(ctx,r)},260)});
+  const ctx=pfwCtxOf(sc);if(!ctx||!ctx.body.querySelector('.pf-editor'))return;if(pfwPop&&pfwPop._kind==='sel'&&!pfwPop.classList.contains('pfw-pill'))return;pfwPill(ctx,r)},260)});
 document.addEventListener('mousedown',e=>{if(pfwPop&&!pfwPop.contains(e.target)&&!e.target.closest('.rte-area mark[data-pf]'))pfwHide();if(pfwCard&&!pfwCard.contains(e.target)&&!e.target.closest('mark[data-pf]'))pfwHideCard()},true);
 addEventListener('scroll',()=>{pfwHide();pfwHideCard()},true);addEventListener('resize',()=>{pfwHide();pfwHideCard()});
 const pfwSetup=edSetup;edSetup=function(ctx){pfwSetup(ctx);const host=ctx.body.querySelector('.pf-editor');if(!host)return;ctx.body._pfwCtx=ctx;const list=host.querySelector('[data-pf-groups]');
@@ -5141,6 +5152,71 @@ function pfwShowCard(id,anchor){const p=records.posts.find(p=>pfClean(p.function
   pfwCard=el;pfwPlace(el,anchor.getBoundingClientRect())}
 document.addEventListener('click',e=>{const m=e.target.closest('mark[data-pf]');if(m&&!m.closest('.rte-area')){e.preventDefault();pfwShowCard(m.dataset.pf,m);return}
   const b=e.target.closest('[data-pfw-g]');if(b){e.preventDefault();pfwShowCard(b.dataset.pfwG,b)}});
+
+/* ═════════ 사진에 붙이기 · 드래그는 작은 '＋ 붙이기' 하나만 (2026-10-30, 주인 결정) ═════════
+   · 드래그하면 바로 큰 메뉴를 띄우지 않고 작은 '＋ 붙이기' 하나만 띄움. 운영체제의 복사·붙여넣기 메뉴(휴대폰은 위, PC는 오른쪽 클릭)는 그대로 쓰고,
+     우리 것은 선택한 글자 아래에 붙어서 겹치지 않음. 누르면 제안 메뉴.
+   · 글쓰기의 사진을 누르면 메뉴에 '이 사진에 정보 붙이기'. 고르면 사진에 정보가 붙고, 사진 속 위치를 누르면 점(건너뛰면 가운데).
+     정보는 post.functions의 anchor {asset, x, y}로 저장(pfClean이 이 값만 살림, 자주 쓰기에는 남기지 않음).
+   · 읽는 화면: 사진 위 작은 점 → 누르면 카드. 모아 보기: 붙인 사진(없으면 글의 대표 사진)을 작은 썸네일로. */
+const pfpClean=pfClean;pfClean=function(list,limit){const out=pfpClean(list,limit);if(list===records.functionTemplates)return out;const src=Array.isArray(list)?list:[];
+  out.forEach(g=>{const o=src.find(x=>x&&String(x.id)===g.id),a=o&&o.anchor;if(a&&typeof a.asset==='string'&&/^[\w-]{1,80}$/.test(a.asset)){const c=v=>Math.round(Math.max(0,Math.min(100,+v||0))*10)/10;g.anchor={asset:a.asset,x:c(a.x),y:c(a.y)}}});return out};
+const pfpPostAssets=p=>new Set(allPhotos(blocksOf(p)).map(x=>x.assetId));
+/* 드래그 → '＋ 붙이기' 하나 */
+function pfwPill(ctx,range){pfwHide();const el=document.createElement('div');el.className='pfw-pop mini pfw-pill';el.innerHTML='<button type="button">＋ 붙이기</button>';const keep=range.cloneRange();
+  el.addEventListener('mousedown',e=>e.preventDefault());el.querySelector('button').onclick=()=>pfwShow(ctx,keep);pfwPop=el;el._kind='sel';
+  const r=range.getBoundingClientRect();pfwPlace(el,{left:r.left,width:r.width,top:r.bottom+(matchMedia('(pointer:coarse)').matches?28:4),bottom:r.bottom+(matchMedia('(pointer:coarse)').matches?28:4)})}
+/* 사진: 글쓰기 */
+let pfpLast=null;
+document.addEventListener('click',e=>{const btn=e.target.closest('.pblock .ph-item [data-phm]');if(!btn)return;const ctx=pfwCtxOf(btn);if(!ctx)return;
+  const fig=btn.closest('.ph-item'),pb=btn.closest('.pblock'),b=ctx.draft.blocks.find(x=>x.id===pb.dataset.bid),ph=b&&b.items[+fig.dataset.i];if(!ph)return;
+  if(ctx._pfpPin){const g=ctx.draft.functions.find(x=>x.id===ctx._pfpPin);if(g&&g.anchor&&g.anchor.asset===ph.assetId){e.preventDefault();e.stopImmediatePropagation();const r=(btn.querySelector('img')||btn).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;
+    g.anchor.x=Math.round((e.clientX-r.left)/r.width*1000)/10;g.anchor.y=Math.round((e.clientY-r.top)/r.height*1000)/10;ctx._pfpPin=null;ctx.queueAuto();pfpDots(ctx);toast('사진에 위치를 표시했어요');return}}
+  pfpLast={ctx,asset:ph.assetId,btn,at:Date.now()}},true);
+const pfpMenu=showMenu;showMenu=function(items,...rest){
+  if(pfpLast&&Date.now()-pfpLast.at<800&&Array.isArray(items)&&items.some(x=>x&&/설명 (쓰기|고치기)/.test(x.label||''))){const {ctx,asset,btn}=pfpLast;pfpLast=null;
+    const g=ctx.draft.functions.find(x=>x.anchor&&x.anchor.asset===asset);
+    const add=g?[{label:`붙인 정보: ${g.name}`,run:()=>{const card=ctx.body.querySelector(`.pf-card[data-pf-id="${CSS.escape(g.id)}"]`);if(card)card.scrollIntoView({block:'nearest',behavior:'smooth'})}},{label:'사진 속 위치 다시 찍기',run:()=>pfpStartPin(ctx,g)},{label:'붙인 정보 빼기',run:()=>{ctx.draft.functions=ctx.draft.functions.filter(x=>x.id!==g.id);ctx.queueAuto();ctx.pfDraw&&ctx.pfDraw();pfpDots(ctx);toast(`${g.name}을 뺐어요 · 사진은 그대로예요`)}}]
+      :[{label:'이 사진에 정보 붙이기',run:()=>pfpShow(ctx,asset,btn)}];
+    items=[...add,'-',...items]}
+  return pfpMenu(items,...rest)};
+function pfpNear(ctx,asset){/* 사진 바로 앞 글 한 줄: 제안 순서와 값 미리 채우기에 씀 */const i=ctx.draft.blocks.findIndex(b=>b.type==='photos'&&b.items.some(x=>x.assetId===asset));for(let j=i-1;j>=0;j--){const b=ctx.draft.blocks[j];if(b.type==='text'){const t=textOf(String(b.html||'').replace(/<(br|\/div|\/p)>/gi,'\n')).trim();if(t)return t.split('\n').filter(Boolean).pop()}}return ''}
+function pfpShow(ctx,asset,btn){const sent=pfpNear(ctx,asset),list=pfwRank('',sent);pfwHide();
+  const el=document.createElement('div');el.className='pfw-pop';el.setAttribute('role','dialog');el.setAttribute('aria-label','사진에 붙이기');
+  el.innerHTML=`<p class="pfw-h"><b>이 사진</b>에 붙이기</p>${list.map((s,i)=>{const v=(PF_VIEWS[s.name]||[])[0];return `<button type="button" class="pfw-sg${i===0&&sent?' on':''}" data-i="${i}"><b>${esc(s.name)}</b><small>${v?'→ '+esc(v):pfPreview(s.fields)}</small></button>`}).join('')}<div class="pfw-own"><input type="text" maxlength="20" placeholder="다른 이름으로 붙이기" aria-label="다른 이름으로 붙이기"><button type="button" class="btn">붙이기</button></div>`;
+  el.addEventListener('mousedown',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
+  const go=s=>{if(ctx.draft.functions.length>=12){toast('한 글에는 12개까지 붙일 수 있어요.');return}const {g,auto}=pfwMake(s,'',sent);g.anchor={asset,x:50,y:50};ctx.draft.functions.push(g);pfMarkRecent(g.name);ctx.queueAuto();ctx.pfDraw&&ctx.pfDraw();pfwHide();pfpStartPin(ctx,g);
+    toast(`사진에 ${g.name}을 붙였어요 · 사진 속 위치를 눌러 표시해요${auto.length?' · '+auto.join(', ')+'은 글에서 채웠어요':''}`)};
+  el.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>go(list[+b.dataset.i]));
+  const inp=el.querySelector('input'),own=()=>{const v=inp.value.trim();if(v)go({schemaId:uid('schema'),name:v.slice(0,40),fields:[{name:'내용',type:'text'}]})};
+  el.querySelector('.pfw-own .btn').onclick=own;inp.onkeydown=e=>{if(e.isComposing)return;if(e.key==='Enter'){e.preventDefault();own()}if(e.key==='Escape')pfwHide()};
+  pfwPop=el;el._kind='photo';pfwPlace(el,btn.getBoundingClientRect())}
+function pfpStartPin(ctx,g){ctx._pfpPin=g.id;pfpDots(ctx);const f=pfpFig(ctx,g.anchor.asset);if(f)try{f.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}}
+function pfpFig(ctx,asset){const url=assets[asset]?.dataUrl;if(!url)return null;return [...ctx.body.querySelectorAll('.pblock .ph-item')].find(f=>f.querySelector('img')?.getAttribute('src')===url)||null}
+function pfpDots(ctx){ctx.body.querySelectorAll('.pfp-dot,.pfp-hint').forEach(n=>n.remove());ctx.body.querySelectorAll('.ph-item.pfp-pinning').forEach(n=>n.classList.remove('pfp-pinning'));
+  (ctx.draft.functions||[]).forEach(g=>{if(!g.anchor)return;const f=pfpFig(ctx,g.anchor.asset);if(!f)return;const b=f.querySelector('[data-phm]');
+    /* 사진 칸이 그림보다 클 수 있어서, 점은 그림 자리 기준으로 놓음 */const im=b.querySelector('img'),ox=im?im.offsetLeft:0,oy=im?im.offsetTop:0,iw=im?im.offsetWidth:b.offsetWidth,ih=im?im.offsetHeight:b.offsetHeight;
+    const d=document.createElement('span');d.className='pfp-dot';d.style.left=(ox+iw*g.anchor.x/100)+'px';d.style.top=(oy+ih*g.anchor.y/100)+'px';d.title=g.name;b.appendChild(d);
+    if(ctx._pfpPin===g.id){f.classList.add('pfp-pinning');const h=document.createElement('span');h.className='pfp-hint';h.style.left=ox+'px';h.style.width=iw+'px';h.style.top=(oy+ih)+'px';h.style.bottom='auto';h.style.transform='translateY(-100%)';h.innerHTML='사진 속 위치를 눌러요 · <u>건너뛰기</u>';h.querySelector('u').addEventListener('click',e=>{e.preventDefault();e.stopPropagation();ctx._pfpPin=null;pfpDots(ctx)},true);b.appendChild(h)}})}
+const pfpSetup=edSetup;edSetup=function(ctx){pfpSetup(ctx);if(!ctx.body.querySelector('.pf-editor'))return;
+  /* 사진 칸이 다시 그려질 때마다 점을 다시 놓음 */let t=0;new MutationObserver(m=>{if(m.every(x=>[...x.addedNodes,...x.removedNodes].every(n=>n.classList&&(n.classList.contains('pfp-dot')||n.classList.contains('pfp-hint')))))return;clearTimeout(t);t=setTimeout(()=>pfpDots(ctx),30)}).observe(ctx.blocksEl||ctx.body,{childList:true,subtree:true});
+  /* 사진에 붙은 정보: 글 아래 줄 제목을 '사진 · 이름'으로 */
+  const list=ctx.body.querySelector('.pf-editor [data-pf-groups]');const tidy=()=>list.querySelectorAll('.pf-card[data-pf-id]').forEach(card=>{const g=ctx.draft.functions.find(x=>x.id===card.dataset.pfId);if(!g||!g.anchor)return;card.classList.add('pf-anch');const nm=card.querySelector('.pf-name');if(nm&&!nm.dataset.ph){nm.dataset.ph=1;nm.innerHTML=`사진 <small>${esc(g.name)}</small>`}});
+  new MutationObserver(tidy).observe(list,{childList:true});tidy();setTimeout(()=>pfpDots(ctx),50)};
+/* 사진: 읽는 화면 — 점 + 맨 아래 한 줄 */
+const pfpBody=renderBody;renderBody=function(p){let html=pfpBody(p);if(!p)return html;const have=pfpPostAssets(p);const gs=pfClean(p.functions).filter(g=>g.anchor&&have.has(g.anchor.asset)&&g.fields.some(f=>f.value!==''||g.anchor));if(!gs.length)return html;
+  const wa=pfwAnchored(p);const all=pfClean(p.functions).filter(g=>g.fields.some(f=>f.value!=='')&&!wa.has(g.id));let i=0;const ids=new Set(gs.map(g=>g.id));   /* 단어에 붙은 것은 앞에서 이미 빠짐 */
+  html=html.replace(/<section class="pf-card pf-view">[\s\S]*?<\/section>/g,m=>{const g=all[i++];return g&&ids.has(g.id)?'':m});
+  gs.forEach(g=>{const url=assets[g.anchor.asset]?.dataUrl;if(!url)return;const tag=`<img src="${url}"`;const at=html.indexOf(tag);if(at<0)return;
+    html=html.slice(0,at)+`<button type="button" class="pfp-dot pfw-dot" data-pfw-g="${esc(g.id)}" style="left:${g.anchor.x}%;top:${g.anchor.y}%" aria-label="${esc(g.name)} 보기"></button>`+html.slice(at)});
+  const line=gs.map(g=>{const t=(g.fields[pfwTargetIdx(g)]||{}).value||'';return `<button type="button" data-pfw-g="${esc(g.id)}">사진${t?` ‘${esc(t)}’`:''} · ${esc(g.name)}</button>`}).join('');
+  if(html.includes('<p class="pfw-list">'))html=html.replace('<p class="pfw-list"><span>붙인 정보</span>',`<p class="pfw-list"><span>붙인 정보</span>${line}`);else html+=`<p class="pfw-list"><span>붙인 정보</span>${line}</p>`;
+  return html};
+/* 카드 제목: 단어가 없으면 '사진' */
+const pfpCard=pfwShowCard;pfwShowCard=function(id,anchor){pfpCard(id,anchor);if(pfwCard){const k=pfwCard.querySelector('.k');if(k)k.innerHTML=k.innerHTML.replace(/ · ‘’$/,' · 사진')}};
+/* 모아 보기: 붙인 사진(없으면 글의 대표 사진)을 작은 썸네일로 */
+const pfpRow=pfRow;pfRow=function(e){const h=pfpRow(e),a=e.g.anchor&&assets[e.g.anchor.asset]?assets[e.g.anchor.asset]:coverOf(e.post);if(!a||!a.dataUrl)return h;
+  return h.replace('class="pfc-row"','class="pfc-row has-th"').replace(/<\/button>$/,`<img class="pfc-th" src="${a.dataUrl}" alt=""></button>`)};
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
