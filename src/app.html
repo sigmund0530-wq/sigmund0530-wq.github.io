@@ -1159,6 +1159,12 @@ video.wf-live{object-fit:cover}
 .pf-again .btn{border:0;background:none;padding:0;height:auto;min-height:0;font:inherit;font-size:12.5px;color:var(--accent);font-weight:600}
 .pf-to{font-style:normal;color:var(--accent);font-size:12px;margin-left:6px;font-weight:500}
 @media(max-width:600px){.pfc-in{padding:18px 16px}.pfc-tabs{gap:16px}.pfc-tabs button{font-size:17px}}
+/* 입력 전환과 항목 추가: 기존 간격·알약 버튼을 유지 */
+.ink-resume{margin:8px 0;border:0;background:none;color:var(--ink-2);font-size:13px}.ink-resume[hidden]{display:none}
+.pf-field-choices{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.pf-field-choices .btn{height:34px;border-radius:999px;background:none;border:1px solid var(--line);font-size:13px}
+.pf-extra-field{min-width:0}.pf-field-remove{background:none;border:0;color:var(--ink-2);font:inherit;font-size:12px;padding:6px 0;cursor:pointer}
+.ed-file-over{outline:2px dashed var(--accent);outline-offset:-4px}.ed-file-over:after{content:'사진·그림 이미지 또는 음성 파일 놓기';position:sticky;bottom:76px;display:block;padding:12px;background:var(--chrome);color:var(--accent);text-align:center;pointer-events:none}
+
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -2077,18 +2083,19 @@ const isBlankHtml=h=>!textOf(h||"").trim()&&!/<hr/i.test(h||"");
 const blocksOf=p=>(p&&p.bodyJson&&p.bodyJson.blocks)||[];
 const allPhotos=bs=>bs.filter(b=>b.type==="photos").flatMap(b=>b.items);
 /* 편집용 모양: 맨 앞·맨 뒤·사진 블록 사이에는 항상 문단 블록이 있어 이어 쓸 수 있음 */
-function normBlocks(bs){
+function normBlocks(bs,ink=[]){
+  const anchored=new Set(ink.map(s=>s.b));
   const a=bs.filter(b=>!(b.type==="photos"&&!b.items.length));
   const out=[];
   a.forEach(b=>{const last=out[out.length-1];
     if(b.type!=="text"){if(!last||last.type!=="text")out.push(blankText());out.push(b)}
-    else{if(last&&last.type==="text"&&isBlankHtml(b.html))return;if(last&&last.type==="text"&&isBlankHtml(last.html))out.pop();out.push(b)}});
+    else{if(last&&last.type==="text"&&isBlankHtml(b.html)&&!anchored.has(b.id))return;if(last&&last.type==="text"&&isBlankHtml(last.html)&&!anchored.has(last.id))out.pop();out.push(b)}});
   if(!out.length||out[out.length-1].type!=="text")out.push(blankText());
   if(out[0].type!=="text")out.unshift(blankText());
   return out;
 }
 /* 저장용 모양: 빈 문단은 버림 */
-const finalBlocks=bs=>bs.filter(b=>b.type==="photos"?b.items.length:b.type==="audio"?!!b.assetId:!isBlankHtml(b.html))
+const finalBlocks=(bs,ink=[])=>bs.filter(b=>b.type==="photos"?b.items.length:b.type==="audio"?!!b.assetId:!isBlankHtml(b.html)||ink.some(s=>s.b===b.id))
   .map(b=>b.type==="photos"?{id:b.id,type:"photos",items:b.items.map(x=>({assetId:x.assetId,caption:(x.caption||"").trim()}))}:b.type==="audio"?{id:b.id,type:"audio",assetId:b.assetId,caption:(b.caption||"").trim()}:{id:b.id,type:"text",html:b.html});
 /* 예전 임시저장(본문 하나 + 사진 목록) → 블록 */
 function draftToBlocks(d){if(d.blocks)return d.blocks;const bs=[{id:uid("b"),type:"text",html:d.bodyHtml||""}];
@@ -2100,7 +2107,7 @@ function openEditor(opts){
   const key="edit:"+slot;
   const open=wins.find(x=>x.key===key);if(open){focusWin(open);return}
   const cid0=existing?existing.categoryId:null;
-  const base={functions:clone(existing?.functions||[]),title:existing?.title||opts.seed?.title||"",blocks:normBlocks(clone(existing?blocksOf(existing):(opts.seed?.blocks||[]))),categoryId:cid0,
+  const base={functions:clone(existing?.functions||[]),title:existing?.title||opts.seed?.title||"",blocks:normBlocks(clone(existing?blocksOf(existing):(opts.seed?.blocks||[])),existing?.ink||opts.seed?.ink||[]),categoryId:cid0,
     feedOptIn:existing?.feedOptIn===true,visibility:existing?.visibility||settings().defaultVis||"private",visOwn:existing?!!existing.visOwn:false,allow:clone(existing?.allow||[]),
     recordedAt:existing?dateOf(existing):new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10),
     showDate:existing&&existing.showDate!=null?existing.showDate:settings().showDates,ink:clone(existing?.ink||opts.seed?.ink||[]),coverAssetId:existing?.coverAssetId||null,placeShortcut:!!opts.place};
@@ -2110,7 +2117,7 @@ function openEditor(opts){
   if(offer){offer.draft.blocks=draftToBlocks(offer.draft);offer.draft.blocks.forEach(b=>{if(b.type==="photos")b.items=b.items.filter(x=>assets[x.assetId])});
     delete offer.draft.bodyHtml;delete offer.draft.photos}
   if(offer&&opts.seed)offer=null;
-  if(offer){draft=Object.assign(clone(base),offer.draft);draft.blocks=normBlocks(draft.blocks)}
+  if(offer){draft=Object.assign(clone(base),offer.draft);draft.blocks=normBlocks(draft.blocks,draft.ink)}
   let autoAt=null,autoT=null,autoFail=false,lastBid=null,lastRange=null;
   let onSel=null;
   openWin(key,{title:existing?"글 수정":"새 글",icon:ICONS.document.svg,foot:true,keep:true,wide:true,full:true,alive:()=>!existing||!!post(existing.id),
@@ -2169,7 +2176,7 @@ function openEditor(opts){
       const syncText=()=>draft.blocks.forEach(b=>{if(b.type==="text"){const n=textEl(b.id);if(n)b.html=sanitize(n.innerHTML)}});
       const coverId=()=>{const ps=allPhotos(draft.blocks);if(draft.coverAssetId&&ps.some(x=>x.assetId===draft.coverAssetId))return draft.coverAssetId;return ps[0]?.assetId||null};
       function drawBlocks(focusId,atStart){
-        draft.blocks=normBlocks(draft.blocks);
+        draft.blocks=normBlocks(draft.blocks,draft.ink);
         const cover=coverId(),total=allPhotos(draft.blocks).length;
         pc.textContent=total?`· 사진 ${total}/${MAX_PHOTOS}장`:"";
         const firstText=draft.blocks.find(b=>b.type==="text");
@@ -2206,7 +2213,7 @@ function openEditor(opts){
         if(fileList.length>files.length)toast(`사진은 글 하나에 ${MAX_PHOTOS}장까지 넣을 수 있어요.`);
         const ids=[];for(const f of files){try{ids.push(await addAsset(f,1000,"post",.78))}catch(e){toast(e.message)}}return ids;
       }
-      const edCtx={get draft(){return draft},syncText,drawBlocks:(a,b2)=>drawBlocks(a,b2),queueAuto:()=>queueAuto(),insertBlock:blk=>insertBlockAt(blk,lastBid,lastRange),insertAt:(blk,bid,range)=>insertBlockAt(blk,bid,range),body,M,get blocksEl(){return blocksEl}};
+      const edCtx={insertFiles:(files,bid,range)=>insertFiles(files,bid,range),get draft(){return draft},syncText,drawBlocks:(a,b2)=>drawBlocks(a,b2),queueAuto:()=>queueAuto(),insertBlock:blk=>insertBlockAt(blk,lastBid,lastRange),insertAt:(blk,bid,range)=>insertBlockAt(blk,bid,range),body,M,get blocksEl(){return blocksEl}};
       drawBlocks();
       edSetup(edCtx);
 
@@ -2281,7 +2288,7 @@ function openEditor(opts){
       $(`#f-cat-${k}`,body).addEventListener("change",e=>{if(!draft.visOwn)setVis(catDefault(e.target.value||null));
         else if(e.target.value&&$(`#f-vis-${k}`,body).value===catDefault(e.target.value||null))draft.visOwn=false;visSrc()});
       visSrc();
-      const isEmpty=()=>!draft.title.trim()&&!finalBlocks(draft.blocks).length&&!(draft.ink&&draft.ink.length)&&!pfClean(draft.functions).some(g=>g.fields.some(f=>f.value.trim()));
+      const isEmpty=()=>!draft.title.trim()&&!finalBlocks(draft.blocks,draft.ink).length&&!(draft.ink&&draft.ink.length)&&!pfClean(draft.functions).some(g=>g.fields.some(f=>f.value.trim()));
       const autoLabel=()=>{const txt=autoFail?"임시저장 실패":autoAt?`${hm(autoAt)} 자동 저장됨`:existing?"":"쓰는 동안 자동 저장돼요";
         w.node.querySelectorAll(".autosave,.ed-autosave").forEach(s=>{s.textContent=txt;s.classList.toggle("fail",autoFail)})};
       function queueAuto(){clearTimeout(autoT);autoT=setTimeout(()=>{sync();if(isEmpty())return;
@@ -2299,7 +2306,7 @@ function openEditor(opts){
       autoLabel();
       foot.querySelector("[data-x]").onclick=()=>requestClose(w);
       /* 나가기 확인: 처음 열었을 때와 달라진 게 있으면 그만 쓰기 / 초안으로 두기 / 계속 쓰기 */
-      const snapOf=d=>JSON.stringify([d.title.trim(),finalBlocks(clone(d.blocks)),d.categoryId,d.visibility,d.recordedAt,d.showDate,(d.allow||[]).join(","),(d.ink||[]).length,JSON.stringify(d.ink||[]).length]);
+      const snapOf=d=>JSON.stringify([d.title.trim(),finalBlocks(clone(d.blocks),d.ink),d.categoryId,d.visibility,d.recordedAt,d.showDate,(d.allow||[]).join(","),(d.ink||[]).length,JSON.stringify(d.ink||[]).length]);
       const baseSnap=snapOf(clone(base));
       w.opts.beforeClose=async()=>{sync();
         if(isEmpty()&&!existing||snapOf(draft)===baseSnap){clearTimeout(autoT);if(!offer)clearAuto(slot);closeWin(w);return}
@@ -2356,7 +2363,7 @@ function openEditor(opts){
         let p=existing?post(existing.id):null;const t=now();
         if(!p){p={id:uid("post"),profileId:records.profile.id,status:"draft",revision:0,createdAt:t,firstPublishedAt:null};records.posts.push(p)}
         const oldIds=allPhotos(blocksOf(p)).map(x=>x.assetId);
-        const blocks=finalBlocks(draft.blocks);const ps=allPhotos(blocks);
+        const blocks=finalBlocks(draft.blocks,draft.ink);const ps=allPhotos(blocks);
         if(draft.visibility==="custom"&&!draft.allow.length){toast("보여 줄 사람을 적어 주세요.");return}
         const ink=(draft.ink||[]).filter(s=>blocks.some(b=>b.id===s.b));
         if(existing&&p.bodyJson&&JSON.stringify([p.title||"",blocksOf(p),p.ink||[]])!==JSON.stringify([draft.title.trim(),blocks,ink]))revPush(p);
@@ -4243,12 +4250,12 @@ const baseRenderBodyInk=renderBody;renderBody=function(p){const h=baseRenderBody
 /* 글쓰기: '그리기'를 누르면 본문 위에 투명한 종이가 깔림. 완료하면 다시 글쓰기 */
 function inkMode(ctx){if(ctx._ink){ctx._ink.done();return}
   const host=ctx.blocksEl;const d=ctx.draft;d.ink=d.ink||[];
-  let tool="pen",color="#e23d2f",size=3,cur=null;const undo=[],redo=[];
+  const prefs=ctx._inkPrefs||{};let tool=prefs.tool||"pen",color=prefs.color||"#e23d2f",size=prefs.size||3,cur=null;const hist=ctx._inkHistory||(ctx._inkHistory={undo:[],redo:[]}),undo=hist.undo,redo=hist.redo;
   const COLORS=["#222222","#e23d2f","#f29c1f","#f4d03f","#3aa655","#2f7de1","#8e5bd6","#ffffff"];
   host.classList.add("inking");const draw=()=>{const svg=inkLayout(host,cur?[...d.ink,cur]:d.ink,"ink-ed");svg.classList.toggle("erase",tool==="er");svg.classList.toggle("pan",tool==="mv");return svg};let svg=draw();
   const bar=document.createElement("div");bar.className="ink-bar";bar.setAttribute("role","toolbar");bar.setAttribute("aria-label","그리기 도구");
   bar.innerHTML=`<div class="ink-row">${[["pen","펜"],["hl","형광펜"],["er","지우개"],["mv","스크롤"]].map(([k,t])=>`<button type="button" data-it="${k}" aria-pressed="${k===tool}">${t}</button>`).join("")}
-      <span class="ink-sp"></span><button type="button" class="ink-done" data-idone>완료</button></div>
+      <span class="ink-sp"></span><button type="button" class="ink-done" data-idone>글쓰기</button></div>
     <div class="ink-row">${COLORS.map(c=>`<button type="button" class="ink-c" data-ic="${c}" style="background:${c}" aria-label="색" aria-pressed="${c===color}"></button>`).join("")}</div><div class="ink-row">${[[2,"가늘게"],[3,"보통"],[6,"굵게"]].map(([v,t])=>`<button type="button" data-is="${v}" aria-pressed="${v===size}">${t}</button>`).join("")}<span class="ink-sp"></span><button type="button" data-iu aria-label="되돌리기">↶</button><button type="button" data-ir aria-label="다시 하기">↷</button></div>`;
   document.body.appendChild(bar);bar.addEventListener("pointerdown",e=>e.preventDefault());
   const W=()=>host.clientWidth||1;
@@ -4257,7 +4264,7 @@ function inkMode(ctx){if(ctx._ink){ctx._ink.done();return}
   const save=()=>{undo.push(JSON.stringify(d.ink));if(undo.length>80)undo.shift();redo.length=0};
   /* 지우개: 손끝 근처(약 12px)에 지나가는 선을 통째로 지움 */
   const eraseAt=e=>{const R=12;const bx={};[...host.children].forEach(n=>{if(n.dataset&&n.dataset.bid&&bx[n.dataset.bid]==null)bx[n.dataset.bid]=cbox(n)});
-    const hit=d.ink.findIndex(st=>{const b=bx[st.b];if(!b)return false;const r=Math.max(R,st.s*b.w*(st.t==="hl"?1.3:.5));return st.p.some(q=>Math.hypot(b.l+q[0]*b.w-e.clientX,b.t+q[1]*b.w-e.clientY)<r)});
+    const hit=d.ink.findIndex(st=>{const b=bx[st.b];if(!b)return false;const r=Math.max(R,st.s*b.w*(st.t==="hl"?1.3:.5));return inkStrokeNear(st.p,[(e.clientX-b.l)/b.w,(e.clientY-b.t)/b.w],r/b.w)});
     if(hit>=0){if(cur==="erase"&&!eraseAt.saved){save();eraseAt.saved=true}d.ink.splice(hit,1);svg=draw();ctx.queueAuto()}};
   let bel=null;
   const down=e=>{if(tool==="mv"||!e.target.closest("svg.ink-ed"))return;e.preventDefault();try{svg.setPointerCapture(e.pointerId)}catch(x){}
@@ -4275,10 +4282,10 @@ function inkMode(ctx){if(ctx._ink){ctx._ink.done();return}
   const kd=e=>{const mod=IS_MAC?e.metaKey:e.ctrlKey;if(e.key==="Escape"){e.preventDefault();e.stopPropagation();done();return}if(!mod)return;const k=e.key.toLowerCase();
     if(k==="z"&&!e.shiftKey){e.preventDefault();e.stopImmediatePropagation();doUndo()}else if((k==="z"&&e.shiftKey)||(!IS_MAC&&k==="y")){e.preventDefault();e.stopImmediatePropagation();doRedo()}};
   document.addEventListener("keydown",kd,true);
-  const done=()=>{host.classList.remove("inking");bar.remove();document.removeEventListener("keydown",kd,true);host.removeEventListener("pointerdown",down);host.removeEventListener("pointermove",move);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);ctx._ink=null;inkLayout(host,d.ink,"ink-ed").classList.remove("erase","pan");
+  const done=()=>{up();ctx._inkPrefs={tool,color,size};host.classList.remove("inking");bar.remove();document.removeEventListener("keydown",kd,true);host.removeEventListener("pointerdown",down);host.removeEventListener("pointermove",move);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);ctx._ink=null;inkLayout(host,d.ink,"ink-ed").classList.remove("erase","pan");
     const btn=ctx.body.querySelector("[data-x-draw]");if(btn)btn.classList.remove("on")};
   bar.querySelector("[data-idone]").onclick=done;ctx._ink={done};const btn=ctx.body.querySelector("[data-x-draw]");if(btn)btn.classList.add("on");
-  if(!d.ink.length)toast("본문 위에 바로 그려요. 다 그리면 ‘완료’를 눌러 주세요.")}
+  if(!d.ink.length)toast("본문 위에 바로 그려요. ‘글쓰기’를 누르면 이어 쓰고, ‘그림 수정’으로 다시 고칠 수 있어요.")}
 /* 글쓰기에서 본문이 다시 그려지거나 글자가 늘면 선 자리도 다시 */
 function inkEditRefresh(ctx){const host=ctx.blocksEl;if(!host)return;const d=ctx.draft;if(!(d.ink&&d.ink.length)&&!ctx._ink){const s=[...host.children].find(n=>n.tagName==="svg");if(s)s.remove();return}inkLayout(host,d.ink,"ink-ed")}
 
@@ -4748,9 +4755,13 @@ const pfBaseSetup=edSetup;edSetup=function(ctx){pfBaseSetup(ctx);ctx.draft.funct
  host.innerHTML='<div data-pf-groups></div><div class="pf-attach" hidden><input type="text" class="pf-q" data-pf-q maxlength="40" placeholder="무엇을 붙일까요? · 판매, 책, 기분…" autocomplete="off" aria-label="붙일 것 찾기"><div class="pf-sugs" role="listbox"></div></div><p class="pf-undo" hidden></p><button class="btn pf-add" type="button" data-pf-add>＋ 붙이기</button>';
  ctx.body.querySelector('form').appendChild(host);const list=host.querySelector('[data-pf-groups]'),box=host.querySelector('.pf-attach'),qi=host.querySelector('[data-pf-q]'),sugs=host.querySelector('.pf-sugs'),undo=host.querySelector('.pf-undo'),addBtn=host.querySelector('[data-pf-add]');let cur=0,shown=[],undoT;
  const expanded=new Set();
- const draw=()=>{list.innerHTML=ctx.draft.functions.map((g,i)=>{const lead=pfLeadIndex(g),extras=g.fields.map((f,j)=>({f,j})).filter(x=>x.j!==lead);return `<section class="pf-card" data-pf-index="${i}" data-pf-id="${esc(g.id)}"><div class="pf-head"><strong class="pf-name">${esc(g.name)}</strong><button type="button" class="btn" data-config>직접 고치기</button><button type="button" class="btn" data-template>자주 쓰기에 넣기</button><button type="button" class="btn" data-delete>빼기</button></div><div class="pf-fields">${g.fields[lead]?pfFieldInput(g.fields[lead],lead):''}</div>${extras.length?`<details class="pf-extra" ${expanded.has(g.id)||extras.some(x=>x.f.value!=='')?'open':''}><summary>더 적기 · 선택</summary><div class="pf-fields">${extras.map(x=>pfFieldInput(x.f,x.j)).join('')}</div></details>`:''}</section>`}).join('');
+ const draw=()=>{list.innerHTML=ctx.draft.functions.map((g,i)=>{const lead=pfLeadIndex(g),extras=g.fields.map((f,j)=>({f,j})).filter(x=>x.j!==lead);return `<section class="pf-card" data-pf-index="${i}" data-pf-id="${esc(g.id)}"><div class="pf-head"><strong class="pf-name">${esc(g.name)}</strong><button type="button" class="btn" data-config>직접 고치기</button><button type="button" class="btn" data-template>자주 쓰기에 넣기</button><button type="button" class="btn" data-delete>빼기</button></div><div class="pf-fields">${g.fields[lead]?pfFieldInput(g.fields[lead],lead):''}</div><details class="pf-extra" ${expanded.has(g.id)||extras.some(x=>x.f.value!=='')?'open':''}><summary>더 적기 · 선택</summary><div class="pf-fields">${extras.map(x=>`<div class="pf-extra-field">${pfFieldInput(x.f,x.j)}<button type="button" class="pf-field-remove" data-pf-remove-field="${x.j}" aria-label="${esc(x.f.name)} 항목 빼기">빼기</button></div>`).join('')}</div><p class="hint">더 남기고 싶은 정보를 골라 주세요.</p><div class="pf-field-choices">${pfExtraChoices(g).map((f,j)=>`<button type="button" class="btn" data-pf-pick-field="${j}">＋ ${esc(f.name)}</button>`).join('')}<button type="button" class="btn" data-pf-own-field>＋ 직접 추가</button></div></details></section>`}).join('');
   list.querySelectorAll('[data-pf-index]').forEach(card=>{const i=+card.dataset.pfIndex,g=ctx.draft.functions[i];card.querySelectorAll('[data-value]').forEach(input=>{input.oninput=input.onchange=()=>{g.fields[+input.dataset.value].value=input.value;ctx.queueAuto()}});
    const details=card.querySelector('.pf-extra');if(details)details.ontoggle=()=>{if(details.open)expanded.add(g.id);else expanded.delete(g.id)};
+   const addField=f=>{if(!f||!host.isConnected)return;if(g.fields.length>=20){toast('정보는 20개까지 붙일 수 있어요.');return}if(g.fields.some(x=>pfNorm(x.name)===pfNorm(f.name))){toast('이미 붙인 항목이에요.');return}g.fields.push({...f,id:uid('pff'),key:uid('field'),value:''});expanded.add(g.id);draw();ctx.queueAuto();list.querySelector(`[data-pf-id="${CSS.escape(g.id)}"] [data-value="${g.fields.length-1}"]`)?.focus()};
+   card.querySelectorAll('[data-pf-pick-field]').forEach(b=>b.onclick=()=>addField(pfExtraChoices(g)[+b.dataset.pfPickField]));
+   card.querySelector('[data-pf-own-field]').onclick=async()=>{const f=await pfOwnField();addField(f)};
+   card.querySelectorAll('[data-pf-remove-field]').forEach(b=>b.onclick=async()=>{const j=+b.dataset.pfRemoveField,f=g.fields[j];if(f.value&&!await confirmBox('항목 빼기',`‘${f.name}’에 적은 내용도 이 글에서 빠져요.`,'빼기',true))return;if(!host.isConnected)return;g.fields.splice(j,1);expanded.add(g.id);draw();ctx.queueAuto()});
    card.querySelector('[data-config]').onclick=async()=>{const updated=await pfConfigure(g);if(!updated||!host.isConnected)return;ctx.draft.functions[i]=updated;draw();ctx.queueAuto()};card.querySelector('[data-template]').onclick=()=>pfTemplateSave(g);card.querySelector('[data-delete]').onclick=()=>{ctx.draft.functions.splice(i,1);draw();ctx.queueAuto()}})};
  const close=()=>{box.hidden=true;addBtn.hidden=false;qi.value=''};
  const drawSugs=()=>{const q=qi.value.trim();shown=pfSuggestions(q);const exact=shown.some(s=>pfNorm(s.name)===pfNorm(q));cur=Math.min(cur,Math.max(0,shown.length+(q&&!exact?1:0)-1));
@@ -5019,6 +5030,54 @@ const pfcPosts=renderPosts;renderPosts=function(cv){pfcPosts(cv);if(isVisitor())
 const pfcHome=renderHome;renderHome=function(cv){pfcHome(cv);if(isVisitor())return;const nav=cv.querySelector('.pc-space-nav');if(nav&&!nav.querySelector('[data-pf-go]')){const b=document.createElement('button');b.type='button';b.dataset.pfGo='';b.textContent='모아 보기';nav.append(b);
     /* 붙인 정보가 카테고리처럼 저절로 생김(나만 보임) */const vs=[...new Set(pfEntries().map(e=>e.view))];if(vs.length){const sec=document.createElement('div');sec.className='pfc-side';sec.innerHTML=`<p>붙인 정보로 · 나만 보기</p>${vs.map(v=>`<button type="button" data-pf-go="${esc(v)}">${esc(v)}</button>`).join('')}`;nav.after(sec)}}
   if(isMobile()){const hv=cv.querySelector('[data-act="homeView"]');const row=hv&&hv.parentElement;if(row&&!row.querySelector('.pfc-m')){const b=document.createElement('button');b.type='button';b.className='linkbtn pfc-m';b.dataset.pfGo='';b.textContent='모아 보기 ›';row.append(b)}}};
+
+/* ═════════ 글쓰기·그리기 전환 / 파일 끌어 넣기 / 선택 항목 (2026-10-31) ═════════ */
+function inkStrokeNear(points,p,r){
+ const sq=(a,b)=>(a[0]-b[0])**2+(a[1]-b[1])**2;
+ if(!points.length)return false;if(sq(points[0],p)<=r*r)return true;
+ for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],dx=b[0]-a[0],dy=b[1]-a[1],d=dx*dx+dy*dy,t=d?Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/d)):0;if(sq([a[0]+t*dx,a[1]+t*dy],p)<=r*r)return true}return false
+}
+const PF_MORE={
+ '중고 판매':[{name:'상품 상태',type:'select',options:['미사용','사용감 적음','사용감 있음','수리 필요']},{name:'브랜드',type:'text'},{name:'모델명',type:'text'},{name:'사이즈',type:'text'},{name:'색상',type:'text'},{name:'구매한 날',type:'date'},{name:'거래 방법',type:'select',options:['직거래','택배','둘 다 가능']},{name:'거래 지역',type:'text'},{name:'배송비',type:'number'}],
+ '독서 기록':[{name:'출판사',type:'text'},{name:'읽기 시작한 날',type:'date'},{name:'다 읽은 날',type:'date'},{name:'읽은 쪽',type:'number'}],
+ '구매 정보':[{name:'물건',type:'text'},{name:'브랜드',type:'text'},{name:'수량',type:'number'},{name:'구매 이유',type:'text'}],
+ '여행':[{name:'돌아온 날',type:'date'},{name:'교통수단',type:'text'},{name:'비용',type:'number'}],
+ '맛집·카페':[{name:'먹은 메뉴',type:'text'},{name:'방문한 날',type:'date'},{name:'가격',type:'number'}]
+};
+function pfExtraChoices(g){const key=g.schemaId?.startsWith('preset:')?g.schemaId.slice(7):g.name;return [...(PF_MORE[key]||PF_MORE[g.name]||[]),{name:'날짜',type:'date'},{name:'장소',type:'text'},{name:'메모',type:'text'}].filter((f,i,a)=>a.findIndex(x=>x.name===f.name)===i&&!g.fields.some(x=>pfNorm(x.name)===pfNorm(f.name)))}
+async function pfOwnField(){const task=modal(`<h3>정보 직접 추가</h3><label>항목 이름<input data-pf-own-name maxlength="40" placeholder="예: 소재, 사용 기간, 기억할 말"></label><label>적는 방식<select data-pf-own-type>${Object.entries(PF_TYPES).map(([v,n])=>`<option value="${v}">${n}</option>`).join('')}</select></label><label data-pf-own-options-wrap hidden>선택지<input data-pf-own-options maxlength="1200" placeholder="쉼표로 나눠 적어요"></label><p class="pf-error" role="alert"></p><div class="acts"><button type="button" class="btn" data-c>취소</button><button type="button" class="btn primary" data-o>추가</button></div>`),m=modal.cur;
+ const type=m.querySelector('[data-pf-own-type]');type.onchange=()=>m.querySelector('[data-pf-own-options-wrap]').hidden=type.value!=='select';m.querySelector('[data-c]').onclick=()=>m._done(null);m.querySelector('[data-o]').onclick=()=>{const name=m.querySelector('[data-pf-own-name]').value.trim(),options=[...new Set(m.querySelector('[data-pf-own-options]').value.split(',').map(x=>x.trim()).filter(Boolean))];if(!name||type.value==='select'&&(!options.length||options.length>20||options.some(x=>x.length>60))){m.querySelector('.pf-error').textContent=!name?'항목 이름을 적어 주세요.':'선택지는 1~20개, 각 60자까지 적어 주세요.';return}m._done({name,type:type.value,options:type.value==='select'?options:[]})};return task
+}
+let activeInkCtx=null;
+const inkModeBeforeInputs=inkMode;inkMode=function(ctx){
+ if(activeInkCtx&&activeInkCtx!==ctx)activeInkCtx._ink?.done();inkModeBeforeInputs(ctx);
+ if(!ctx._ink){activeInkCtx=null;return}activeInkCtx=ctx;const done=ctx._ink.done;ctx._ink.done=()=>{done();if(activeInkCtx===ctx)activeInkCtx=null;ctx._inkResume?.()};
+ // The palette's own exit uses the wrapped cleanup as well.
+ document.querySelector('.ink-bar [data-idone]').onclick=()=>ctx._ink?.done();ctx._inkResume?.()
+};
+function leaveInkForInput(e){const ctx=activeInkCtx;if(!ctx||!ctx._ink)return;const t=e.target;if(t.closest?.('.ink-bar,[data-x-draw],[data-ink-resume]'))return;if(t.closest?.('svg.ink-ed')&&ctx.blocksEl.contains(t))return;ctx._ink.done()}
+document.addEventListener('pointerdown',leaveInkForInput,true);document.addEventListener('focusin',leaveInkForInput,true);
+const closeWinBeforeInk=closeWin;closeWin=function(w){if(activeInkCtx&&w?.node.contains(activeInkCtx.body))activeInkCtx._ink?.done();return closeWinBeforeInk(w)};
+const drawWinBeforeInk=drawWin;drawWin=function(w){if(activeInkCtx&&w?.node.contains(activeInkCtx.body))activeInkCtx._ink?.done();return drawWinBeforeInk(w)};
+const edSetupBeforeInputs=edSetup;edSetup=function(ctx){edSetupBeforeInputs(ctx);
+ const resume=document.createElement('button');resume.type='button';resume.className='btn ink-resume';resume.dataset.inkResume='';resume.textContent='✎ 그림 수정';ctx.blocksEl.after(resume);
+ ctx._inkResume=()=>{resume.hidden=!(ctx.draft.ink||[]).length&&!ctx._ink;resume.style.visibility=ctx._ink?'hidden':''};ctx._inkResume();resume.onclick=()=>inkMode(ctx);
+ const refresh=new MutationObserver(()=>ctx._inkResume());refresh.observe(ctx.blocksEl,{childList:true,subtree:true});
+ const win=ctx.body.closest('.win'),w=wins.find(x=>x.node===win);if(w){const old=w.opts.onClose;w.opts.onClose=()=>{refresh.disconnect();ctx._ink?.done();old?.()}}
+ const form=ctx.body.querySelector('form');let depth=0,busy=false;
+ const files=e=>[...(e.dataTransfer?.types||[])].includes('Files');
+ form.addEventListener('dragenter',e=>{if(!files(e))return;e.preventDefault();depth++;form.classList.add('ed-file-over');ctx._ink?.done()});
+ form.addEventListener('dragleave',e=>{if(!files(e))return;if(--depth<=0){depth=0;form.classList.remove('ed-file-over')}});
+ form.addEventListener('dragover',e=>{if(!files(e))return;e.preventDefault();e.dataTransfer.dropEffect='copy'});
+ form.addEventListener('drop',async e=>{const input=[...(e.dataTransfer?.files||[])];if(!input.length)return;e.preventDefault();e.stopImmediatePropagation();depth=0;form.classList.remove('ed-file-over');ctx._ink?.done();if(busy){toast('파일을 넣는 중이에요. 잠시 기다려 주세요.');return}busy=true;
+   let range=null;const area=e.target.closest('.rte-area');if(area){if(document.caretRangeFromPoint)range=document.caretRangeFromPoint(e.clientX,e.clientY);else if(document.caretPositionFromPoint){const cp=document.caretPositionFromPoint(e.clientX,e.clientY);if(cp){range=document.createRange();range.setStart(cp.offsetNode,cp.offset);range.collapse(true)}}if(range&&!area.contains(range.startContainer))range=null}
+   let bid=area?.dataset.bid||null;let rejected=0;
+   try{for(let i=0;i<input.length;){if(!form.isConnected)break;const file=input[i];if(/^image\//.test(file.type)){const images=[];while(i<input.length&&/^image\//.test(input[i].type))images.push(input[i++]);await ctx.insertFiles(images,bid,range);bid=null;range=null;continue}
+     i++;if(/^audio\//.test(file.type)){if(file.size>4*1024*1024){toast('음성은 4MB까지 넣을 수 있어요.');continue}const url=await blobToUrl(file);if(!form.isConnected)break;const id=uid('asset');assets[id]={id,role:'audio',mime:file.type,dataUrl:url};ctx.insertAt({id:uid('b'),type:'audio',assetId:id,caption:file.name},bid,range);bid=null;range=null}else rejected++}
+     if(rejected)toast('사진·그림 이미지와 음성 파일을 넣을 수 있어요. 다른 형식은 아직 지원하지 않아요.')
+   }catch(err){toast('파일을 넣지 못했어요. 파일을 확인하고 다시 시도해 주세요.')}finally{busy=false}
+ },true)
+};
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
