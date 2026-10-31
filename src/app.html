@@ -1298,6 +1298,7 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
 .ink-sel-bar button:hover,.pfw-sg:hover,.pfw-sg.on{background:var(--porc-in)!important;color:var(--ink)!important}
 .pfw-sg:hover small,.pfw-sg.on small{color:var(--ink-2)!important;opacity:1}
 @media (prefers-reduced-motion:reduce){.btn,.rte-bar button,.btn.primary,.pn-write,.ink-bar button{transition:none}}
+.pf-head .btn,.pf-head .btn:active{box-shadow:none!important}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5449,6 +5450,15 @@ const inkSelSetup=edSetup;edSetup=function(ctx){inkSelSetup(ctx);const host=ctx.
   document.addEventListener('keydown',kd,true);
   const win=ctx.body.closest('.win'),w=wins.find(x=>x.node===win);if(w){const old=w.opts.onClose;w.opts.onClose=()=>{document.removeEventListener('keydown',kd,true);inkSelClear(ctx);old?.()}}};
 document.addEventListener('pointerdown',e=>{if(e.target.closest('.ink-sel,.blocks,.ink-bar'))return;document.querySelectorAll('.blocks .ink-sel').forEach(el=>{const c=pfwCtxOf(el);if(c)inkSelClear(c);else el.remove()})},true);
+
+/* ═════════ 휴대폰: 드래그 후 '＋ 붙이기'를 키보드 바로 위에 (2026-11-01) ═════════
+   왜: 아이폰은 선택한 글자 위·아래 어디에나 '오려두기·복사하기' 메뉴를 띄워서, 선택 아래에 둔 우리 버튼을 덮었어요.
+   손가락으로 쓰는 기기에서는 선택 근처가 아니라 보이는 화면 맨 아래(키보드 바로 위) 가운데에 둬요. 운영체제 메뉴와 겹치지 않아요. */
+const basePfwPill=pfwPill;
+function pfwPillDock(){const el=pfwPop;if(!el||el._kind!=='sel'||!el.isConnected)return;const vv=window.visualViewport,bot=vv?vv.offsetTop+vv.height:innerHeight;
+  el.style.position='fixed';el.style.left='50%';el.style.right='auto';el.style.transform='translateX(-50%)';el.style.bottom='auto';el.style.top=Math.max(8,bot-el.offsetHeight-14)+'px'}
+pfwPill=function(ctx,range){basePfwPill(ctx,range);if(matchMedia('(pointer:coarse)').matches)pfwPillDock()};
+if(window.visualViewport){visualViewport.addEventListener('resize',()=>{if(matchMedia('(pointer:coarse)').matches)pfwPillDock()});visualViewport.addEventListener('scroll',()=>{if(matchMedia('(pointer:coarse)').matches)pfwPillDock()})}
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
