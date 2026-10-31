@@ -331,7 +331,7 @@ button{cursor:pointer}
 .win .foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:var(--chrome-2)}
 
 .btn{border:1px solid var(--line);background:var(--chrome);border-radius:8px;padding:7px 14px;font-size:13.5px}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary,.pn-write{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
 .btn.ghost{border-color:transparent;background:transparent}
 .btn:disabled{opacity:.5;cursor:default}
@@ -1214,6 +1214,24 @@ video.wf-live{object-fit:cover}
 .ink-undo button{border:0;background:none;color:var(--chrome);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0}
 .ink-what{font-size:12px;color:#cfd6e4;padding:0 6px}
 @media (prefers-reduced-motion:reduce){.ink-peek{animation:none}}
+/* ═════ 손끝에 닿는 버튼 (2026-10-31, 주인 결정 A안 · Codex 시안 docs/design/button-material.html 참고) ═════
+   매끈한 표면·얇은 테두리·아래 두께 2px, 누르면 2px 내려앉음. 글이 주인공이라 글쓰기 줄(B·I·U·사진…)은 평평하게 두고,
+   주요 버튼(글쓰기·발행·저장, 대화상자의 확인)·＋ 붙이기·그리기 도구에만. 색은 변수로 밝은/어두운 화면 모두. */
+:root{--key-top:#ffffff;--key-bot:#e6eaee;--key-edge:#aeb6c0;--key-shade:rgba(36,48,64,.16);--key-glint:rgba(255,255,255,.85);--key-press:#dae1e9}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--key-top:#4b5563;--key-bot:#343d49;--key-edge:#161d26;--key-shade:rgba(0,0,0,.45);--key-glint:rgba(255,255,255,.15);--key-press:#28313d}}
+:root[data-theme="dark"]{--key-top:#4b5563;--key-bot:#343d49;--key-edge:#161d26;--key-shade:rgba(0,0,0,.45);--key-glint:rgba(255,255,255,.15);--key-press:#28313d}
+.btn.primary,.pf-editor .pf-add,.win.editor .tbar .hdraft,.pfw-pill button{transition:transform 90ms,box-shadow 90ms,background 90ms}
+.pf-editor .pf-add,.win.editor .tbar .hdraft,.pfw-pill button{background:linear-gradient(var(--key-top),var(--key-bot))!important;border:1px solid var(--key-edge)!important;color:var(--ink)!important;box-shadow:inset 0 1px 0 var(--key-glint),0 2px 0 var(--key-edge),0 4px 5px var(--key-shade)!important}
+.btn.primary{background:var(--accent);background:linear-gradient(color-mix(in srgb,var(--accent) 78%,#fff),var(--accent))!important;border:1px solid color-mix(in srgb,var(--accent) 70%,#000)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 0 color-mix(in srgb,var(--accent) 60%,#000),0 4px 5px var(--key-shade)!important}
+.btn.primary:active,.pn-write:active,.pf-editor .pf-add:active,.win.editor .tbar .hdraft:active,.pfw-pill button:active{transform:translateY(2px);box-shadow:inset 0 2px 3px var(--key-shade),inset 0 -1px 0 var(--key-glint)!important}
+.pf-editor .pf-add:active,.win.editor .tbar .hdraft:active,.pfw-pill button:active{background:var(--key-press)!important}
+.pfw-pill{padding:0!important;border:0!important;background:none!important;box-shadow:none!important}.pfw-pill button{border-radius:999px!important;padding:6px 14px!important}
+/* 그리기 도구: 어두운 막대 위의 작은 건반처럼, 고른 도구는 눌린 채로 */
+.ink-bar button:not(.ink-c){background:linear-gradient(#4b5563,#343d49)!important;border:1px solid #161d26!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 2px 0 #161d26,0 3px 4px rgba(0,0,0,.4)!important;transition:transform 90ms,box-shadow 90ms}
+.ink-bar button:not(.ink-c)[aria-pressed="true"],.ink-bar button:not(.ink-c):active{transform:translateY(2px);background:#28313d!important;box-shadow:inset 0 2px 3px rgba(0,0,0,.5),inset 0 -1px 0 rgba(255,255,255,.12)!important;color:#9fbcff!important}
+.ink-bar .ink-c{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 0 #161d26!important;transition:transform 90ms}.ink-bar .ink-c[aria-pressed="true"]{transform:translateY(2px);box-shadow:inset 0 2px 3px rgba(0,0,0,.45)!important}
+.ink-bar .ink-done{background:linear-gradient(#5d86ea,#2b62d9)!important;border-color:#1f479f!important;color:#fff!important}
+@media (prefers-reduced-motion:reduce){.btn.primary,.pf-editor .pf-add,.ink-bar button{transition:none}}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
