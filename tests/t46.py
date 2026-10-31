@@ -12,7 +12,7 @@ with sync_playwright() as p:
     bb=a.bounding_box()
     def stroke(x1,y1,x2,y2):pg.mouse.move(bb['x']+x1,bb['y']+y1);pg.mouse.down();pg.mouse.move(bb['x']+x2,bb['y']+y2,steps=10);pg.mouse.up();pg.wait_for_timeout(100)
     stroke(10,22,180,26)  # 밑줄
-    pg.click('.ink-bar [data-it="hl"]');pg.click('.ink-bar [data-ic="#f4d03f"]');pg.click('.ink-bar [data-it="hl"]');stroke(10,12,120,12)
+    pg.click('.ink-bar [data-it="hl"]');pg.click('.ink-bar [data-ic="#e2d6a0"]');pg.click('.ink-bar [data-it="hl"]');stroke(10,12,120,12)
     pg.click('.ink-bar [data-it="pen"]');stroke(200,5,240,40)
     n=lambda:pg.locator('.win.editor svg.ink-ed path').count()
     ok(f'{name} 3 strokes drawn ({n()})',n()==3)

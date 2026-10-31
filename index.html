@@ -1239,38 +1239,62 @@ video.wf-live{object-fit:cover}
   --accent:#e4e4e6; --accent-ink:#141415; --select:rgba(255,255,255,.14); --danger:#ff6b63; --ok:#c9c9cb; --warn:#a9a9ab; --glass:rgba(24,24,26,.86);
   --key-top:#3a3a3f; --key-bot:#262629; --key-edge:#0c0c0e; --key-shade:rgba(0,0,0,.5); --key-glint:rgba(255,255,255,.14); --key-press:#1c1c1f;
   --blue-top:#ececee; --blue-mid:#e4e4e6; --blue-bot:#d8d8da; --blue-edge:#7d7d80; --primary-ink:#141415; --lcd-sel:#d0d0d0; --lcd-sel-ink:#202020; --flush-seam:#2f2f33; --flush-glow:rgba(255,255,255,.04); --flush-in:#111113; --flush-in-2:#0c0c0d; --flush-shade:rgba(0,0,0,.4); color-scheme:dark}
-/* 매끈한 버튼 (2026-10-31, 주인 결정: 튀어나온 건반은 별로 → 바탕과 같은 높이) */
-/* 기기 모양(휠·액정)은 쓰지 않고, 화면 배치도 그대로. 버튼 재질만 바꿈.
-   · 두께·아래 그림자 없음. 바탕과 같은 높이에 가는 테두리 한 줄 + 위쪽 옅은 빛.
-   · 누르거나 고른 상태는 살짝 파인 회색(검은 띠 아님). 주요 버튼은 흑연색, 윤기는 줄임.
-   · 서식 줄 버튼은 테두리 없이 글자만, 고르면 파인 회색. */
-.btn,.pf-editor .pf-add,.win.editor .tbar .hdraft,.pfw-pill button,.nv-btns .btn{background:linear-gradient(var(--flush-glow),transparent 75%),var(--chrome);border:1px solid var(--flush-seam);color:var(--ink);box-shadow:inset 0 1px 0 var(--key-glint);transition:background 120ms,box-shadow 120ms}
-.rte-bar button,.rte-bar .rte-photo{background:none;border:1px solid transparent;color:var(--ink-2);box-shadow:none;margin:1px;transition:background 120ms}
-.rte-bar .rte-photo{display:inline-flex;align-items:center;gap:4px;border-radius:6px;height:30px;padding:0 10px;cursor:pointer}
-.nv.wide .nv-side .nv-btns [data-act="editProfile"]{background:none;border:0;box-shadow:none;justify-content:flex-start;padding-left:0}
-.btn:active,.pf-editor .pf-add:active,.win.editor .tbar .hdraft:active,.pfw-pill button:active,.nv-btns .btn:active,.rte-bar button:active,.rte-bar .rte-photo:active{background:linear-gradient(var(--flush-in-2),var(--flush-in));box-shadow:inset 0 1px 2px var(--flush-shade)}
-.rte-bar button:hover,.rte-bar .rte-photo:hover{background:var(--chrome-2);color:var(--ink)}
-.btn.primary,.pn-write{background:linear-gradient(var(--blue-top),var(--blue-bot))!important;border:1px solid var(--blue-bot)!important;color:var(--primary-ink)!important;text-shadow:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;transition:background 120ms}
-.btn.primary:active,.pn-write:active{background:var(--blue-bot)!important;box-shadow:inset 0 1px 3px rgba(0,0,0,.3)!important}
-.rte-bar button[aria-pressed="true"],.rte-bar button.on,.btn[aria-pressed="true"]{background:linear-gradient(var(--flush-in-2),var(--flush-in))!important;color:var(--ink)!important;border-color:var(--flush-seam)!important;box-shadow:inset 0 1px 2px var(--flush-shade)!important}
-/* 알림: 옅은 회색 알약 */
-.toast,.pf-undo-bar,.ink-undo{background:var(--chrome-2)!important;color:var(--ink)!important;border:1px solid var(--flush-seam);box-shadow:0 6px 18px var(--flush-shade)!important}
+/* ═════ 도자기 무드 (2026-11-01, 주인 결정: 하얀 도자기 인형 사진의 무드와 톤) ═════
+   왜: 버튼마다 테두리가 있고, 새까만 버튼·원색 펜 색·두꺼운 글씨가 섞여 싸 보였음.
+   · 색은 사진에서 뽑은 것만: 연회색→거의 흰 바탕, 도자기 흰색, 상아색, 흙빛 회색, 흐린 회색 글자, 안개 파랑(아주 조금).
+   · 테두리 없음. 보통 버튼은 도자기처럼 살짝 떠 있고(위쪽 흰 빛 + 넓고 옅은 그림자), 고르면 상아색으로 살짝 파임.
+   · 주요 버튼(발행·글쓰기)은 검정 대신 흙빛 회색. 글씨는 얇게.
+   · 어두운 화면은 따뜻한 먹색 도자기 판. 펜 색도 사진 톤의 흐린 색. */
+:root{
+  --chrome:#f6f6f5; --chrome-2:#efeee9; --line:#e2e0d9; --ink:#5f5d57; --ink-2:#8e8e8e; --accent:#8c877b; --accent-ink:#fbfbf9;
+  --select:rgba(140,135,123,.14); --danger:#b4675d; --ok:#8c877b; --warn:#a6a093;
+  --porc-hi:#fdfdfc; --porc:#f1f0eb; --porc-in:#e4e1d6; --porc-shade:rgba(120,115,106,.16); --porc-glint:rgba(255,255,255,.95);
+  --porc-main-top:#9a958a; --porc-main-bot:#857f73; --primary-ink:#fbfbf9; --porc-bg-top:#ececeb; --porc-bg-bot:#fafafa;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --chrome:#1d1c1a; --chrome-2:#262522; --line:#33312d; --ink:#e6e3da; --ink-2:#9b978d; --accent:#c9c3b4; --accent-ink:#1d1c1a;
+  --select:rgba(201,195,180,.14); --danger:#e08b80; --ok:#c9c3b4; --warn:#a6a093;
+  --porc-hi:#2c2b28; --porc:#252421; --porc-in:#171614; --porc-shade:rgba(0,0,0,.45); --porc-glint:rgba(255,255,255,.06);
+  --porc-main-top:#d8d3c6; --porc-main-bot:#c4bead; --primary-ink:#1d1c1a; --porc-bg-top:#1a1917; --porc-bg-bot:#22211e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --chrome:#1d1c1a; --chrome-2:#262522; --line:#33312d; --ink:#e6e3da; --ink-2:#9b978d; --accent:#c9c3b4; --accent-ink:#1d1c1a;
+  --select:rgba(201,195,180,.14); --danger:#e08b80; --ok:#c9c3b4; --warn:#a6a093;
+  --porc-hi:#2c2b28; --porc:#252421; --porc-in:#171614; --porc-shade:rgba(0,0,0,.45); --porc-glint:rgba(255,255,255,.06);
+  --porc-main-top:#d8d3c6; --porc-main-bot:#c4bead; --primary-ink:#1d1c1a; --porc-bg-top:#1a1917; --porc-bg-bot:#22211e; color-scheme:dark}
+/* 보통 버튼: 테두리 없는 도자기 */
+.btn,.pf-editor .pf-add,.win.editor .tbar .hdraft,.pfw-pill button,.nv-btns .btn{background:linear-gradient(var(--porc-hi),var(--porc));border:1px solid transparent;color:var(--ink);font-weight:400;box-shadow:inset 0 1px 0 var(--porc-glint),0 2px 8px var(--porc-shade);transition:background 140ms,box-shadow 140ms}
+.btn:active,.pf-editor .pf-add:active,.win.editor .tbar .hdraft:active,.pfw-pill button:active,.nv-btns .btn:active{background:var(--porc-in);box-shadow:inset 0 1px 3px var(--porc-shade)}
+.nv.wide .nv-btns .nv-main,.nv.wide .nv-btns [data-act="editProfile"]{background:none!important;border:0!important;box-shadow:none!important;justify-content:flex-start;padding-left:0;color:var(--ink-2)}
+/* 서식 줄: 글자만, 고르면 상아색 파임 */
+.rte-bar button,.rte-bar .rte-photo{background:none;border:1px solid transparent;color:var(--ink-2);box-shadow:none;margin:1px;border-radius:999px;transition:background 140ms}
+.rte-bar .rte-photo{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px;cursor:pointer}
+.rte-bar button:hover,.rte-bar .rte-photo:hover{background:var(--porc);color:var(--ink)}
+.rte-bar button:active,.rte-bar .rte-photo:active{background:var(--porc-in)}
+.rte-bar button[aria-pressed="true"],.rte-bar button.on,.btn[aria-pressed="true"]{background:var(--porc-in)!important;color:var(--ink)!important;border-color:transparent!important;box-shadow:inset 0 1px 3px var(--porc-shade)!important}
+/* 주요 버튼: 흙빛 회색 */
+.btn.primary,.pn-write{background:linear-gradient(var(--porc-main-top),var(--porc-main-bot))!important;border:1px solid transparent!important;color:var(--primary-ink)!important;font-weight:500!important;text-shadow:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 12px var(--porc-shade)!important;transition:background 140ms}
+.btn.primary:active,.pn-write:active{background:var(--porc-main-bot)!important;box-shadow:inset 0 1px 3px rgba(0,0,0,.2)!important}
+/* 알림: 반투명 도자기 알약 */
+.toast,.pf-undo-bar,.ink-undo{background:color-mix(in srgb,var(--porc-hi) 88%,transparent)!important;color:var(--ink)!important;border:0!important;border-radius:999px!important;box-shadow:inset 0 1px 0 var(--porc-glint),0 8px 24px var(--porc-shade)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .ink-undo button{color:var(--ink)!important}
-.topbar{background:var(--chrome)!important;border:1px solid var(--line);box-shadow:0 4px 14px var(--flush-shade)}
-.menu [role=menuitem]:hover,.menu [role=menuitem]:focus-visible,.menu button:hover{background:var(--chrome-2);color:var(--ink)}
-/* 그리기 막대: 배치 그대로, 재질만 */
-.ink-bar{background:var(--chrome)!important;color:var(--ink)!important;border:1px solid var(--flush-seam);box-shadow:0 10px 28px var(--flush-shade)!important;padding:10px 12px!important}
-.ink-bar button:not(.ink-c){background:linear-gradient(var(--flush-glow),transparent 75%),var(--chrome)!important;border:1px solid var(--flush-seam)!important;color:var(--ink-2)!important;box-shadow:inset 0 1px 0 var(--key-glint)!important;transition:background 120ms}
-.ink-bar button:not(.ink-c)[aria-pressed="true"],.ink-bar button:not(.ink-c):active{background:linear-gradient(var(--flush-in-2),var(--flush-in))!important;color:var(--ink)!important;box-shadow:inset 0 1px 2px var(--flush-shade)!important}
-.ink-bar .ink-c{border-color:var(--flush-seam)!important;box-shadow:none!important}
-.ink-bar .ink-c[aria-pressed="true"]{outline-color:var(--ink-2)!important}
-.ink-bar button.ink-done{background:linear-gradient(var(--blue-top),var(--blue-bot))!important;border-color:var(--blue-bot)!important;color:var(--primary-ink)!important}
+.topbar{background:color-mix(in srgb,var(--porc-hi) 92%,transparent)!important;border:0!important;box-shadow:inset 0 1px 0 var(--porc-glint),0 6px 20px var(--porc-shade)}
+.menu [role=menuitem]:hover,.menu [role=menuitem]:focus-visible,.menu button:hover{background:var(--porc-in);color:var(--ink)}
+/* 그리기 막대: 테두리 없는 도자기 판, 도구는 글자만 */
+.ink-bar{background:linear-gradient(var(--porc-hi),var(--porc))!important;color:var(--ink)!important;border:0!important;border-radius:24px!important;box-shadow:inset 0 1px 0 var(--porc-glint),0 14px 36px var(--porc-shade)!important;padding:12px 14px!important}
+.ink-bar button:not(.ink-c){background:none!important;border:1px solid transparent!important;color:var(--ink-2)!important;box-shadow:none!important;transition:background 140ms}
+.ink-bar button:not(.ink-c):hover{background:var(--porc)!important;color:var(--ink)!important}
+.ink-bar button:not(.ink-c)[aria-pressed="true"],.ink-bar button:not(.ink-c):active{background:var(--porc-in)!important;color:var(--ink)!important;box-shadow:inset 0 1px 3px var(--porc-shade)!important}
+.ink-bar .ink-c{width:20px!important;height:20px!important;border:0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 3px var(--porc-shade)!important;margin:3px}
+.ink-bar .ink-c[aria-pressed="true"]{outline:1px solid var(--ink-2)!important;outline-offset:3px}
+.ink-bar button.ink-done{background:linear-gradient(var(--porc-main-top),var(--porc-main-bot))!important;color:var(--primary-ink)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 10px var(--porc-shade)!important}
 .ink-what{color:var(--ink-2)!important}
 /* 휴대폰: 그리기 막대가 떠 있으면 알림은 화면 위쪽으로(막대를 가리지 않게) */
 body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom:auto;pointer-events:none}
-.ink-bar .ink-row{padding:3px;margin:-3px;gap:6px}
-.ink-sel-bar,.pfw-pop,.pfw-card{background:var(--chrome)!important;border-color:var(--flush-seam)!important}
-.ink-sel-bar button:hover,.pfw-sg:hover,.pfw-sg.on{background:var(--chrome-2)!important;color:var(--ink)!important}
+.ink-bar .ink-row{padding:3px;margin:-3px;gap:4px}
+.ink-bar .ink-sz{width:32px;height:32px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;border-radius:999px}.ink-bar .ink-sz i{display:block;border-radius:50%;background:currentColor}
+.ink-bar [data-iu],.ink-bar [data-ir]{width:32px;height:32px;padding:0!important;display:inline-flex;align-items:center;justify-content:center}
+.ink-sel-bar,.pfw-pop,.pfw-card{background:var(--porc-hi)!important;border-color:transparent!important;box-shadow:inset 0 1px 0 var(--porc-glint),0 10px 28px var(--porc-shade)!important}
+.ink-sel-bar button:hover,.pfw-sg:hover,.pfw-sg.on{background:var(--porc-in)!important;color:var(--ink)!important}
 .pfw-sg:hover small,.pfw-sg.on small{color:var(--ink-2)!important;opacity:1}
 @media (prefers-reduced-motion:reduce){.btn,.rte-bar button,.btn.primary,.pn-write,.ink-bar button{transition:none}}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
@@ -4128,7 +4152,7 @@ function openDraw(opt){return new Promise(res=>{
   const baseId=prev?prev.baseId:(src?opt.assetId:null),base=baseId?assets[baseId]:null;
   let W=prev?prev.w:(base?base.width:900),H=prev?prev.h:(base?base.height:640);const sc=Math.min(1,1000/Math.max(W,H));W=Math.round(W*sc);H=Math.round(H*sc);
   let strokes=prev?clone(prev.strokes):[],redo=[],bg=prev?prev.bg:(base?"photo":"paper"),tool="pen",color="#222222",size=6,zoom=1,cur=null;
-  const COLORS=["#222222","#ffffff","#e23d2f","#f29c1f","#f4d03f","#3aa655","#2f7de1","#8e5bd6"];
+  const COLORS=["#5f5d57","#fbfbf9","#c98f86","#d9b98a","#e2d6a0","#a9b89a","#a0a8bf","#b7a9c4"];
   const ov=document.createElement("div");ov.className="drw";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label",base?"사진 위에 그리기":"그리기");
   ov.innerHTML=`<div class="drw-top"><button type="button" class="btn" data-x>취소</button><b>${base?"사진 위에 그리기":"그리기"}</b><button type="button" class="btn primary" data-ok>넣기</button></div>
     <div class="drw-stage"><div class="drw-paper"><canvas class="drw-base"></canvas><canvas class="drw-layer"></canvas></div></div>
@@ -4358,13 +4382,13 @@ const baseRenderBodyInk=renderBody;renderBody=function(p){const h=baseRenderBody
 /* 글쓰기: '그리기'를 누르면 본문 위에 투명한 종이가 깔림. 완료하면 다시 글쓰기 */
 function inkMode(ctx){if(ctx._ink){ctx._ink.done();return}
   const host=ctx.blocksEl;const d=ctx.draft;d.ink=d.ink||[];
-  const prefs=ctx._inkPrefs||{};let tool=prefs.tool||"pen",color=prefs.color||"#e23d2f",size=prefs.size||3,cur=null;const hist=ctx._inkHistory||(ctx._inkHistory={undo:[],redo:[]}),undo=hist.undo,redo=hist.redo;
-  const COLORS=["#222222","#e23d2f","#f29c1f","#f4d03f","#3aa655","#2f7de1","#8e5bd6","#ffffff"];
+  const prefs=ctx._inkPrefs||{};let tool=prefs.tool||"pen",color=prefs.color||"#5f5d57",size=prefs.size||3,cur=null;const hist=ctx._inkHistory||(ctx._inkHistory={undo:[],redo:[]}),undo=hist.undo,redo=hist.redo;
+  const COLORS=["#5f5d57","#c98f86","#d9b98a","#e2d6a0","#a9b89a","#a0a8bf","#b7a9c4","#fbfbf9"];
   host.classList.add("inking");const draw=()=>{const svg=inkLayout(host,cur?[...d.ink,cur]:d.ink,"ink-ed");svg.classList.toggle("erase",tool==="er");svg.classList.toggle("pan",tool==="mv");return svg};let svg=draw();
   const bar=document.createElement("div");bar.className="ink-bar";bar.setAttribute("role","toolbar");bar.setAttribute("aria-label","그리기 도구");
   bar.innerHTML=`<div class="ink-row">${[["pen","펜"],["hl","형광펜"],["er","지우개"],["mv","스크롤"]].map(([k,t])=>`<button type="button" data-it="${k}" aria-pressed="${k===tool}">${t}</button>`).join("")}
       <span class="ink-sp"></span><button type="button" class="ink-done" data-idone>글쓰기</button></div>
-    <div class="ink-row">${COLORS.map(c=>`<button type="button" class="ink-c" data-ic="${c}" style="background:${c}" aria-label="색" aria-pressed="${c===color}"></button>`).join("")}</div><div class="ink-row">${[[2,"가늘게"],[3,"보통"],[6,"굵게"]].map(([v,t])=>`<button type="button" data-is="${v}" aria-pressed="${v===size}">${t}</button>`).join("")}<span class="ink-sp"></span><button type="button" data-iu aria-label="되돌리기">↶</button><button type="button" data-ir aria-label="다시 하기">↷</button></div>`;
+    <div class="ink-row">${COLORS.map(c=>`<button type="button" class="ink-c" data-ic="${c}" style="background:${c}" aria-label="색" aria-pressed="${c===color}"></button>`).join("")}</div><div class="ink-row">${[[2,"가늘게"],[3,"보통"],[6,"굵게"]].map(([v,t])=>`<button type="button" class="ink-sz" data-is="${v}" aria-pressed="${v===size}" aria-label="${t}" title="${t}"><i style="width:${v+3}px;height:${v+3}px"></i></button>`).join("")}<span class="ink-sp"></span><button type="button" data-iu aria-label="되돌리기"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button><button type="button" data-ir aria-label="다시 하기"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5M20 9H9a5 5 0 0 0 0 10h3"/></svg></button></div>`;
   document.body.appendChild(bar);bar.addEventListener("pointerdown",e=>e.preventDefault());
   const W=()=>host.clientWidth||1;
   const blockAt=y=>{const L=[...host.children].filter(n=>n.dataset&&n.dataset.bid);let pick=L[0];for(const n of L){if(n.getBoundingClientRect().top<=y)pick=n}return pick};
