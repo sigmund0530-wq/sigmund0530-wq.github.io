@@ -1299,6 +1299,20 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
 .pfw-sg:hover small,.pfw-sg.on small{color:var(--ink-2)!important;opacity:1}
 @media (prefers-reduced-motion:reduce){.btn,.rte-bar button,.btn.primary,.pn-write,.ink-bar button{transition:none}}
 .pf-head .btn,.pf-head .btn:active{box-shadow:none!important}
+/* 붙이기를 제목 바로 아래로 (2026-11-01) */
+.pf-editor.pf-top{margin:8px 0 12px!important;padding-top:0!important;border-top:0!important;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.pf-editor.pf-top>[data-pf-add]{order:-2}
+.pf-editor.pf-top>.pfw-tip{order:-1;margin-left:0}
+.pf-editor.pf-top>[data-pf-groups]{order:0;flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 16px;min-width:0}
+.pf-editor.pf-top>[data-pf-groups]:empty{display:none}
+.pf-editor.pf-top>[data-pf-groups]>*:not(.pf-fold){flex-basis:100%}
+.pf-editor.pf-top>.pf-attach,.pf-editor.pf-top>.pf-undo,.pf-editor.pf-top>:not([data-pf-add]):not(.pfw-tip):not([data-pf-groups]){flex-basis:100%}
+.pf-card.pf-fold{padding:2px 0!important;margin:0!important;border:0!important;max-width:100%}
+.pf-card.pf-fold>:not(.pf-head){display:none!important}
+.pf-card.pf-fold .pf-head>:not(.pf-name){display:none!important}
+.pf-card.pf-fold .pf-head{cursor:pointer;flex-wrap:nowrap;gap:0;min-width:0}
+.pf-card.pf-fold .pf-head .pf-name{flex:0 1 auto;font-weight:500;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pf-card.pf-fold .pf-head::after{content:attr(data-sum) " ›";color:var(--ink-2);font-size:14px;white-space:pre;flex:none}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5459,6 +5473,21 @@ function pfwPillDock(){const el=pfwPop;if(!el||el._kind!=='sel'||!el.isConnected
   el.style.position='fixed';el.style.left='50%';el.style.right='auto';el.style.transform='translateX(-50%)';el.style.bottom='auto';el.style.top=Math.max(8,bot-el.offsetHeight-14)+'px'}
 pfwPill=function(ctx,range){basePfwPill(ctx,range);if(matchMedia('(pointer:coarse)').matches)pfwPillDock()};
 if(window.visualViewport){visualViewport.addEventListener('resize',()=>{if(matchMedia('(pointer:coarse)').matches)pfwPillDock()});visualViewport.addEventListener('scroll',()=>{if(matchMedia('(pointer:coarse)').matches)pfwPillDock()})}
+
+/* ═════════ 붙이기를 제목 바로 아래로 (2026-11-01, 주인 결정) ═════════
+   왜: 템플릿(＋ 붙이기·붙인 정보)은 글의 성격이라 쓰기 시작할 때 보여야 해요. 휴대폰에서 글 아래에 두면 키보드 바로 위에 붙어 자리를 차지했어요.
+   · PC·휴대폰 모두 제목 바로 아래. 붙인 정보는 '중고 판매 · 원목 책상 ›' 한 줄로 접혀 있고, 누르면 펼쳐짐.
+   · ＋ 붙이기로 방금 붙인 것은 펼친 채로(첫 칸에 바로 쓰게). 글 속 단어에 붙인 것은 접힌 채로(이름이 이미 본문에 있고, 본문이 아래로 밀리지 않게). 사진에 붙인 것은 이름을 적어야 해서 펼친 채로. 저절로 접지는 않음(접히면서 본문이 위로 튀어 누르려던 곳이 어긋나서). 이름 줄을 눌러 접고 펴요. */
+const pfTopSetup=edSetup;edSetup=function(ctx){pfTopSetup(ctx);const host=ctx.body.querySelector('.pf-editor'),t=ctx.body.querySelector('.ed-title');if(!host||!t)return;
+  t.after(host);host.classList.add('pf-top');const list=host.querySelector('[data-pf-groups]');if(!list)return;
+  const open=ctx._pfOpen||(ctx._pfOpen=new Set()),seen=ctx._pfSeen||(ctx._pfSeen=new Set((ctx.draft.functions||[]).map(g=>g.id)));
+  const fold=()=>{list.querySelectorAll('.pf-card[data-pf-id]').forEach(card=>{const id=card.dataset.pfId;if(!seen.has(id)){seen.add(id);const anch=ctx.body.querySelector('.rte-area mark[data-pf="'+CSS.escape(id)+'"]');if(!anch)open.add(id)}
+    const g=(ctx.draft.functions||[]).find(x=>x.id===id),head=card.querySelector('.pf-head');if(!g||!head)return;
+    const lead=g.fields[typeof pfLeadIndex==='function'?pfLeadIndex(g):0],v=lead&&String(lead.value||'').trim();
+    head.dataset.sum=(v&&!ctx.body.querySelector('.rte-area mark[data-pf="'+CSS.escape(id)+'"]'))?' · '+v:'';const isOpen=open.has(id)||card.contains(document.activeElement);card.classList.toggle('pf-fold',!isOpen);head.setAttribute('aria-expanded',isOpen?'true':'false')})};
+  list.addEventListener('click',e=>{const head=e.target.closest('.pf-head');if(!head||e.target.closest('button,input,select,textarea,a'))return;const card=head.closest('.pf-card');if(!card)return;const id=card.dataset.pfId;
+    if(open.has(id))open.delete(id);else open.add(id);fold()});
+  new MutationObserver(()=>fold()).observe(list,{childList:true});fold()};
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
