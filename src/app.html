@@ -1265,7 +1265,7 @@ video.wf-live{object-fit:cover}
 .ink-what{color:var(--ink-2)!important}
 /* 건반의 두께·그림자가 잘리지 않게: 가로로 넘치는 줄 안쪽에 여유를 둠 */
 /* 휴대폰: 그리기 막대가 떠 있으면 알림은 화면 위쪽으로(막대를 가리지 않게) */
-body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom:auto}
+body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom:auto;pointer-events:none}
 .ink-bar .ink-row{padding:4px 5px 8px;margin:-3px -5px -5px;gap:6px}.ink-bar{padding:10px 12px!important}
 /* 그림 고르기 막대·붙이기 메뉴도 흰 몸통 */
 .ink-sel-bar,.pfw-pop,.pfw-card{background:linear-gradient(var(--key-top),var(--chrome))!important;border-color:var(--key-edge)!important}
