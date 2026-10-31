@@ -1246,10 +1246,10 @@ video.wf-live{object-fit:cover}
    · 주요 버튼(발행·글쓰기)은 검정 대신 흙빛 회색. 글씨는 얇게.
    · 어두운 화면은 따뜻한 먹색 도자기 판. 펜 색도 사진 톤의 흐린 색. */
 :root{
-  --chrome:#f5f5f5; --chrome-2:#eeeeee; --line:#e1e1e1; --ink:#5a5a5c; --ink-2:#8e8e8e; --accent:#8a8a8c; --accent-ink:#fcfcfc;
+  --chrome:#fcfcfc; --chrome-2:#f6f6f6; --line:#ececec; --ink:#5a5a5c; --ink-2:#8e8e8e; --accent:#8a8a8c; --accent-ink:#fcfcfc;
   --select:rgba(0,0,0,.07); --danger:#b4675d; --ok:#8a8a8c; --warn:#a6a6a6;
-  --porc-hi:#fdfdfd; --porc:#f0f0f0; --porc-in:#e4e4e4; --porc-shade:rgba(0,0,0,.09); --porc-glint:rgba(255,255,255,.95);
-  --porc-main-top:#9c9c9e; --porc-main-bot:#838385; --primary-ink:#fcfcfc; --porc-bg-top:#ebebeb; --porc-bg-bot:#fafafa;
+  --porc-hi:#ffffff; --porc:#fafafa; --porc-in:#efefef; --porc-shade:rgba(0,0,0,.07); --porc-glint:rgba(255,255,255,.95);
+  --porc-main-top:#a9a9ab; --porc-main-bot:#929294; --primary-ink:#fcfcfc; --porc-bg-top:#f7f7f7; --porc-bg-bot:#fafafa;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --chrome:#1b1b1c; --chrome-2:#242425; --line:#323234; --ink:#e4e4e5; --ink-2:#9a9a9c; --accent:#c8c8ca; --accent-ink:#1b1b1c;
@@ -1286,6 +1286,7 @@ video.wf-live{object-fit:cover}
 .ink-bar button:not(.ink-c)[aria-pressed="true"],.ink-bar button:not(.ink-c):active{background:var(--porc-in)!important;color:var(--ink)!important;box-shadow:inset 0 1px 3px var(--porc-shade)!important}
 .ink-bar .ink-c{width:20px!important;height:20px!important;border:0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 3px var(--porc-shade)!important;margin:3px}
 .ink-bar .ink-c[aria-pressed="true"]{outline:1px solid var(--ink-2)!important;outline-offset:3px}
+.ink-bar .ink-c[data-ic="#fcfcfc"]{box-shadow:inset 0 0 0 1px #dcdcdc,0 1px 3px var(--porc-shade)!important}
 .ink-bar button.ink-done{background:linear-gradient(var(--porc-main-top),var(--porc-main-bot))!important;color:var(--primary-ink)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 10px var(--porc-shade)!important}
 .ink-what{color:var(--ink-2)!important}
 /* 휴대폰: 그리기 막대가 떠 있으면 알림은 화면 위쪽으로(막대를 가리지 않게) */
