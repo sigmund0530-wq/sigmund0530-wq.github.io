@@ -5489,6 +5489,53 @@ const pfTopSetup=edSetup;edSetup=function(ctx){pfTopSetup(ctx);const host=ctx.bo
     if(open.has(id))open.delete(id);else open.add(id);fold()});
   new MutationObserver(()=>fold()).observe(list,{childList:true});fold()};
 
+/* ═════════ 알아서 모으기 AI (2026-11-02, 주인 결정) ═════════
+   켠 사람만(설정 → 알아서 모으기). 발행을 누르면 무가당 AI(Cloudflare Workers AI · Qwen3, 학습·보관 안 함)가 본문을 읽고
+   책·물건·장소·음식·음악·영화·드라마를 글 속 단어에 붙여요(드래그로 붙이는 것과 같은 표시). 그다음 원래 발행 창이 떠요.
+   틀린 건 단어를 눌러 '빼기'. 서버에 로그인한 사람만(Worker가 로그인 토큰을 확인). 실패하거나 6초가 넘으면 그냥 발행해요.
+   장소는 같은 문장에 음식이 있거나 먹은 말이 있으면 '맛집·카페', 아니면 '여행'.
+   [data-pub]의 onclick은 edSetup 뒤에 붙으므로, 문서 전체에서 먼저(capture) 받아 AI를 돌린 뒤 다시 누름. */
+const AI_URL="https://mugadang-ai.sigmund0530.workers.dev";
+const AI_FOOD={name:'먹은 것',schemaId:'preset:먹은 것',keys:[],fields:[{name:'음식',type:'text'},{name:'가게',type:'text'}]};
+const aiSg=n=>PF_SUGGEST.find(s=>s.name===n);
+function aiTpl(kind,sent,food){
+  if(kind==='책')return aiSg('독서 기록');
+  if(kind==='음악')return aiSg('음악');
+  if(kind==='영화·드라마')return aiSg('영화·드라마');
+  if(kind==='음식')return AI_FOOD;
+  if(kind==='장소')return food||/먹|마시|카페|식당|빵|맛집|커피|밥/.test(sent)?aiSg('맛집·카페'):aiSg('여행');
+  if(kind==='물건')return /팔|판매|중고|내놓/.test(sent)?aiSg('중고 판매'):/샀|사 ?왔|구매|주문|지름|사줬/.test(sent)?aiSg('구매 정보'):aiSg('물건 정리');
+  return null}
+const aiOn=()=>settings().aiCollect===true&&SB.on&&!!SB.user;
+let aiBusy=false,aiPass=false;
+function aiFind(area,word){const tw=document.createTreeWalker(area,NodeFilter.SHOW_TEXT);let n;
+  while((n=tw.nextNode())){if(n.parentElement.closest('mark[data-pf]'))continue;const i=n.data.indexOf(word);if(i<0)continue;
+    const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+word.length);return r}return null}
+async function aiCollect(ctx){const areas=[...ctx.body.querySelectorAll('.rte-area')];const text=areas.map(a=>a.innerText||a.textContent||'').join('\n').trim().slice(0,4000);
+  if(text.length<8)return [];let token='';try{const {data}=await SB.c.auth.getSession();token=data&&data.session&&data.session.access_token||''}catch(e){}
+  if(!token)return [];const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),6000);let items=[];
+  try{const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({text}),signal:ac.signal});
+    if(r.ok){const j=await r.json();items=Array.isArray(j.items)?j.items:[]}}catch(e){}finally{clearTimeout(tm)}
+  const done=[],have=new Set([...ctx.body.querySelectorAll('mark[data-pf]')].map(m=>m.textContent.trim()));
+  const quiet=toast;toast=()=>{};
+  try{for(const it of items.slice(0,20)){const w=String(it&&it.word||'').trim();if(!w||w.length>40||have.has(w))continue;if(ctx.draft.functions.length>=12)break;
+    let r=null,area=null;for(const a of areas){r=aiFind(a,w);if(r){area=a;break}}if(!r)continue;
+    const sent=pfwSent(area.innerText||area.textContent,w),s=aiTpl(it.kind,sent,items.some(x=>x&&x.kind==='음식'&&x.word&&sent.includes(x.word)));if(!s)continue;
+    const before=ctx.draft.functions.length;pfwAttach(ctx,r,s);if(ctx.draft.functions.length>before){done.push(w);have.add(w)}}}
+  finally{toast=quiet}
+  return done}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pub]');if(!b||aiPass||!aiOn())return;
+  const area=document.querySelector('.rte-area'),ctx=area&&pfwCtxOf(area);if(!ctx||!ctx.draft)return;
+  e.preventDefault();e.stopImmediatePropagation();if(aiBusy)return;aiBusy=true;toast('무가당 AI가 글을 읽고 있어요…');
+  aiCollect(ctx).then(done=>{aiBusy=false;aiPass=true;try{b.click()}finally{aiPass=false}
+    if(done.length)setTimeout(()=>toast(`AI가 ${done.slice(0,3).map(w=>'‘'+(w.length>10?w.slice(0,9)+'…':w)+'’').join(', ')}${done.length>3?` 등 ${done.length}개`:''}를 모았어요 · 틀리면 단어를 눌러 빼요`),30)},
+    ()=>{aiBusy=false;aiPass=true;try{b.click()}finally{aiPass=false}})},true);
+/* 설정: '알아서 모으기' 켜기 */
+const aiBaseSettings=renderSettings;renderSettings=function(cv){aiBaseSettings(cv);const anchor=[...cv.querySelectorAll('.set-sec')].find(s=>(s.querySelector('h2')||{}).textContent==='내 기록');if(!anchor)return;
+  const on=settings().aiCollect===true,srv=SB.on&&!!SB.user;const sec=document.createElement('section');sec.className='set-sec set-ai';
+  sec.innerHTML=`<h2>알아서 모으기</h2><div class="set-row"><div class="set-l"><b>발행할 때 AI가 모아 두기</b><small>${srv?'무가당 AI가 글을 읽고 책·물건·장소 같은 말에 정보를 붙여요. 학습에 쓰지 않고, 읽은 뒤 남기지 않아요.':'서버에 로그인하면 쓸 수 있어요.'}</small></div><div class="set-r">${srv?`<button type="button" class="btn sm${on?' on':''}" data-ai-toggle aria-pressed="${on}">${on?'켜짐':'꺼짐'}</button>`:''}</div></div>`;
+  anchor.before(sec);const t=sec.querySelector('[data-ai-toggle]');if(t)t.onclick=()=>{const v=!(settings().aiCollect===true);records.settings=Object.assign({},records.settings||{},{aiCollect:v});commit();
+    t.classList.toggle('on',v);t.textContent=v?'켜짐':'꺼짐';t.setAttribute('aria-pressed',String(v));toast(v?'켰어요 · 발행할 때 AI가 모아 둬요':'껐어요')}};
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;

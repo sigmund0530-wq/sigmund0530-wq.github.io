@@ -22,7 +22,7 @@ class Q{constructor(t){this.t=t;this.f=[];this.op="select"}
     if(this.op==="delete"){db.tables[this.t]=T.filter(r=>!(this.f.every(f=>f(r))&&own(r)));save();return {data:null,error:null}}}}
 const toData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
 window.supabase={createClient(url,key){return {
-  auth:{async getSession(){await wait();return {data:{session:sess()},error:null}},
+  auth:{async getSession(){await wait();const s=sess();return {data:{session:s?Object.assign({access_token:"mock-token"},s):null},error:null}},
     async signUp({email,password}){await wait();if(db.users.some(u=>u.email===email))return E("User already registered");const user={id:"u-"+Math.random().toString(36).slice(2,10)+"-0000-0000-0000-000000000000",email,password};db.users.push(user);save();const s={user:{id:user.id,email}};localStorage.setItem("mocksess",JSON.stringify(s));return {data:{user:s.user,session:s},error:null}},
     async signInWithPassword({email,password}){await wait();const u=db.users.find(u=>u.email===email&&u.password===password);if(!u)return E("Invalid login credentials");const s={user:{id:u.id,email}};localStorage.setItem("mocksess",JSON.stringify(s));return {data:{user:s.user,session:s},error:null}},
     async signOut(){localStorage.removeItem("mocksess");return {error:null}},async updateUser(o){await wait();const u=db.users.find(x=>x.id===uidNow());if(!u)return E("JWT required");if(o.password)u.password=o.password;if(o.email)u.pendingEmail=o.email;save();return {data:{user:{id:u.id,email:u.email}},error:null}},async resetPasswordForEmail(){return {data:{},error:null}}},
