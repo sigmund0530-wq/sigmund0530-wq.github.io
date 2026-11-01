@@ -1345,6 +1345,10 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
 .pw-tip{position:absolute;left:50%;top:8px;transform:translateX(-50%);padding:3px 10px;border-radius:999px;background:var(--porc-in,var(--chrome-2));color:var(--ink);font-size:12px;pointer-events:none;z-index:4}
 .win.editor .pblock{position:relative}
 .pw-wrap{margin-left:auto;margin-right:auto;max-width:100%}
+/* 사진 범위 줄이기(2026-11-02, 주인: '이미지 범위가 왜 이렇게 넓어'): 사진 한 장일 때 틀이 정사각형이라 위아래가 비었음 → 사진 비율 그대로.
+   첫 문단은 빈 글일 때 쓸 자리를 넉넉히 잡는데(34vh), 바로 뒤에 사진이 오면 그 빈자리가 사진 위에 남았음 → 사진이 뒤에 오면 내용만큼만 */
+.prow-edit.n1 .ph-img{aspect-ratio:auto;height:auto}
+.win.editor .blocks .rte-area:first-child:has(+ .pblock),.blocks .rte-area:first-child:has(+ .pblock){min-height:0}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
