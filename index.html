@@ -1352,6 +1352,10 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
 /* 휴대폰 키보드가 올라오면 글쓰기 창을 키보드 위로 올리는데(--kb), 사파리의 키보드 위 막대·주소 막대와 높이가 딱 맞지 않아
    창 아래로 뒤에 깔린 화면(내 공간 글 카드 등)이 비쳐 보였음(2026-11-02, 주인 아이폰 화면) → 창 아래쪽을 같은 바탕색으로 길게 덮음 */
 .win.editor.m{box-shadow:0 100vh 0 0 var(--chrome)!important}
+/* 휴대폰 키보드가 떠 있을 때: 글쓰기 창 = 눈에 보이는 영역. 글쓰기 중엔 아래 탭 막대 숨김 */
+html.kb-open .win.editor.m{top:var(--vvt,0px)!important;height:var(--vvh,100%)!important;bottom:auto!important;max-height:none!important}
+body:has(.win.editor.m) #tabbar{display:none!important}
+html.kb-open .win.editor.m>.rte-bar{padding-bottom:6px!important}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5683,6 +5687,14 @@ const pwMenu=showMenu;showMenu=function(items,...rest){
 const pwBaseBody=renderBody;renderBody=function(p){const bs=blocksOf(p);if(!bs.some(b=>b.type==='photos'&&b.w>=20&&b.w<100))return pwBaseBody(p);
   return bs.map(b=>{const one=pwBaseBody(Object.assign({},p,{bodyJson:Object.assign({},p.bodyJson,{blocks:[b]})}));
     return b.type==='photos'&&b.w>=20&&b.w<100&&one?`<div class="pw-wrap" style="width:${Math.round(b.w)}%">${one}</div>`:one}).join('')};
+/* ═════════ 휴대폰 키보드와 글쓰기 창 (2026-11-02, 주인 아이폰 화면) ═════════
+   예전엔 창 아래를 키보드 높이(--kb)만큼 올렸는데, 아이폰 사파리는 키보드를 띄울 때 화면 자체를 위로 밀기도 해서
+   창이 너무 높이 올라가고(제목·본문이 화면 밖) 아래 탭 막대(홈·글쓰기·내 방…)가 비쳐 보였음.
+   → 키보드가 떠 있는 동안은 글쓰기 창을 '지금 눈에 보이는 영역'(visualViewport의 위치·높이)에 그대로 맞춤.
+     글쓰기 창이 열려 있으면 탭 막대는 숨김. */
+if(window.visualViewport){const vvFit=()=>{const v=visualViewport,de=document.documentElement,kb=innerHeight-v.height;
+    de.classList.toggle('kb-open',kb>80);de.style.setProperty('--vvt',Math.round(v.offsetTop)+'px');de.style.setProperty('--vvh',Math.round(v.height)+'px')};
+  visualViewport.addEventListener('resize',vvFit);visualViewport.addEventListener('scroll',vvFit);vvFit()}
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
