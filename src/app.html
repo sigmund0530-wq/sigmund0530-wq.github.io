@@ -1404,6 +1404,11 @@ html.ps-dragging,html.ps-dragging *{user-select:none!important;-webkit-user-sele
 .pc-prevs figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px}
 .pc-prevs canvas{border-radius:50%;display:block;background:var(--chrome-2)}
 .pc-prevs figcaption{font-size:11.5px;color:var(--ink-2)}
+.pe-av{position:relative}.pe-av img{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover}
+.pe-more{display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:4px}
+.pe-sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink);cursor:pointer}
+.pe-sw input{width:20px;height:20px;accent-color:var(--ink-2);flex:none}
+.pe-link{border:0;border-bottom:1px solid var(--line);background:none;text-align:left;font:inherit;font-size:14.5px;color:var(--ink);padding:14px 0;cursor:pointer}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5897,6 +5902,12 @@ editProfile=async function(){const pr=records.profile;const made=[];
       <label class="pe-f"><span>공간 이름</span><input type="text" data-pe-space maxlength="30" placeholder="${esc((pr.displayName||'나')+'의 공간')}" value="${esc(pr.spaceName||'')}"></label>
       <label class="pe-f"><span>소개 <small data-pe-cnt></small></span><textarea data-pe-status maxlength="60" rows="2" placeholder="나를 한 줄로">${esc(pr.status||'')}</textarea></label>
       <div class="pe-f pe-addr"><span>공간 주소</span><div><b>@${esc(pr.handle||'')}</b><button type="button" class="pe-txt" data-pe-handle>설정에서 바꾸기 ›</button></div></div>
+      <div class="pe-more">
+        <label class="pe-sw"><span>방문자에게 프로필 보이기</span><input type="checkbox" data-pe-show ${seHidden('profile')?'':'checked'}></label>
+        <label class="pe-sw"><span>소개를 바꾸면 이전 소개를 나만 보게 보관</span><input type="checkbox" data-pe-keep ${pr.keepBio?'checked':''}></label>
+        ${(pr.bioHistory||[]).length?`<button type="button" class="pe-link" data-bio-hist>이전 소개 보기 ›</button>`:''}
+        <button type="button" class="pe-link" data-pe-sq>나만 아는 질문 ›</button>
+      </div>
     </div></div>`;
   document.body.appendChild(el);const $q=s=>el.querySelector(s);
   const draw=()=>{$q('.pe-av').innerHTML=photo&&assets[photo]?`<img src="${assets[photo].dataUrl}" alt="">`:`<span class="ini">${esc(($q('[data-pe-name]').value||'나').trim().slice(0,1))}</span>`;
@@ -5908,18 +5919,28 @@ editProfile=async function(){const pr=records.profile;const made=[];
   $q('[data-pe-adj]').onclick=async()=>{const sid=src&&assets[src]?src:photo;const r=await peCrop(sid,sid===src?crop:null);if(!r)return;made.push(r.id);photo=r.id;if(sid!==src){src=sid}crop=r.crop;draw()};
   $q('[data-pe-rm]').onclick=()=>{photo=null;src=null;crop=null;draw()};
   $q('[data-pe-handle]').onclick=()=>{close();setRenderer('settings')};
+  $q('[data-pe-sq]').onclick=()=>sqEdit();
   const close=()=>{el.remove();document.removeEventListener('keydown',esc_)};
   const esc_=e=>{if(e.key==='Escape'&&!document.querySelector('.pc-wrap')){made.forEach(id=>{if(id!==pr.photoAssetId&&id!==pr.photoSrcId)delete assets[id]});close()}};document.addEventListener('keydown',esc_);
   $q('[data-pe-x]').onclick=()=>{made.forEach(id=>{if(id!==pr.photoAssetId&&id!==pr.photoSrcId)delete assets[id]});close()};
   $q('[data-pe-ok]').onclick=()=>{
     [pr.photoAssetId,pr.photoSrcId].forEach(id=>{if(id&&id!==photo&&id!==src)delete assets[id]});made.forEach(id=>{if(id!==photo&&id!==src)delete assets[id]});
     pr.photoAssetId=photo;if(src&&src!==photo){pr.photoSrcId=src;pr.photoCrop=crop}else{delete pr.photoSrcId;delete pr.photoCrop}
-    pr.displayName=$q('[data-pe-name]').value.trim()||'내 공간';pr.status=$q('[data-pe-status]').value.trim();delete pr.statusAt;pr.spaceName=$q('[data-pe-space]').value.trim();
+    const oldSt=pr.status||'',newSt=$q('[data-pe-status]').value.trim();pr.keepBio=$q('[data-pe-keep]').checked||undefined;
+    if(pr.keepBio&&oldSt.trim()&&oldSt!==newSt){(pr.bioHistory=pr.bioHistory||[]).unshift({text:oldSt,until:localDay(now())});if(pr.bioHistory.length>50)pr.bioHistory.length=50}
+    pr.displayName=$q('[data-pe-name]').value.trim()||'내 공간';pr.status=newSt;delete pr.statusAt;pr.spaceName=$q('[data-pe-space]').value.trim();
+    layout.hide=Object.assign({},layout.hide||{},{profile:!$q('[data-pe-show]').checked});
+    /* 내 공간 편집 중이었다면: 편집 '취소'가 이 저장까지 되돌리지 않게 기준본의 프로필도 맞춤(소개 이력이 두 번 쌓이지 않게도) */
+    try{if(seSnap){const o=JSON.parse(seSnap);o.profile=JSON.parse(JSON.stringify(pr));if(o.layout)o.layout.hide=Object.assign({},layout.hide);seSnap=JSON.stringify(o)}}catch(e){}
     close();commit();toast('프로필을 바꿨어요')};
   if(!isMobile())setTimeout(()=>$q('[data-pe-name]').focus(),30)};
 /* 프로필을 바꾸는 길은 모두 새 프로필 편집 화면으로: 설정의 '편집하러 가기', 내 공간 편집 칸의 '사진 바꾸기'(사진은 칸에 맞춰 잘라야 해서) */
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-set="profile"],.se-panel label:has([data-se-photo]),.se-panel .se-ph-prev');if(!t)return;
   if(t.matches('[data-set="profile"]')&&ui.renderer!=='settings')return;e.preventDefault();e.stopImmediatePropagation();if(!isVisitor())editProfile()},true);
+/* 내 공간 편집에서 '프로필'을 고르면 아래 설정 칸(같은 항목이 겹쳤음) 대신 프로필 편집 화면을 바로 엶(2026-11-02, 주인: 중복이 생길 필요가 없잖아) */
+const peSePanel=sePanel;sePanel=function(cv){if(ui.seSel==='profile'&&!ui.roomSel){ui.seSel=null;document.querySelectorAll('.se-panel').forEach(n=>n.remove());
+    document.querySelectorAll('.se-sel').forEach(n=>n.classList.remove('se-sel'));if(!document.querySelector('.pe-page'))setTimeout(()=>editProfile(),0);return}
+  return peSePanel(cv)};
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;

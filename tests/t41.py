@@ -20,11 +20,9 @@ with sync_playwright() as p:
   # 소개 이력
   pg.evaluate("document.querySelectorAll('.win .x,.win .back').forEach(b=>b.click())");pg.wait_for_timeout(300)
   pg.locator('[data-tab2="me"]').tap();pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.tap();pg.wait_for_timeout(300)
-  pg.locator('[data-se="profile"]').first.tap();pg.wait_for_timeout(300)
-  print('  panels',pg.locator('.se-panel').count(),'dialogs',pg.locator('.scrim').count(),'wins',pg.locator('.win').count(),'se-on',pg.locator('.se-on').count());pg.screenshot(path='rec_m_dbg.png');print('  foot',pg.evaluate("(()=>{const f=document.querySelector('.se-panel .se-foot'),p=document.querySelector('.se-panel');return [!!f,f&&JSON.stringify(f.getBoundingClientRect()),JSON.stringify(p.getBoundingClientRect()),getComputedStyle(p).bottom,getComputedStyle(p).top,innerHeight]})()"))
-  pg.locator('[data-se-f="status"]').fill('첫 소개');pg.locator('[data-se-pok]').tap();pg.wait_for_timeout(300);pg.locator('[data-se-save]').tap();pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.tap();pg.wait_for_timeout(300)
-  pg.locator('[data-se="profile"]').first.tap();pg.wait_for_timeout(300);pg.locator('[data-bio-keep]').check();print('  keep after check',pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).profile.keepBio"),'status now',pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).profile.status"));pg.locator('[data-se-f="status"]').fill('두 번째 소개');pg.wait_for_timeout(600);pg.locator('[data-se-pok]').tap();pg.wait_for_timeout(300)
-  print('  dbg',pg.evaluate('window.__b'));print('  prof',pg.evaluate("(()=>{const p=JSON.parse(localStorage.getItem('mgd2.v1.records')).profile;return [p.status,p.keepBio,p.bioHistory]})()"))
+  # 프로필은 '프로필 편집' 화면에서(2026-11-02)
+  pg.locator('[data-se="profile"]').first.tap();pg.wait_for_timeout(400);pg.locator('[data-pe-status]').fill('첫 소개');pg.locator('[data-pe-ok]').tap();pg.wait_for_timeout(300)
+  pg.locator('[data-se="profile"]').first.tap();pg.wait_for_timeout(400);pg.locator('[data-pe-keep]').check();pg.locator('[data-pe-status]').fill('두 번째 소개');pg.locator('[data-pe-ok]').tap();pg.wait_for_timeout(300)
   pg.locator('[data-se-save]').tap();pg.wait_for_timeout(300)
   h=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).profile.bioHistory||[]");ok('bio history saved '+str(h),len(h)==1 and h[0]['text']=='첫 소개')
   # 전체 글

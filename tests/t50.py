@@ -27,12 +27,15 @@ with sync_playwright() as p:
     ok(f'{name} 3. 저장 후 새로고침해도 유지 ({n_saved} → {pg.locator(".rm-it").count()}칸)',pg.locator('.rm-it').count()==n_saved and pg.evaluate(LAY)!=L0)
     # 4) 전체 취소 → 소개 이력에도 안 남음 (이력 켜 둔 상태에서)
     me=lambda:(pg.locator('[data-tab2="me"]').click() if mob else pg.locator('.pc-nav [data-pn="me"]').click(),pg.wait_for_timeout(300))
-    me();begin();pg.locator('[data-se="profile"]').first.click();pg.wait_for_timeout(300);pg.locator('[data-bio-keep]').check();pg.locator('[data-se-f="status"]').fill('처음 소개');pg.wait_for_timeout(600);apply()
-    pg.locator('.se-bar [data-se-save]').click();pg.wait_for_timeout(400);P0=pg.evaluate(PRO)
-    begin();pg.locator('[data-se="profile"]').first.click();pg.wait_for_timeout(300);pg.locator('[data-se-f="status"]').fill('바꿨다 취소할 소개');pg.wait_for_timeout(600);apply()
-    pg.locator('.se-bar [data-se-cancel]').click();pg.wait_for_timeout(400);P1=pg.evaluate(PRO)
-    ok(f'{name} 4. 전체 취소 → 소개·소개 이력 그대로 {P1}',P1==P0)
-    # (덤) 저장하면 이력이 남는지
-    begin();pg.locator('[data-se="profile"]').first.click();pg.wait_for_timeout(300);pg.locator('[data-se-f="status"]').fill('두 번째 소개');pg.wait_for_timeout(600);apply();pg.locator('.se-bar [data-se-save]').click();pg.wait_for_timeout(400)
-    ok(f'{name} +. 저장하면 이전 소개가 이력에 남음 {pg.evaluate(PRO)}','처음 소개' in pg.evaluate(PRO).split('bioHistory')[1])
+    # 프로필은 이제 '프로필 편집' 화면에서 따로 저장(2026-11-02). 그 화면의 취소 → 소개·이력 그대로, 완료 → 이전 소개가 이력에
+    def pe(status,keep=False,ok_=True):
+      begin();pg.locator('[data-se="profile"]').first.click();pg.wait_for_timeout(400)
+      if keep:pg.locator('[data-pe-keep]').check()
+      pg.locator('[data-pe-status]').fill(status);pg.locator('[data-pe-ok]' if ok_ else '[data-pe-x]').click();pg.wait_for_timeout(300)
+      pg.locator('.se-bar [data-se-save]').click();pg.wait_for_timeout(400)
+    me();pe('처음 소개',keep=True);P0=pg.evaluate(PRO)
+    pe('바꿨다 취소할 소개',ok_=False);P1=pg.evaluate(PRO)
+    ok(f'{name} 4. 프로필 편집에서 취소 → 소개·소개 이력 그대로 {P1}',P1==P0)
+    pe('두 번째 소개')
+    ok(f'{name} +. 완료하면 이전 소개가 이력에 남음 {pg.evaluate(PRO)}','처음 소개' in pg.evaluate(PRO).split('bioHistory')[1])
     print(name,'ERR',errs)

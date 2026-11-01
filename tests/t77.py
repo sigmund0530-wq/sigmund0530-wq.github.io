@@ -40,4 +40,21 @@ with sync_playwright() as p:
     ok(abs(float(pg.locator('.pc-zoom input').input_value())-pr['photoCrop']['z'])<0.05,tag+' 다시 맞추기는 지난 위치에서 시작')
     pg.locator('[data-pc-x]').click();pg.wait_for_timeout(200);pg.locator('[data-pe-x]').click();pg.wait_for_timeout(200)
     ok(rec(pg)['profile']['photoAssetId']==pr['photoAssetId'],tag+' 취소하면 그대로')
+    # 내 공간 편집에서 '프로필'을 누르면 겹치던 칸 대신 같은 편집 화면
+    pg.go_back();pg.wait_for_timeout(300)
+    if pg.locator('[data-se-begin]:visible').count()==0:
+      pg.locator('[data-tab2="home"],[data-pn="home"],[data-nav="blog"]').first.click() if pg.locator('[data-tab2="home"],[data-pn="home"],[data-nav="blog"]').count() else None;pg.wait_for_timeout(300)
+    if pg.locator('[data-se-begin]:visible').count():
+      pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(400)
+      pg.locator('[data-se="profile"]').first.click();pg.wait_for_timeout(400)
+      ok(pg.locator('.pe-page').count()==1 and pg.locator('.se-panel').count()==0,tag+' 내 공간 편집의 프로필 → 같은 편집 화면(겹치는 칸 없음)')
+      ok(pg.locator('[data-pe-show]').count()==1 and pg.locator('[data-pe-keep]').count()==1 and pg.locator('[data-pe-sq]').count()==1,tag+' 보이기·소개 보관·나만 아는 질문도 여기에')
+      pg.locator('[data-pe-show]').uncheck();pg.locator('[data-pe-keep]').check();pg.fill('[data-pe-status]','두 번째 소개');pg.locator('[data-pe-ok]').click();pg.wait_for_timeout(400)
+      lay=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.layout.desktop')||'{}')");r=rec(pg)['profile']
+      ok((lay.get('hide') or {}).get('profile') is True,tag+' 방문자에게 숨기기 저장')
+      ok(r.get('keepBio') and r.get('bioHistory') and r['bioHistory'][0]['text']=='한 줄 소개',tag+' 이전 소개 보관',r.get('bioHistory'))
+      pg.locator('[data-se-cancel],.se-bar button:has-text("취소")').first.click();pg.wait_for_timeout(400)
+      if pg.locator('.dialog [data-o]').count():pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(300)
+      ok(rec(pg)['profile']['status']=='두 번째 소개',tag+' 편집 취소해도 프로필 저장은 그대로')
+    else:ok(False,tag+' 내 공간 편집 버튼을 못 찾음')
     ok(not errs,tag+' ERR',errs);pg.context.close()
