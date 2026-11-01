@@ -5525,7 +5525,7 @@ async function aiCollect(ctx){const areas=[...ctx.body.querySelectorAll('.rte-ar
   finally{toast=quiet}
   return done}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pub]');if(!b||aiPass||!aiOn())return;
-  const area=document.querySelector('.rte-area'),ctx=area&&pfwCtxOf(area);if(!ctx||!ctx.draft)return;
+  const w=b.closest('.win')||document,area=w.querySelector('.rte-area')||document.querySelector('.rte-area'),ctx=area&&pfwCtxOf(area);if(!ctx||!ctx.draft)return;
   e.preventDefault();e.stopImmediatePropagation();if(aiBusy)return;aiBusy=true;toast('무가당 AI가 글을 읽고 있어요…');
   aiCollect(ctx).then(done=>{aiBusy=false;aiPass=true;try{b.click()}finally{aiPass=false}
     if(done.length)setTimeout(()=>toast(`AI가 ${done.slice(0,3).map(w=>'‘'+(w.length>10?w.slice(0,9)+'…':w)+'’').join(', ')}${done.length>3?` 등 ${done.length}개`:''}를 모았어요 · 틀리면 단어를 눌러 빼요`),30)},
