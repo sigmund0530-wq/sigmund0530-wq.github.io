@@ -1,4 +1,4 @@
-import json,sys,time
+import json,sys,time,re
 from llama_cpp import Llama
 PROMPT=open('prompt.txt',encoding='utf-8').read()
 S=json.load(open(sys.argv[2] if len(sys.argv)>2 else 'samples.json',encoding='utf-8'))
@@ -15,7 +15,15 @@ def run(name,path,suffix=""):
         txt=re.sub(r"<think>.*?</think>","",r["choices"][0]["message"]["content"],flags=re.S);m=re.search(r"\{.*\}|\[.*\]",txt,re.S)
         try:o=json.loads(m.group(0));got=o.get("items",[]) if isinstance(o,dict) else o
         except Exception:got=[]
-        g={norm(x.get("word","")):x.get("kind","") for x in got if isinstance(x,dict) and x.get("word")}
+        KN={'책':'책','물건':'물건','장소':'장소','음식':'음식','음악':'음악','영화·드라마':'영화·드라마','영화/드라마':'영화·드라마','영화':'영화·드라마','드라마':'영화·드라마'}
+        g={}
+        for x in got:
+            if not isinstance(x,dict) or not x.get("word"):continue
+            wd=norm(x["word"]);kd=KN.get(str(x.get("kind","")).strip())
+            if not kd or wd not in s["text"] or re.search(r"\d+\s*(만|천)?\s*원",wd):continue
+            g[wd]=kd
+        g={k:v for k,v in g.items() if len(k)>1}
+        g={k:v for k,v in g.items() if not any(k!=o and k in o for o in g)}  # 겹치면 긴 이름만
         w={a:b for a,b in s["want"]}
         def find(k):
             for a in w:
