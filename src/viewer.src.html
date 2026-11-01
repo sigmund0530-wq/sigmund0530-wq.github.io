@@ -40,6 +40,7 @@ header h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.01em}
 .solo .wrap{padding:0}.solo header{padding:6px 8px;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.solo header::-webkit-scrollbar{display:none}.solo header h1,.solo .note{display:none}.solo .seg{flex:none}.solo .seg button{padding:5px 10px;font-size:12.5px}.solo .stage{padding:0;gap:0;align-items:stretch}
 .solo .device{flex:1;gap:0}.solo .phone{padding:0;border-radius:0;background:none;box-shadow:none;flex:1;display:flex}
 .solo .phone .screen{border-radius:0;flex:1}.solo .cap{display:none}
+.solo .monitor,.solo .phone.tablet{padding:0;border-radius:0;background:none;box-shadow:none;flex:1;display:flex}.solo .monitor .screen,.solo .phone.tablet .screen{border-radius:0;flex:1}
 .phone.tablet{border-radius:34px;padding:16px}.phone.tablet .screen{border-radius:16px}
 </style>
 
@@ -90,10 +91,10 @@ header h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.01em}
 <script>
 (function(){
   const SZ={pc:{w:1280,h:800},tab:{w:820,h:1180},mo:{w:390,h:800}};
-  let mode="pc",st="before";
+  let mode=null,st="before";
   try{const m=localStorage.getItem("mgd.viewer.mode");if(m)mode=m;const t=localStorage.getItem("mgd.viewer.st");if(t)st=t}catch(e){}
   if(mode==="after"){mode="mobile";st="after"}
-  if(!["both","pc","tablet","mobile"].includes(mode))mode="pc";
+  if(!["both","pc","tablet","mobile"].includes(mode))mode=null;
   const $=id=>document.getElementById(id);
   let SRC=null;const getSrc=()=>{if(SRC==null){const b=atob(document.getElementById("appsrc").textContent.trim());SRC=new TextDecoder().decode(Uint8Array.from(b,c=>c.charCodeAt(0)))}return SRC};
   /* 가입 후 화면들은 따로 저장소(mgd2after)를 함께 써서 가입 전 화면과 섞이지 않게. 처음 열 때 가입을 자동으로 마침 */
@@ -117,7 +118,11 @@ header h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.01em}
             wait("[data-aup-skip]",sk=>{sk.click();wait("[data-au-enter]",en=>en.click())})})})})})}
   /* 진짜 휴대폰에서 모바일 화면을 볼 때만 틀 없이 꽉 채움. 좁은 미리보기 창에서는 보통 화면 그대로(버튼 줄바꿈) */
   const phone=()=>innerWidth<640&&matchMedia("(pointer:coarse)").matches;
+  /* 처음 열 때(고른 적 없으면): 휴대폰은 모바일, 넓은 화면은 나란히, 그 사이는 PC */
+  if(!mode)mode=phone()?"mobile":innerWidth>=1100?"both":"pc";
   const solo=()=>phone()&&(mode==="mobile"||mode==="both");
+  /* 휴대폰에서 PC·태블릿을 고르면: 틀 없이 화면 너비에 맞춰 줄이고 세로는 꽉 채움('PC 버전으로 보기'처럼) */
+  const wideOnPhone=()=>phone()&&(mode==="pc"||mode==="tablet");
   const ALL=["pc","tab","mo","pc2","tab2","mo2"];
   function fit(){
     const sf=st==="after"?"2":"";
@@ -126,6 +131,9 @@ header h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.01em}
     if(solo()){document.body.classList.add("solo");const k="mo"+sf;ALL.forEach(x=>$("dev-"+x).hidden=x!==k);load(k);
       const f=$("f-"+k),scr=$("scr-"+k),hh=document.querySelector("header").offsetHeight,h=innerHeight-hh;f.width=innerWidth;f.height=h;f.style.width=innerWidth+"px";f.style.height=h+"px";f.style.transform="none";
       scr.style.width=innerWidth+"px";scr.style.height=h+"px";return}
+    if(wideOnPhone()){document.body.classList.add("solo");const k=(mode==="pc"?"pc":"tab")+sf;ALL.forEach(x=>$("dev-"+x).hidden=x!==k);load(k);
+      const f=$("f-"+k),scr=$("scr-"+k),hh=document.querySelector("header").offsetHeight,H=innerHeight-hh,W=innerWidth,bw=SZ[mode==="pc"?"pc":"tab"].w,s=W/bw,ih=Math.round(H/s);
+      f.width=bw;f.height=ih;f.style.width=bw+"px";f.style.height=ih+"px";f.style.transform="scale("+s+")";scr.style.width=W+"px";scr.style.height=H+"px";return}
     document.body.classList.remove("solo");
     const st0=$("stage"),W=st0.clientWidth,H=st0.clientHeight-30;
     const show=mode==="both"?["pc","mo"]:[{pc:"pc",tablet:"tab",mobile:"mo"}[mode]];
