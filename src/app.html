@@ -1364,6 +1364,12 @@ html.kb-open .win.editor.m>.rte-bar{padding-bottom:6px!important}
 @media (pointer:coarse){.pw-h.pw-tl{left:-9px;top:-9px}.pw-h.pw-tr{right:-9px;top:-9px}.pw-h.pw-bl{left:-9px;bottom:-9px}}
 .ps-more{position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:999px;border:0;background:var(--porc-hi,var(--chrome));color:var(--ink);box-shadow:0 1px 6px var(--porc-shade,rgba(0,0,0,.15));font-size:16px;line-height:1;cursor:pointer;z-index:4}
 .pblock .ph-img,.pblock .ph-img img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+/* 꾹 눌러 들린 사진·끄는 그림자 */
+.ph-item.ps-lift{transform:scale(.96);transition:transform .15s;filter:drop-shadow(0 8px 18px rgba(0,0,0,.18))}
+.ph-item.ps-src{opacity:.35}
+.ps-ghost{position:fixed;z-index:100001;pointer-events:none;border-radius:8px;opacity:.9;box-shadow:0 12px 30px rgba(0,0,0,.25);transform:rotate(-2deg)}
+html.ps-dragging,html.ps-dragging *{user-select:none!important;-webkit-user-select:none!important}
+.rte-area.drop-text{box-shadow:inset 0 -3px 0 var(--ink-2)}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5730,13 +5736,48 @@ document.addEventListener('click',e=>{const btn=e.target.closest&&e.target.close
   e.preventDefault();e.stopImmediatePropagation();if(Date.now()<psSkipClick)return;
   const pb=btn.closest('.pblock');if(pb.classList.contains('pw-sel'))psUnsel();else psSel(pb)},true);
 document.addEventListener('contextmenu',e=>{const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn)return;e.preventDefault();psSel(btn.closest('.pblock'));psMenu(btn)});
-let psT=0,psAt=null;
+/* 꾹 누른 뒤(2026-11-02, 주인 결정): 그대로 떼면 메뉴, 끌면 사진을 원하는 자리로 옮김(손가락·펜). PC는 원래 있던 끌어 놓기(edPhotoDrag)를 씀.
+   놓는 자리 규칙은 PC 끌어 놓기와 같음: 다른 사진 옆이면 그 줄 안에서 앞·뒤, 글 위면 놓은 줄 끝에서 글을 나누고 새 사진 줄. 화면 위·아래 끝에 가면 저절로 굴러감. */
+let psT=0,psAt=null,psArm=null,psDrag=null;
+function psDropAt(ctx,s0,x,y){const host=ctx.blocksEl;host.querySelectorAll('.drop-before,.drop-after,.drop-text').forEach(n=>n.classList.remove('drop-before','drop-after','drop-text'));
+  const t=document.elementFromPoint(x,y);if(!t||!host.contains(t))return false;ctx.syncText();
+  const bs=ctx.draft.blocks,sb=bs.find(b=>b.id===s0.bid);if(!sb||!sb.items[s0.i])return false;const item=sb.items[s0.i];
+  const fig=t.closest('.ph-item');
+  if(fig){const tb=bs.find(b=>b.id===fig.closest('.pblock').dataset.bid);if(!tb)return false;let j=+fig.dataset.i;const r=fig.getBoundingClientRect();if(x>r.left+r.width/2)j++;
+    if(tb===sb&&j>s0.i)j--;if(tb===sb&&j===s0.i)return false;sb.items.splice(s0.i,1);tb.items.splice(j,0,item);ctx.drawBlocks();ctx.queueAuto();return true}
+  const a=t.closest('.rte-area');if(!a)return false;let rg=null;
+  if(document.caretRangeFromPoint)rg=document.caretRangeFromPoint(x,y);else if(document.caretPositionFromPoint){const cp=document.caretPositionFromPoint(x,y);if(cp){rg=document.createRange();rg.setStart(cp.offsetNode,cp.offset);rg.collapse(true)}}
+  if(rg&&!a.contains(rg.startContainer))rg=null;
+  if(rg){let n=rg.startContainer;while(n&&n.parentNode!==a)n=n.parentNode;if(n){rg=document.createRange();rg.setStartAfter(n);rg.collapse(true)}}
+  const w=sb.items.length===1?sb.w:undefined;sb.items.splice(s0.i,1);const nb={id:uid('b'),type:'photos',items:[item]};if(w)nb.w=w;ctx.insertAt(nb,a.dataset.bid,rg);return true}
+function psHint(ctx,x,y){const host=ctx.blocksEl;host.querySelectorAll('.drop-before,.drop-after,.drop-text').forEach(n=>n.classList.remove('drop-before','drop-after','drop-text'));
+  const t=document.elementFromPoint(x,y);if(!t||!host.contains(t))return;const fig=t.closest('.ph-item');
+  if(fig){if(fig.classList.contains('ps-src'))return;const r=fig.getBoundingClientRect();fig.classList.add(x>r.left+r.width/2?'drop-after':'drop-before');return}
+  const a=t.closest('.rte-area');if(a)a.classList.add('drop-text')}
+const psScroller=el=>{for(let n=el;n&&n!==document.body;n=n.parentElement){const cs=getComputedStyle(n);if(/(auto|scroll)/.test(cs.overflowY)&&n.scrollHeight>n.clientHeight+2)return n}return document.scrollingElement};
+function psEnd(drop,x,y){const d=psDrag;psDrag=null;if(!d)return;cancelAnimationFrame(d.raf);d.ghost.remove();d.fig.classList.remove('ps-src');document.documentElement.classList.remove('ps-dragging');
+  if(drop&&psDropAt(d.ctx,d.s0,x,y)){psUnsel();toast('사진을 옮겼어요')}else d.ctx.blocksEl.querySelectorAll('.drop-before,.drop-after,.drop-text').forEach(n=>n.classList.remove('drop-before','drop-after','drop-text'))}
 document.addEventListener('pointerdown',e=>{
   if(!(e.target.closest&&e.target.closest('.pblock.pw-sel')))psUnsel();
   const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn||e.pointerType==='mouse')return;
-  psAt={x:e.clientX,y:e.clientY};clearTimeout(psT);psT=setTimeout(()=>{psAt=null;psSkipClick=Date.now()+700;psSel(btn.closest('.pblock'));psMenu(btn)},450)},true);
-const psCancel=e=>{if(!psAt)return;if(e.type!=='pointermove'||Math.hypot(e.clientX-psAt.x,e.clientY-psAt.y)>10){clearTimeout(psT);psAt=null}};
-['pointermove','pointerup','pointercancel','scroll'].forEach(t=>document.addEventListener(t,psCancel,true));
+  psAt={x:e.clientX,y:e.clientY,id:e.pointerId};psArm=null;clearTimeout(psT);
+  psT=setTimeout(()=>{psSkipClick=Date.now()+900;const fig=btn.closest('.ph-item');psSel(btn.closest('.pblock'));fig.classList.add('ps-lift');psArm={btn,fig,x:psAt.x,y:psAt.y};psAt=null},450)},true);
+document.addEventListener('pointermove',e=>{
+  if(psAt&&Math.hypot(e.clientX-psAt.x,e.clientY-psAt.y)>10){clearTimeout(psT);psAt=null}
+  if(psArm&&!psDrag&&Math.hypot(e.clientX-psArm.x,e.clientY-psArm.y)>8){const {btn,fig}=psArm;psArm=null;fig.classList.remove('ps-lift');const ctx=pfwCtxOf(btn);if(!ctx)return;
+    const img=fig.querySelector('img'),r=img.getBoundingClientRect(),g=document.createElement('img');g.src=img.src;g.className='ps-ghost';const gw=Math.min(160,r.width);g.style.width=gw+'px';document.body.appendChild(g);
+    fig.classList.add('ps-src');document.documentElement.classList.add('ps-dragging');
+    psDrag={ctx,fig,ghost:g,gw,s0:{bid:fig.closest('.pblock').dataset.bid,i:+fig.dataset.i},x:e.clientX,y:e.clientY,sc:psScroller(ctx.blocksEl),raf:0};
+    const tick=()=>{if(!psDrag)return;const d=psDrag,vh=(window.visualViewport?visualViewport.height:innerHeight);const sp=d.y<90?-(90-d.y)/4:d.y>vh-90?(d.y-(vh-90))/4:0;
+      if(sp&&d.sc){d.sc.scrollTop+=sp;psHint(d.ctx,d.x,d.y)}d.raf=requestAnimationFrame(tick)};psDrag.raf=requestAnimationFrame(tick)}
+  if(psDrag){const d=psDrag;d.x=e.clientX;d.y=e.clientY;d.ghost.style.left=(e.clientX-d.gw/2)+'px';d.ghost.style.top=(e.clientY-d.gw*0.4)+'px';psHint(d.ctx,e.clientX,e.clientY)}},true);
+document.addEventListener('pointerup',e=>{clearTimeout(psT);psAt=null;
+  if(psDrag){psEnd(true,e.clientX,e.clientY);return}
+  if(psArm){const {btn,fig}=psArm;psArm=null;fig.classList.remove('ps-lift');psMenu(btn)}},true);
+document.addEventListener('pointercancel',()=>{clearTimeout(psT);psAt=null;if(psArm){psArm.fig.classList.remove('ps-lift');psArm=null}if(psDrag)psEnd(false)},true);
+/* 끄는 동안 화면이 같이 굴러가지 않게(아이폰은 touchmove를 막아야 함). 꾹 눌러 들린 뒤부터만 막음 */
+document.addEventListener('touchmove',e=>{if(psArm||psDrag)e.preventDefault()},{passive:false,capture:true});
+document.addEventListener('scroll',()=>{if(psAt){clearTimeout(psT);psAt=null}},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')psUnsel()});
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
