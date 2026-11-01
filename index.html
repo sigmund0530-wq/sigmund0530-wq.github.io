@@ -1313,6 +1313,25 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
 .pf-card.pf-fold .pf-head{cursor:pointer;flex-wrap:nowrap;gap:0;min-width:0}
 .pf-card.pf-fold .pf-head .pf-name{flex:0 1 auto;font-weight:500;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pf-card.pf-fold .pf-head::after{content:attr(data-sum) " ›";color:var(--ink-2);font-size:14px;white-space:pre;flex:none}
+/* 짤 칸: 상자 대신 떠 있는 도자기 판 하나, 안은 간격으로만 나눔 */
+.zz-pan{position:fixed;z-index:100000;background:var(--chrome);border-radius:16px;box-shadow:0 12px 40px var(--porc-shade,rgba(0,0,0,.08)),0 1px 0 var(--porc-hi,#fff) inset;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:440px}
+.zz-pan.m{left:0;right:0;bottom:0;top:auto;border-radius:18px 18px 0 0;max-height:62vh;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.zz-top{display:flex;gap:8px;align-items:center}
+.zz-q{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;background:var(--chrome);padding:9px 12px;font:inherit;font-size:14px;color:var(--ink)}
+.zz-x{border:0;background:none;color:var(--ink-2);font:inherit;font-size:13px;padding:6px 4px;cursor:pointer}
+.zz-tabs{display:flex;gap:4px}
+.zz-tabs button{border:0;background:none;font:inherit;font-size:13px;color:var(--ink-2);padding:5px 10px;border-radius:999px;cursor:pointer}
+.zz-tabs button[aria-selected=true]{background:var(--porc-in,var(--chrome-2));color:var(--ink)}
+.zz-grid{flex:1;min-height:120px;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-content:start}
+.zz-pan:not(.m) .zz-grid{grid-template-columns:repeat(4,1fr)}
+.zz-it{border:0;padding:0;background:var(--chrome-2);border-radius:8px;aspect-ratio:1;overflow:hidden;cursor:pointer;position:relative}
+.zz-it img{width:100%;height:100%;object-fit:cover;display:block}
+.zz-it.busy{opacity:.45}
+.zz-ph{display:block;width:100%;height:100%}
+.zz-msg{grid-column:1/-1;margin:16px 4px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.zz-more{grid-column:1/-1;border:0;background:none;font:inherit;font-size:13px;color:var(--ink-2);padding:10px;cursor:pointer}
+.zz-foot{margin:0;font-size:11.5px;color:var(--ink-2)}
+.win.editor.m .zz-btn{font-size:15px;font-weight:600}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5536,6 +5555,87 @@ const aiBaseSettings=renderSettings;renderSettings=function(cv){aiBaseSettings(c
   sec.innerHTML=`<h2>알아서 모으기</h2><div class="set-row"><div class="set-l"><b>발행할 때 AI가 모아 두기</b><small>${srv?'무가당 AI가 글을 읽고 책·물건·장소 같은 말에 정보를 붙여요. 학습에 쓰지 않고, 읽은 뒤 남기지 않아요.':'서버에 로그인하면 쓸 수 있어요.'}</small></div><div class="set-r">${srv?`<button type="button" class="btn sm${on?' on':''}" data-ai-toggle aria-pressed="${on}">${on?'켜짐':'꺼짐'}</button>`:''}</div></div>`;
   anchor.before(sec);const t=sec.querySelector('[data-ai-toggle]');if(t)t.onclick=()=>{const v=!(settings().aiCollect===true);records.settings=Object.assign({},records.settings||{},{aiCollect:v});commit();
     t.classList.toggle('on',v);t.textContent=v?'켜짐':'꺼짐';t.setAttribute('aria-pressed',String(v));toast(v?'켰어요 · 발행할 때 AI가 모아 둬요':'껐어요')}};
+/* ═════════ 짤 (2026-11-02, 주인 결정) ═════════
+   앨범·사파리·핀터레스트를 오가며 짤을 찾는 게 귀찮아서, 글쓰기 도구줄의 '짤' 하나로:
+   - 내 짤: 짤 칸에서 넣었거나 붙여넣은 그림이 저절로 모임(records.zzal [{id, at, q}], 최근 쓴 순, 200개까지). 다시 올리지 않고 같은 파일을 씀.
+   - GIF(Klipy) · 한국 짤(네이버): 무가당 서버(mugadang-ai Worker)를 거쳐 찾고 그림도 서버가 대신 받아 줌 → 짤 회사는 누가 찾았는지 모름.
+     키는 Worker 비밀 값(주인이 넣음). 키가 없으면 '준비 중'. 서버에 로그인한 사람만.
+   - 붙여넣기: 예전엔 그림을 버리고 글자만 넣었음 → 그림이 있으면 커서 자리에 사진으로 넣고 내 짤에도 모음.
+   - 움직이는 GIF: 예전엔 사진을 넣을 때 캔버스로 다시 그려 첫 장면만 남았음 → 글 사진이 GIF(2MB 이하)면 그대로 둠. */
+const ZZ_URL=AI_URL+"/zzal";const ZZ_MAX=200,ZZ_GIF=2*1024*1024;
+const zzList=()=>Array.isArray(records.zzal)?records.zzal.filter(z=>z&&z.id&&assets[z.id]):[];
+function zzAdd(id,q){if(!id)return;const L=zzList().filter(z=>z.id!==id);L.unshift({id,at:Date.now(),q:String(q||'').slice(0,40)});records.zzal=L.slice(0,ZZ_MAX);persist()}
+const zzBaseUsed=extraUsedIds;extraUsedIds=function(){const out=zzBaseUsed();(Array.isArray(records&&records.zzal)?records.zzal:[]).forEach(z=>z&&z.id&&out.push(z.id));return out};
+const zzBaseAdd=addAsset;addAsset=function(file,max,role,q){
+  if(!(file&&file.type==='image/gif'&&role==='post'&&file.size<=ZZ_GIF))return zzBaseAdd(file,max,role,q);
+  return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=()=>rej(new Error('이 그림은 열 수 없어요.'));
+    fr.onload=()=>{const img=new Image();img.onload=()=>{const id=uid('asset');assets[id]={id,role,mime:'image/gif',width:img.naturalWidth,height:img.naturalHeight,dataUrl:fr.result,light:false};res(id)};
+      img.onerror=()=>rej(new Error('이 그림은 열 수 없어요.'));img.src=fr.result};fr.readAsDataURL(file)})};
+const zzSrv=()=>SB.on&&!!SB.user;
+async function zzTok(){try{const {data}=await SB.c.auth.getSession();return data&&data.session&&data.session.access_token||''}catch(e){return ''}}
+async function zzPost(path,body,tok,blob){const r=await fetch(ZZ_URL+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error(String(r.status));return blob?r.blob():r.json()}
+async function zzFetchImg(u,tok){const b=await zzPost('/img',{u},tok,true);const t=b.type||'image/jpeg';return new File([b],'zzal.'+(t.split('/')[1]||'img'),{type:t})}
+async function zzInsertIds(ctx,ids){if(!ids.length)return;ctx.insertBlock({id:uid('b'),type:'photos',items:ids.map(id=>({assetId:id,caption:''}))})}
+let zzPanel=null;
+function zzClose(){if(zzPanel){zzPanel.remove();zzPanel=null}}
+function zzOpen(ctx,btn){if(zzPanel){zzClose();return}pfwHide();
+  const M=isMobile(),el=document.createElement('div');el.className='zz-pan'+(M?' m':'');el.setAttribute('role','dialog');el.setAttribute('aria-label','짤 넣기');
+  const mine=zzList();let tab=mine.length?'mine':'gif',q='',page=1,seq=0,urls=[];
+  el.innerHTML=`<div class="zz-top"><input type="search" class="zz-q" placeholder="짤 찾기 · 헐, 킹받네" aria-label="짤 찾기" enterkeyhint="search"><button type="button" class="zz-x" aria-label="닫기">닫기</button></div>
+    <div class="zz-tabs" role="tablist"><button type="button" data-zt="mine">내 짤</button><button type="button" data-zt="gif">GIF</button><button type="button" data-zt="kr">한국 짤</button></div>
+    <div class="zz-grid" aria-live="polite"></div><p class="zz-foot"></p>`;
+  document.body.appendChild(el);zzPanel=el;
+  if(!M){const r=btn.getBoundingClientRect(),w=Math.min(380,innerWidth-24);el.style.width=w+'px';el.style.left=Math.max(12,Math.min(r.left,innerWidth-w-12))+'px';el.style.top=Math.min(r.bottom+6,innerHeight-420)+'px'}
+  const grid=el.querySelector('.zz-grid'),foot=el.querySelector('.zz-foot'),inp=el.querySelector('.zz-q');
+  el.addEventListener('mousedown',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
+  el.querySelector('.zz-x').onclick=zzClose;
+  const freeUrls=()=>{urls.forEach(u=>URL.revokeObjectURL(u));urls=[]};
+  const msg=t=>{grid.innerHTML=`<p class="zz-msg">${t}</p>`};
+  async function draw(more){const my=++seq;el.querySelectorAll('[data-zt]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.zt===tab)));
+    foot.textContent=tab==='gif'?'GIF 제공 KLIPY · 무가당 서버가 대신 찾아서, 누가 찾았는지 전해지지 않아요':tab==='kr'?'네이버 이미지 검색 · 무가당 서버가 대신 찾아요. 남의 그림은 출처를 생각해 주세요':'짤 칸에서 넣거나 붙여넣은 그림이 여기 모여요';
+    if(tab==='mine'){freeUrls();const k=q.trim().toLowerCase(),L=zzList().filter(z=>!k||String(z.q||'').toLowerCase().includes(k));
+      if(!L.length){msg(k?'이 말로 넣은 짤이 없어요. GIF나 한국 짤에서 찾아봐요.':'아직 모은 짤이 없어요. GIF나 한국 짤에서 찾아 넣으면 여기 모여요.');return}
+      grid.innerHTML=L.map(z=>`<button type="button" class="zz-it" data-mine="${esc(z.id)}" title="${esc(z.q||'')}"><img alt="${esc(z.q||'짤')}" src="${esc(assets[z.id].dataUrl||'')}"></button>`).join('');return}
+    if(!zzSrv()){msg('무가당 서버에 로그인하면 찾을 수 있어요.');return}
+    if(tab==='kr'&&!q.trim()){msg('찾을 말을 넣어 주세요. 예) 헐, 킹받네, 퇴근');return}
+    if(!more){freeUrls();page=1;msg('찾는 중…')}
+    const tok=await zzTok();if(!tok){msg('다시 로그인해 주세요.');return}
+    let j;try{j=await zzPost('/search',{q:q.trim(),src:tab,page},tok)}catch(e){if(my===seq)msg('지금은 찾을 수 없어요. 잠시 뒤 다시 해 봐요.');return}
+    if(my!==seq)return;
+    if(j.need==='key'){msg('짤 검색을 준비하고 있어요. 조금만 기다려 주세요.');return}
+    const items=j.items||[];if(!more)grid.innerHTML='';if(!items.length&&!more){msg('찾은 짤이 없어요. 다른 말로 찾아봐요.');return}
+    const frag=document.createDocumentFragment();
+    items.forEach(it=>{const b=document.createElement('button');b.type='button';b.className='zz-it';b._it=it;b.title=it.title||'';b.innerHTML='<span class="zz-ph"></span>';frag.appendChild(b);
+      zzPost('/img',{u:it.thumb},tok,true).then(bl=>{if(my!==seq)return;const u=URL.createObjectURL(bl);urls.push(u);b.innerHTML=`<img alt="${esc(it.title||'짤')}" src="${u}">`}).catch(()=>b.remove())});
+    grid.querySelector('.zz-more')?.remove();grid.appendChild(frag);
+    if(j.more&&page<10){const mb=document.createElement('button');mb.type='button';mb.className='zz-more';mb.textContent='더 보기';mb.onclick=()=>{page++;draw(true)};grid.appendChild(mb)}}
+  el.querySelectorAll('[data-zt]').forEach(b=>b.onclick=()=>{tab=b.dataset.zt;draw()});
+  let qt=0;inp.addEventListener('input',()=>{q=inp.value;clearTimeout(qt);qt=setTimeout(()=>draw(),tab==='mine'?0:450)});
+  inp.addEventListener('keydown',e=>{if(e.isComposing)return;if(e.key==='Enter'){e.preventDefault();clearTimeout(qt);if(tab==='mine'&&q.trim()&&!zzList().some(z=>String(z.q||'').includes(q.trim()))){tab='gif'}draw()}if(e.key==='Escape')zzClose()});
+  grid.addEventListener('click',async e=>{const b=e.target.closest('.zz-it');if(!b||b.disabled)return;
+    if(b.dataset.mine){const z=zzList().find(x=>x.id===b.dataset.mine);zzClose();await zzInsertIds(ctx,[b.dataset.mine]);zzAdd(b.dataset.mine,z&&z.q);return}
+    const it=b._it;if(!it)return;b.disabled=true;b.classList.add('busy');
+    try{const tok=await zzTok();const f=await zzFetchImg(it.full,tok);const id=await addAsset(f,1000,'post',.85);zzClose();await zzInsertIds(ctx,[id]);zzAdd(id,q.trim()||it.title)}
+    catch(x){b.disabled=false;b.classList.remove('busy');toast('이 짤은 가져올 수 없어요. 다른 걸 골라 봐요.')}});
+  const away=e=>{if(!zzPanel)return document.removeEventListener('pointerdown',away,true);if(!el.contains(e.target)&&!btn.contains(e.target)){zzClose();document.removeEventListener('pointerdown',away,true)}};
+  document.addEventListener('pointerdown',away,true);
+  draw();if(!M)inp.focus()}
+/* 붙여넣기: 그림이 있으면 사진으로 */
+async function zzPaste(ctx,e){const cd=e.clipboardData;if(!cd)return;
+  const files=[...(cd.files||[])].filter(f=>/^image\//.test(f.type));
+  let src='';if(!files.length){const h=cd.getData('text/html')||'';const m=h.match(/<img[^>]+src=["']([^"']+)["']/i);if(m&&/^https?:\/\//.test(m[1])&&!(cd.getData('text/plain')||'').trim())src=m[1]}
+  if(!files.length&&!src)return;e.preventDefault();e.stopImmediatePropagation();
+  try{let fl=files;if(src){if(!zzSrv()){toast('이 그림은 바로 붙일 수 없어요. 저장한 뒤 사진 넣기로 넣어 주세요.');return}fl=[await zzFetchImg(src,await zzTok())]}
+    const ids=[];for(const f of fl.slice(0,MAX_PHOTOS)){try{ids.push(await addAsset(f,1000,'post',.82))}catch(x){toast(x.message)}}
+    await zzInsertIds(ctx,ids);ids.forEach(id=>zzAdd(id,''))}catch(x){toast('그림을 붙이지 못했어요.')}}
+/* 휴대폰 도구줄은 edSetup 뒤에 새로 짜여 창 아래로 옮겨지므로, 한 박자 늦게 창 전체에서 사진 버튼을 찾아 옆에 둠 */
+const zzSetup=edSetup;edSetup=function(ctx){zzSetup(ctx);const b=ctx.body;
+  b.addEventListener('paste',e=>{if(e.target.closest&&e.target.closest('.rte-area'))zzPaste(ctx,e)},true);
+  setTimeout(()=>{const root=b.closest('.win')||b,ph=root.querySelector('.rte-photo');if(!ph||root.querySelector('[data-x-zzal]'))return;
+    const z=document.createElement('button');z.type='button';z.dataset.xZzal='';z.className='zz-btn';z.title='짤을 찾아 커서 자리에 넣어요';z.setAttribute('aria-label','짤 넣기');z.textContent='짤';
+    z.addEventListener('mousedown',e=>e.preventDefault());z.onclick=()=>zzOpen(ctx,z);ph.after(z)},0)};
+const zzCloseWin=closeWin;closeWin=function(w){zzClose();zzCloseWin(w)};
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;

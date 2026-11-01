@@ -2,6 +2,9 @@
 // 글을 받아 책·물건·장소·음식·음악·영화·드라마를 찾아 돌려줘요.
 // Cloudflare는 Workers AI로 처리한 내용을 학습에 쓰지 않고, 처리 후 보관하지 않아요(공식 문서).
 // 설정: 이 Worker의 Settings → Bindings → Workers AI, 변수 이름 AI
+// 짤 검색(2026-11-02): POST /zzal/search {q, src:"gif"|"kr", page} → {items:[{id,thumb,full,w,h,title}]}
+//   POST /zzal/img {u} → 그림 바이트(무가당 서버가 대신 받아 줘서, 짤 회사는 누가 찾았는지 몰라요)
+//   비밀 값(Settings → Variables and Secrets, 주인이 직접 넣음): KLIPY_KEY, NAVER_ID, NAVER_SECRET. 없으면 {items:[], need:"key"}
 const MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
 const ALLOW = ["https://sigmund0530-wq.github.io"];
 // 잠금: 무가당에 로그인한 사람만. 앱이 보낸 로그인 토큰을 Supabase에 물어 확인해요(공개 키만 씀, 비밀 키 없음).
@@ -29,7 +32,7 @@ const norm = w => String(w||"").trim().replace(/^[『「'"‘“《\s]+|[』」'
 
 function cors(origin){
   const ok = ALLOW.includes(origin);
-  return { "Access-Control-Allow-Origin": ok ? origin : ALLOW[0], "Access-Control-Allow-Methods":"POST, OPTIONS", "Access-Control-Allow-Headers":"Content-Type, Authorization", "Vary":"Origin" };
+  return { "Access-Control-Allow-Origin": ok ? origin : ALLOW[0], "Access-Control-Allow-Methods":"POST, OPTIONS", "Access-Control-Allow-Headers":"Content-Type, Authorization", "Access-Control-Max-Age":"86400", "Vary":"Origin" };
 }
 function textOf(r){
   if (!r) return "";
@@ -47,16 +50,56 @@ function clean(items, text){
   return g.filter(a => !g.some(b => b.word !== a.word && b.word.includes(a.word))); // 겹치면 긴 이름만
 }
 
+// 로그인 확인은 같은 토큰이면 5분 동안 다시 묻지 않아요(짤 썸네일을 여러 장 받을 때 Supabase를 덜 부름)
+const seen = new Map();
+async function loggedIn(auth){
+  if (!/^Bearer\s+\S+/.test(auth)) return false;
+  const t = seen.get(auth); if (t && t > Date.now()) return true;
+  const who = await fetch(SB_URL + "/auth/v1/user", { headers: { Authorization: auth, apikey: SB_PUBLISHABLE } });
+  if (!who.ok) return false;
+  if (seen.size > 500) seen.clear(); seen.set(auth, Date.now() + 5 * 60 * 1000); return true;
+}
+const strip = s => String(s || "").replace(/<[^>]*>/g, "").replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&lt;|&gt;/g, "").slice(0, 80);
+async function zzalSearch(body, env){
+  const q = String(body && body.q || "").trim().slice(0, 60), src = body && body.src === "kr" ? "kr" : "gif", page = Math.max(1, Math.min(20, +body.page || 1));
+  if (src === "gif") {
+    if (!env.KLIPY_KEY) return { items: [], need: "key" };
+    const path = q ? "gifs/search?q=" + encodeURIComponent(q) + "&" : "gifs/trending?";
+    const r = await fetch(`https://api.klipy.com/api/v1/${env.KLIPY_KEY}/${path}per_page=24&page=${page}&locale=ko_KR&rating=pg-13`);
+    if (!r.ok) return { items: [], error: r.status };
+    const j = await r.json(); const list = Array.isArray(j.data) ? j.data : (j.data && j.data.data) || [];
+    const pick = (f, ks, ts) => { for (const k of ks) for (const t of ts) { const v = f && f[k] && f[k][t]; if (v && v.url) return v; } return null; };
+    return { items: list.map(x => { const f = x.file || x.files || {}; const th = pick(f, ["xs", "sm"], ["gif", "webp", "jpg"]), full = pick(f, ["sm", "md", "hd"], ["gif"]);
+      return full && th ? { id: "k" + x.id, thumb: th.url, full: full.url, w: full.width || 0, h: full.height || 0, title: strip(x.title) } : null; }).filter(Boolean), more: !!(j.data && j.data.has_next) };
+  }
+  if (!env.NAVER_ID || !env.NAVER_SECRET) return { items: [], need: "key" };
+  if (!q) return { items: [] };
+  const r = await fetch(`https://openapi.naver.com/v1/search/image?query=${encodeURIComponent(q + " 짤")}&display=30&start=${(page - 1) * 30 + 1}&filter=all`, { headers: { "X-Naver-Client-Id": env.NAVER_ID, "X-Naver-Client-Secret": env.NAVER_SECRET } });
+  if (!r.ok) return { items: [], error: r.status };
+  const j = await r.json();
+  return { items: (j.items || []).filter(x => /^https?:\/\//.test(x.link || "")).map((x, i) => ({ id: "n" + page + "-" + i, thumb: x.thumbnail || x.link, full: x.link, w: +x.sizewidth || 0, h: +x.sizeheight || 0, title: strip(x.title) })), more: (j.total || 0) > page * 30 };
+}
+async function zzalImg(body, h){
+  let u; try { u = new URL(String(body && body.u || "")); } catch { return new Response("bad url", { status: 400, headers: h }); }
+  if (!/^https?:$/.test(u.protocol) || /^(localhost|127\.|10\.|192\.168\.|169\.254\.)/.test(u.hostname)) return new Response("bad url", { status: 400, headers: h });
+  const r = await fetch(u.toString(), { headers: { "User-Agent": "Mozilla/5.0", Referer: u.origin + "/" }, redirect: "follow", cf: { cacheTtl: 86400, cacheEverything: true } });
+  const type = (r.headers.get("Content-Type") || "").split(";")[0];
+  if (!r.ok || !/^image\//.test(type)) return new Response("not image", { status: 415, headers: h });
+  const len = +(r.headers.get("Content-Length") || 0); if (len > 6 * 1024 * 1024) return new Response("too big", { status: 413, headers: h });
+  const buf = await r.arrayBuffer(); if (buf.byteLength > 6 * 1024 * 1024) return new Response("too big", { status: 413, headers: h });
+  return new Response(buf, { headers: { ...h, "Content-Type": type, "Cache-Control": "private, max-age=86400" } });
+}
+
 export default {
   async fetch(req, env) {
     const h = cors(req.headers.get("Origin") || "");
     if (req.method === "OPTIONS") return new Response(null, { headers: h });
     if (req.method !== "POST") return new Response("POST only", { status: 405, headers: h });
-    const auth = req.headers.get("Authorization") || "";
-    if (!/^Bearer\s+\S+/.test(auth)) return new Response("login required", { status: 401, headers: h });
-    const who = await fetch(SB_URL + "/auth/v1/user", { headers: { Authorization: auth, apikey: SB_PUBLISHABLE } });
-    if (!who.ok) return new Response("login required", { status: 401, headers: h });
+    if (!(await loggedIn(req.headers.get("Authorization") || ""))) return new Response("login required", { status: 401, headers: h });
     let body; try { body = await req.json(); } catch { return new Response("bad json", { status: 400, headers: h }); }
+    const path = new URL(req.url).pathname;
+    if (path === "/zzal/search") return Response.json(await zzalSearch(body, env), { headers: h });
+    if (path === "/zzal/img") return zzalImg(body, h);
     const text = String(body && body.text || "").slice(0, 4000);
     if (!text.trim()) return Response.json({ items: [] }, { headers: h });
     const r = await env.AI.run(MODEL, { messages: [{ role: "user", content: PROMPT + text + " /no_think" }], max_tokens: 400, temperature: 0 });
