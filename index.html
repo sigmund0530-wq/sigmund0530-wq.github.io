@@ -1409,6 +1409,14 @@ html.ps-dragging,html.ps-dragging *{user-select:none!important;-webkit-user-sele
 .pe-sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink);cursor:pointer}
 .pe-sw input{width:20px;height:20px;accent-color:var(--ink-2);flex:none}
 .pe-link{border:0;border-bottom:1px solid var(--line);background:none;text-align:left;font:inherit;font-size:14.5px;color:var(--ink);padding:14px 0;cursor:pointer}
+.pe-f>span label{font-size:12.5px;color:var(--ink-2)}
+.pe-fbtn{border:0;background:none;font:inherit;font-size:12.5px;color:var(--ink-2);padding:0;cursor:pointer}
+.pe-fonts{display:flex;gap:8px;overflow-x:auto;padding:4px 0 6px;scrollbar-width:none}.pe-fonts::-webkit-scrollbar{display:none}
+.pe-fonts[hidden]{display:none}
+.pe-fonts button{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:76px;padding:10px 12px;border:0;border-radius:12px;background:var(--porc,var(--chrome-2));box-shadow:inset 0 1px 0 var(--porc-hi,transparent),0 2px 8px var(--porc-shade,rgba(0,0,0,.06));color:var(--ink);cursor:pointer}
+.pe-fonts button b{font-weight:400;font-size:17px;white-space:nowrap}
+.pe-fonts button small{font-family:var(--f-body);font-size:11px;color:var(--ink-2)}
+.pe-fonts button[aria-pressed=true]{background:var(--porc-in,var(--chrome-2));box-shadow:inset 0 1px 3px var(--porc-shade,rgba(0,0,0,.1))}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -2051,13 +2059,17 @@ function roomOp(op){const L=shelf();const x=L.find(s=>s.id===ui.roomSel);if(!x)r
   else if(op==="open")openPost(x.postId);
   else if(op==="del"){L.splice(L.indexOf(x),1);ui.roomSel=null;commit();toast("치웠어요. 원래 글은 그대로예요.")}}
 /* ───────── 분위기: 글꼴·강조색·바탕을 내 공간과 글 화면에 함께 적용 ───────── */
-const MOOD_FONTS={"":["기본",null],myeongjo:["명조","Nanum Myeongjo"],gaegu:["손글씨","Gaegu"],jua:["동글동글","Jua"],gothic:["단정한 고딕","Nanum Gothic"]};
+/* 글꼴(2026-11-02 늘림, 주인: 폰트 넣기). [화면 이름, Google Fonts 이름, 굵기(여러 굵기가 있는 것만)] — 한 굵기뿐인 글꼴에 400;700을 달면 통째로 안 받아져서 굵기는 있는 것만 */
+const MOOD_FONTS={"":["기본",null],myeongjo:["명조","Nanum Myeongjo","400;700"],gaegu:["손글씨","Gaegu","400;700"],jua:["동글동글","Jua"],gothic:["단정한 고딕","Nanum Gothic","400;700"],
+  pen:["펜 글씨","Nanum Pen Script"],gdodum:["고운 돋움","Gowun Dodum"],gbatang:["고운 바탕","Gowun Batang","400;700"],blackhan:["굵은 제목","Black Han Sans"],dohyeon:["도현","Do Hyeon"],
+  himelody:["멜로디","Hi Melody"],poorstory:["삐뚤 글씨","Poor Story"],songmyung:["송명","Song Myung"],gamja:["감자꽃","Gamja Flower"],yeonsung:["연성","Yeon Sung"],
+  notoserif:["노토 명조","Noto Serif KR","400;700"],plex:["플렉스 고딕","IBM Plex Sans KR","400;700"],singleday:["하루 하나","Single Day"],dokdo:["동해 독도","East Sea Dokdo"],cute:["귀여운","Cute Font"],stylish:["스타일리시","Stylish"]};
 const MOOD_ACC=["","#2f8a5b","#d9682b","#cf4a7c","#7a55c9","#8a6a4a","#2a2a2a"];
 const MOOD_PAPER={"":["기본",null,null],cream:["크림","#f6f0e4","#29251f"],sky:["하늘","#e9f0f7","#1c2530"],leaf:["연두","#edf3e5","#20281d"],rose:["분홍","#f8ecee","#2c2226"],paper:["흰 종이","#ffffff","#16191e"]};
 const mood=()=>layout.mood||{};
 const isDark=()=>{const t=document.documentElement.dataset.theme;return t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches)};
 function ensureFont(f){if(!f||document.getElementById("mf-"+f))return;const fam=MOOD_FONTS[f][1].replace(/ /g,"+");
-  const l=document.createElement("link");l.id="mf-"+f;l.rel="stylesheet";l.href=`https://fonts.googleapis.com/css2?family=${fam}:wght@400;700&display=swap`;document.head.appendChild(l)}
+  const l=document.createElement("link");l.id="mf-"+f;l.rel="stylesheet";l.href=`https://fonts.googleapis.com/css2?family=${fam}${MOOD_FONTS[f][2]?':wght@'+MOOD_FONTS[f][2]:''}&display=swap`;document.head.appendChild(l)}
 function moodStyle(){const m=mood();let st="";
   if(m.font&&MOOD_FONTS[m.font]){ensureFont(m.font);st+=`--mood-font:"${MOOD_FONTS[m.font][1]}",var(--f-body);`}
   if(m.accent)st+=`--accent:${m.accent};`;
@@ -5898,9 +5910,9 @@ editProfile=async function(){const pr=records.profile;const made=[];
     <div class="pe-body">
       <div class="pe-photo"><button type="button" class="me-photo pe-av" data-pe-new aria-label="프로필 사진 바꾸기"></button>
         <div class="pe-ph-acts"><label class="pe-txt">사진 바꾸기<input type="file" accept="image/*" hidden data-pe-file></label><button type="button" class="pe-txt" data-pe-adj>위치 맞추기</button><button type="button" class="pe-txt danger" data-pe-rm>사진 빼기</button></div></div>
-      <label class="pe-f"><span>닉네임</span><input type="text" data-pe-name maxlength="30" value="${esc(pr.displayName||'')}"></label>
-      <label class="pe-f"><span>공간 이름</span><input type="text" data-pe-space maxlength="30" placeholder="${esc((pr.displayName||'나')+'의 공간')}" value="${esc(pr.spaceName||'')}"></label>
-      <label class="pe-f"><span>소개 <small data-pe-cnt></small></span><textarea data-pe-status maxlength="60" rows="2" placeholder="나를 한 줄로">${esc(pr.status||'')}</textarea></label>
+      <div class="pe-f"><span><label for="pe-name">닉네임</label><button type="button" class="pe-fbtn" data-pe-fbtn="name"></button></span><input id="pe-name" type="text" data-pe-name data-pe-fk="name" maxlength="30" value="${esc(pr.displayName||'')}"><div class="pe-fonts" data-pe-fonts="name" hidden></div></div>
+      <div class="pe-f"><span><label for="pe-space">공간 이름</label><button type="button" class="pe-fbtn" data-pe-fbtn="space"></button></span><input id="pe-space" type="text" data-pe-space data-pe-fk="space" maxlength="30" placeholder="${esc((pr.displayName||'나')+'의 공간')}" value="${esc(pr.spaceName||'')}"><div class="pe-fonts" data-pe-fonts="space" hidden></div></div>
+      <div class="pe-f"><span><label for="pe-status">소개 <small data-pe-cnt></small></label><button type="button" class="pe-fbtn" data-pe-fbtn="status"></button></span><textarea id="pe-status" data-pe-status data-pe-fk="status" maxlength="60" rows="2" placeholder="나를 한 줄로">${esc(pr.status||'')}</textarea><div class="pe-fonts" data-pe-fonts="status" hidden></div></div>
       <div class="pe-f pe-addr"><span>공간 주소</span><div><b>@${esc(pr.handle||'')}</b><button type="button" class="pe-txt" data-pe-handle>설정에서 바꾸기 ›</button></div></div>
       <div class="pe-more">
         <label class="pe-sw"><span>방문자에게 프로필 보이기</span><input type="checkbox" data-pe-show ${seHidden('profile')?'':'checked'}></label>
@@ -5920,6 +5932,15 @@ editProfile=async function(){const pr=records.profile;const made=[];
   $q('[data-pe-rm]').onclick=()=>{photo=null;src=null;crop=null;draw()};
   $q('[data-pe-handle]').onclick=()=>{close();setRenderer('settings')};
   $q('[data-pe-sq]').onclick=()=>sqEdit();
+  /* 글꼴: 닉네임·공간 이름·소개마다 따로. '글꼴 ▾'을 누르면 그 칸 아래 글꼴들이 그 글꼴 모양으로 줄지어 나옴. 고르면 입력칸에서 바로 보임 */
+  const fonts=Object.assign({},pr.fonts||{});
+  const fdraw=k=>{const f=fonts[k]||'',inp=$q(`[data-pe-fk="${k}"]`);inp.style.fontFamily=f&&MOOD_FONTS[f]?`'${MOOD_FONTS[f][1]}',var(--f-body)`:'';if(f)ensureFont(f);
+    $q(`[data-pe-fbtn="${k}"]`).textContent=`글꼴: ${(MOOD_FONTS[f]||MOOD_FONTS[''])[0]} ▾`;
+    const box=$q(`[data-pe-fonts="${k}"]`);if(!box.hidden)box.querySelectorAll('[data-f]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.f===f)))};
+  ['name','space','status'].forEach(k=>{fdraw(k);$q(`[data-pe-fbtn="${k}"]`).onclick=()=>{const box=$q(`[data-pe-fonts="${k}"]`);el.querySelectorAll('.pe-fonts').forEach(b=>{if(b!==box)b.hidden=true});box.hidden=!box.hidden;
+      if(!box.hidden&&!box.firstChild){const sample=k==='status'?'오늘도 천천히':k==='space'?'하루의 공간':'하루';
+        box.innerHTML=Object.entries(MOOD_FONTS).map(([fk,[t,fam]])=>{if(fam)ensureFont(fk);return `<button type="button" data-f="${fk}" style="${fam?`font-family:'${fam}'`:''}"><b>${esc(($q(`[data-pe-fk="${k}"]`).value||'').trim().slice(0,8)||sample)}</b><small>${t}</small></button>`}).join('');
+        box.onclick=e=>{const b=e.target.closest('[data-f]');if(!b)return;fonts[k]=b.dataset.f;if(!fonts[k])delete fonts[k];fdraw(k)}}fdraw(k)}});
   const close=()=>{el.remove();document.removeEventListener('keydown',esc_)};
   const esc_=e=>{if(e.key==='Escape'&&!document.querySelector('.pc-wrap')){made.forEach(id=>{if(id!==pr.photoAssetId&&id!==pr.photoSrcId)delete assets[id]});close()}};document.addEventListener('keydown',esc_);
   $q('[data-pe-x]').onclick=()=>{made.forEach(id=>{if(id!==pr.photoAssetId&&id!==pr.photoSrcId)delete assets[id]});close()};
@@ -5930,6 +5951,7 @@ editProfile=async function(){const pr=records.profile;const made=[];
     if(pr.keepBio&&oldSt.trim()&&oldSt!==newSt){(pr.bioHistory=pr.bioHistory||[]).unshift({text:oldSt,until:localDay(now())});if(pr.bioHistory.length>50)pr.bioHistory.length=50}
     pr.displayName=$q('[data-pe-name]').value.trim()||'내 공간';pr.status=newSt;delete pr.statusAt;pr.spaceName=$q('[data-pe-space]').value.trim();
     layout.hide=Object.assign({},layout.hide||{},{profile:!$q('[data-pe-show]').checked});
+    if(Object.keys(fonts).length)pr.fonts=fonts;else delete pr.fonts;
     /* 내 공간 편집 중이었다면: 편집 '취소'가 이 저장까지 되돌리지 않게 기준본의 프로필도 맞춤(소개 이력이 두 번 쌓이지 않게도) */
     try{if(seSnap){const o=JSON.parse(seSnap);o.profile=JSON.parse(JSON.stringify(pr));if(o.layout)o.layout.hide=Object.assign({},layout.hide);seSnap=JSON.stringify(o)}}catch(e){}
     close();commit();toast('프로필을 바꿨어요')};
@@ -5941,6 +5963,10 @@ document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest
 const peSePanel=sePanel;sePanel=function(cv){if(ui.seSel==='profile'&&!ui.roomSel){ui.seSel=null;document.querySelectorAll('.se-panel').forEach(n=>n.remove());
     document.querySelectorAll('.se-sel').forEach(n=>n.classList.remove('se-sel'));if(!document.querySelector('.pe-page'))setTimeout(()=>editProfile(),0);return}
   return peSePanel(cv)};
+/* 프로필 글꼴 적용: 내 공간의 공간 이름·닉네임·소개에 각각 고른 글꼴(pr.fonts). 화면을 그린 뒤 그 자리 글자에만 입힘 */
+function peApplyFonts(){const f=(records&&records.profile&&records.profile.fonts)||{};const set=(sel,k)=>document.querySelectorAll(sel).forEach(n=>{const v=f[k];if(v&&MOOD_FONTS[v]){ensureFont(v);n.style.fontFamily=`'${MOOD_FONTS[v][1]}',var(--f-body)`}else n.style.fontFamily=''});
+  set('.nv .nv-cover h1','space');set('.nv .nv-who b,.nv .nv-prof b','name');set('.nv .nv-who small:not(.unset),.nv .nv-prof small:not(.unset)','status')}
+const peRender=render;render=function(){const r=peRender.apply(this,arguments);try{peApplyFonts()}catch(e){}return r};
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;

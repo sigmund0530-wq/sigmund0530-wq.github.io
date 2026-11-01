@@ -29,11 +29,20 @@ with sync_playwright() as p:
     gap=pg.evaluate("(()=>{const s=document.querySelector('.pc-stage').getBoundingClientRect(),i=document.querySelector('.pc-stage img').getBoundingClientRect();return i.left<=s.left+1&&i.top<=s.top+1&&i.right>=s.right-1&&i.bottom>=s.bottom-1})()")
     ok(gap,tag+' 칸 밖으로 빈 곳 안 생김')
     pg.locator('[data-pc-ok]').click();pg.wait_for_timeout(300);ok(pg.locator('.pc-wrap').count()==0 and pg.locator('.pe-av img').count()==1,tag+' 적용 → 편집 화면에 새 사진')
+    pg.locator('[data-pe-fbtn="name"]').click();pg.wait_for_timeout(200);ok(pg.locator('[data-pe-fonts="name"] [data-f]').count()>=15,tag+' 닉네임 글꼴 고르기(여러 개)')
+    pg.locator('[data-pe-fonts="name"] [data-f="jua"]').click();pg.locator('[data-pe-fbtn="space"]').click();pg.locator('[data-pe-fonts="space"] [data-f="blackhan"]').click()
+    ok('Jua' in pg.evaluate("document.querySelector('[data-pe-name]').style.fontFamily"),tag+' 입력칸에서 바로 보임')
+    ok(pg.locator('[data-pe-fonts="name"]').is_hidden(),tag+' 다른 칸 글꼴을 열면 앞의 건 닫힘')
     pg.locator('[data-pe-ok]').click();pg.wait_for_timeout(400)
-    pr=rec(pg)['profile'];a=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.assets'))")
+    pr=rec(pg)['profile']
+    ok(pr.get('fonts')=={'name':'jua','space':'blackhan'},tag+' 칸마다 글꼴 저장',pr.get('fonts'));a=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.assets'))")
     ok(pr['displayName']=='새이름' and pr['status']=='한 줄 소개',tag+' 이름·소개 저장')
     ok(pr.get('photoAssetId') in a and a[pr['photoAssetId']]['width']==480,tag+' 480 정사각 프사 저장')
     ok(pr.get('photoSrcId') in a and pr.get('photoCrop',{}).get('z',0)>2,tag+' 원본·맞춘 위치도 저장',pr.get('photoCrop'))
+    pg.go_back();pg.wait_for_timeout(400)
+    ff=pg.evaluate("[...document.querySelectorAll('.nv .nv-cover h1,.nv .nv-who b,.nv .nv-prof b')].map(n=>n.style.fontFamily).join('|')")
+    ok('Black Han Sans' in ff and ('Jua' in ff or not mob),tag+' 내 공간에 칸마다 다른 글꼴',ff)
+    opensettings(pg,mob)
     # 위치 다시 맞추기: 원본에서 이어서
     opensettings(pg,mob) if pg.locator('[data-set="profile"]').count()==0 else None
     pg.locator('[data-set="profile"]').click();pg.wait_for_timeout(300);pg.locator('[data-pe-adj]').click();pg.wait_for_timeout(700)
