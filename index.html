@@ -1336,6 +1336,15 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
 .zz-more{grid-column:1/-1;border:0;background:none;font:inherit;font-size:13px;color:var(--ink-2);padding:10px;cursor:pointer}
 .zz-foot{margin:0;font-size:11.5px;color:var(--ink-2)}
 .win.editor.m .zz-btn{font-size:15px;font-weight:600}
+/* 사진 크기: 묶음 너비는 --pw, 가운데 정렬. 손잡이는 오른쪽 아래 작은 점, 사진에 마우스를 올리거나 고를 때만 보임 */
+.win.editor .pblock .prow-edit{width:var(--pw,100%);margin-left:auto;margin-right:auto;position:relative}
+.pw-h{position:absolute;right:-7px;bottom:-7px;width:18px;height:18px;border-radius:50%;background:var(--porc-hi,var(--chrome));box-shadow:0 1px 4px var(--porc-shade,rgba(0,0,0,.12)),0 0 0 1px var(--line);cursor:nwse-resize;opacity:0;transition:opacity .15s;touch-action:none;z-index:3}
+.pblock:hover .pw-h,.pblock:focus-within .pw-h,.pblock.pw-drag .pw-h,.pw-h:focus-visible{opacity:1}
+@media (pointer:coarse){.pw-h{opacity:.9;width:24px;height:24px;right:-9px;bottom:-9px}}
+.pblock.pw-drag{user-select:none}
+.pw-tip{position:absolute;left:50%;top:8px;transform:translateX(-50%);padding:3px 10px;border-radius:999px;background:var(--porc-in,var(--chrome-2));color:var(--ink);font-size:12px;pointer-events:none;z-index:4}
+.win.editor .pblock{position:relative}
+.pw-wrap{margin-left:auto;margin-right:auto;max-width:100%}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -2267,7 +2276,7 @@ function normBlocks(bs,ink=[]){
 }
 /* 저장용 모양: 빈 문단은 버림 */
 const finalBlocks=(bs,ink=[])=>bs.filter(b=>b.type==="photos"?b.items.length:b.type==="audio"?!!b.assetId:!isBlankHtml(b.html)||ink.some(s=>s.b===b.id))
-  .map(b=>b.type==="photos"?{id:b.id,type:"photos",items:b.items.map(x=>({assetId:x.assetId,caption:(x.caption||"").trim()}))}:b.type==="audio"?{id:b.id,type:"audio",assetId:b.assetId,caption:(b.caption||"").trim()}:{id:b.id,type:"text",html:b.html});
+  .map(b=>b.type==="photos"?{id:b.id,type:"photos",items:b.items.map(x=>({assetId:x.assetId,caption:(x.caption||"").trim()})),...(b.w>=20&&b.w<100?{w:Math.round(b.w)}:{})}:b.type==="audio"?{id:b.id,type:"audio",assetId:b.assetId,caption:(b.caption||"").trim()}:{id:b.id,type:"text",html:b.html});
 /* 예전 임시저장(본문 하나 + 사진 목록) → 블록 */
 function draftToBlocks(d){if(d.blocks)return d.blocks;const bs=[{id:uid("b"),type:"text",html:d.bodyHtml||""}];
   if(d.photos&&d.photos.length)bs.push({id:uid("b"),type:"photos",items:d.photos});return bs}
@@ -2355,9 +2364,9 @@ function openEditor(opts){
           if(b.type==="audio")return audioEditHTML(b);
           if(b.type==="text")return `<div class="rte-area" data-bid="${b.id}" contenteditable="true" role="textbox" aria-multiline="true" aria-label="문단" data-ph="${b===firstText?"오늘 있었던 일, 떠오른 생각…":"이어서 쓰기…"}">${b.html}</div>`;
                     /* 사진: 글에 실릴 모습 그대로 크게. 버튼은 숨기고, 사진을 누르면 메뉴 */
-          return `<div class="pblock" data-bid="${b.id}"><div class="prow-edit n${Math.min(b.items.length,3)}">${b.items.map((ph,i)=>`<figure class="ph-item${ph.assetId===cover?" is-cover":""}" data-i="${i}">
+          return `<div class="pblock" data-bid="${b.id}" style="--pw:${b.w>=20&&b.w<100?b.w:100}%"><div class="prow-edit n${Math.min(b.items.length,3)}">${b.items.map((ph,i)=>`<figure class="ph-item${ph.assetId===cover?" is-cover":""}" data-i="${i}">
               <button type="button" class="ph-img" data-phm aria-label="사진 ${i+1} 편집"><img src="${assets[ph.assetId]?.dataUrl||""}" alt="">${ph.assetId===cover&&total>1?`<span class="cover-badge">대표</span>`:""}</button>
-              ${ph.caption?`<figcaption>${esc(ph.caption)}</figcaption>`:""}</figure>`).join("")}</div><input type="file" accept="image/*" multiple hidden class="ph-add-in"></div>`}).join("");
+              ${ph.caption?`<figcaption>${esc(ph.caption)}</figcaption>`:""}</figure>`).join("")}<span class="pw-h" role="slider" tabindex="0" aria-label="사진 크기" aria-valuemin="20" aria-valuemax="100" aria-valuenow="${b.w>=20&&b.w<100?b.w:100}" title="끌어서 크기 바꾸기"></span></div><input type="file" accept="image/*" multiple hidden class="ph-add-in"></div>`}).join("");
         blocksEl.querySelectorAll(".pblock").forEach(pb=>{
           const b=draft.blocks.find(x=>x.id===pb.dataset.bid);
           const re=()=>{syncText();drawBlocks();queueAuto()};
@@ -5640,6 +5649,33 @@ const zzSetup=edSetup;edSetup=function(ctx){zzSetup(ctx);const b=ctx.body;
     const z=document.createElement('button');z.type='button';z.dataset.xZzal='';z.className='zz-btn';z.title='짤을 찾아 커서 자리에 넣어요';z.setAttribute('aria-label','짤 넣기');z.textContent='짤';
     z.addEventListener('mousedown',e=>e.preventDefault());z.onclick=()=>zzOpen(ctx,z);ph.after(z)},0)};
 const zzCloseWin=closeWin;closeWin=function(w){zzClose();zzCloseWin(w)};
+/* ═════════ 사진·짤 크기 조절 (2026-11-02, 주인 요청) ═════════
+   사진 한 묶음(한 줄에 놓인 사진들)마다 너비를 20~100%로. 글 가운데 정렬. 저장값은 블록의 w(100이면 저장 안 함 → 예전 글과 같음).
+   - 글쓰기: 사진 오른쪽 아래 작은 손잡이를 끌면 크기가 바뀜(5% 단위, 끄는 동안 % 표시). 키보드는 ←/→.
+   - 사진을 누르면 나오는 메뉴에도 '크기: 작게 · 중간 · 크게 · 원래대로'(휴대폰에서 손잡이가 작을 때).
+   - 읽는 화면: renderBody를 감싸 크기가 있는 묶음만 가운데로 좁힘. */
+const PW_SIZES=[['작게',33],['중간',50],['크게',75],['원래대로',100]];
+function pwSet(ctx,bid,w){const b=ctx.draft.blocks.find(x=>x.id===bid);if(!b)return;w=Math.max(20,Math.min(100,Math.round(w/5)*5));
+  if(w>=100)delete b.w;else b.w=w;const pb=ctx.body.querySelector(`.pblock[data-bid="${CSS.escape(bid)}"]`);
+  if(pb){pb.style.setProperty('--pw',w+'%');const h=pb.querySelector('.pw-h');if(h)h.setAttribute('aria-valuenow',w)}ctx.queueAuto();return w}
+document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.pblock .pw-h');if(!h)return;const ctx=pfwCtxOf(h);if(!ctx)return;
+  e.preventDefault();e.stopPropagation();const pb=h.closest('.pblock'),bid=pb.dataset.bid,box=pb.getBoundingClientRect(),cs=getComputedStyle(pb);
+  const inner=box.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),mid=box.left+parseFloat(cs.paddingLeft)+inner/2;
+  const tip=document.createElement('span');tip.className='pw-tip';pb.appendChild(tip);pb.classList.add('pw-drag');
+  const mv=ev=>{const w=pwSet(ctx,bid,Math.abs(ev.clientX-mid)*2/inner*100);tip.textContent=w+'%'};
+  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);tip.remove();pb.classList.remove('pw-drag')};
+  addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)},true);
+document.addEventListener('keydown',e=>{const h=e.target.closest&&e.target.closest('.pblock .pw-h');if(!h||!/^Arrow(Left|Right|Up|Down)$/.test(e.key))return;const ctx=pfwCtxOf(h);if(!ctx)return;
+  e.preventDefault();const bid=h.closest('.pblock').dataset.bid,b=ctx.draft.blocks.find(x=>x.id===bid);pwSet(ctx,bid,(b&&b.w||100)+(/Right|Up/.test(e.key)?5:-5))});
+let pwLast=null;
+document.addEventListener('click',e=>{const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn)return;const ctx=pfwCtxOf(btn);if(ctx)pwLast={ctx,bid:btn.closest('.pblock').dataset.bid,at:Date.now()}},true);
+const pwMenu=showMenu;showMenu=function(items,...rest){
+  if(pwLast&&Date.now()-pwLast.at<800&&Array.isArray(items)&&items.some(x=>x&&/설명 (쓰기|고치기)/.test(x.label||''))){const {ctx,bid}=pwLast;pwLast=null;const b=ctx.draft.blocks.find(x=>x.id===bid),cur=b&&b.w||100;
+    items=[...items,'-',...PW_SIZES.map(([t,w])=>({label:`크기: ${t}${cur===w?' ✓':''}`,run:()=>pwSet(ctx,bid,w)}))]}
+  return pwMenu(items,...rest)};
+const pwBaseBody=renderBody;renderBody=function(p){const bs=blocksOf(p);if(!bs.some(b=>b.type==='photos'&&b.w>=20&&b.w<100))return pwBaseBody(p);
+  return bs.map(b=>{const one=pwBaseBody(Object.assign({},p,{bodyJson:Object.assign({},p.bodyJson,{blocks:[b]})}));
+    return b.type==='photos'&&b.w>=20&&b.w<100&&one?`<div class="pw-wrap" style="width:${Math.round(b.w)}%">${one}</div>`:one}).join('')};
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
