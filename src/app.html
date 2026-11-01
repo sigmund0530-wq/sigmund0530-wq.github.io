@@ -1370,6 +1370,8 @@ html.kb-open .win.editor.m>.rte-bar{padding-bottom:6px!important}
 .ps-ghost{position:fixed;z-index:100001;pointer-events:none;border-radius:8px;opacity:.9;box-shadow:0 12px 30px rgba(0,0,0,.25);transform:rotate(-2deg)}
 html.ps-dragging,html.ps-dragging *{user-select:none!important;-webkit-user-select:none!important}
 .rte-area.drop-text{box-shadow:inset 0 -3px 0 var(--ink-2)}
+.ps-line{position:fixed;z-index:100000;background:var(--ink);border-radius:2px;pointer-events:none;box-shadow:0 0 0 2px var(--chrome)}
+.ps-line[hidden]{display:none}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5739,24 +5741,51 @@ document.addEventListener('contextmenu',e=>{const btn=e.target.closest&&e.target
 /* 꾹 누른 뒤(2026-11-02, 주인 결정): 그대로 떼면 메뉴, 끌면 사진을 원하는 자리로 옮김(손가락·펜). PC는 원래 있던 끌어 놓기(edPhotoDrag)를 씀.
    놓는 자리 규칙은 PC 끌어 놓기와 같음: 다른 사진 옆이면 그 줄 안에서 앞·뒤, 글 위면 놓은 줄 끝에서 글을 나누고 새 사진 줄. 화면 위·아래 끝에 가면 저절로 굴러감. */
 let psT=0,psAt=null,psArm=null,psDrag=null;
-function psDropAt(ctx,s0,x,y){const host=ctx.blocksEl;host.querySelectorAll('.drop-before,.drop-after,.drop-text').forEach(n=>n.classList.remove('drop-before','drop-after','drop-text'));
-  const t=document.elementFromPoint(x,y);if(!t||!host.contains(t))return false;ctx.syncText();
-  const bs=ctx.draft.blocks,sb=bs.find(b=>b.id===s0.bid);if(!sb||!sb.items[s0.i])return false;const item=sb.items[s0.i];
-  const fig=t.closest('.ph-item');
-  if(fig){const tb=bs.find(b=>b.id===fig.closest('.pblock').dataset.bid);if(!tb)return false;let j=+fig.dataset.i;const r=fig.getBoundingClientRect();if(x>r.left+r.width/2)j++;
-    if(tb===sb&&j>s0.i)j--;if(tb===sb&&j===s0.i)return false;sb.items.splice(s0.i,1);tb.items.splice(j,0,item);ctx.drawBlocks();ctx.queueAuto();return true}
-  const a=t.closest('.rte-area');if(!a)return false;let rg=null;
+/* 놓을 자리 찾기(2026-11-02 고침, 주인: '글 사이에 안 넣어지고 이동도 안 돼'): 예전엔 손가락 바로 아래가 글이나 사진일 때만 놓였음.
+   이제 세로 위치로 가장 가까운 자리를 고름 — 사진 위면 그 줄 앞·뒤, 글 위면 그 줄 끝, 빈 곳·블록 사이·맨 아래면 그 사이. 놓을 자리는 가로줄 하나로 보여 줌 */
+function psCaretLineEnd(a,x,y){let rg=null;
   if(document.caretRangeFromPoint)rg=document.caretRangeFromPoint(x,y);else if(document.caretPositionFromPoint){const cp=document.caretPositionFromPoint(x,y);if(cp){rg=document.createRange();rg.setStart(cp.offsetNode,cp.offset);rg.collapse(true)}}
-  if(rg&&!a.contains(rg.startContainer))rg=null;
-  if(rg){let n=rg.startContainer;while(n&&n.parentNode!==a)n=n.parentNode;if(n){rg=document.createRange();rg.setStartAfter(n);rg.collapse(true)}}
-  const w=sb.items.length===1?sb.w:undefined;sb.items.splice(s0.i,1);const nb={id:uid('b'),type:'photos',items:[item]};if(w)nb.w=w;ctx.insertAt(nb,a.dataset.bid,rg);return true}
-function psHint(ctx,x,y){const host=ctx.blocksEl;host.querySelectorAll('.drop-before,.drop-after,.drop-text').forEach(n=>n.classList.remove('drop-before','drop-after','drop-text'));
-  const t=document.elementFromPoint(x,y);if(!t||!host.contains(t))return;const fig=t.closest('.ph-item');
-  if(fig){if(fig.classList.contains('ps-src'))return;const r=fig.getBoundingClientRect();fig.classList.add(x>r.left+r.width/2?'drop-after':'drop-before');return}
-  const a=t.closest('.rte-area');if(a)a.classList.add('drop-text')}
+  if(!rg||!a.contains(rg.startContainer))return null;let n=rg.startContainer;while(n&&n.parentNode!==a)n=n.parentNode;if(!n||n===a)return null;
+  const rr=(n.nodeType===1?n:(()=>{const q=document.createRange();q.selectNode(n);return q})()).getBoundingClientRect();
+  /* 그 줄 위쪽 1/3이면 줄 앞, 아니면 줄 뒤. 첫 줄 앞·마지막 줄 뒤는 글 바깥(블록 사이)로 */
+  if(y<rr.top+rr.height*.35){if(!n.previousSibling)return {edge:'before'};const r=document.createRange();r.setStartBefore(n);r.collapse(true);return {range:r,lineY:rr.top}}
+  if(!n.nextSibling)return {edge:'after'};
+  const r=document.createRange();r.setStartAfter(n);r.collapse(true);return {range:r,lineY:rr.bottom}}
+function psTarget(ctx,x,y){const host=ctx.blocksEl,kids=[...host.children].filter(e=>e.dataset&&e.dataset.bid&&!e.classList.contains('ps-line'));if(!kids.length)return null;
+  const hr=host.getBoundingClientRect(),L=hr.left,R=hr.right;
+  for(let k=0;k<kids.length;k++){const el=kids[k],r=el.getBoundingClientRect();if(y<r.top){const prev=kids[k-1];return {kind:'gap',before:el,prev,lineY:prev?(prev.getBoundingClientRect().bottom+r.top)/2:r.top-2,L,R}}
+    if(y<=r.bottom){
+      if(el.classList.contains('pblock')){const figs=[...el.querySelectorAll('.ph-item')];let best=null,bd=1e9;figs.forEach(f=>{const fr=f.getBoundingClientRect(),d=Math.abs(x-(fr.left+fr.width/2));if(d<bd){bd=d;best=f}});
+        if(best){const fr=best.getBoundingClientRect();/* 사진 위·아래 가장자리 1/4은 줄 사이로 */
+          if(y<fr.top+fr.height*.22)return {kind:'gap',before:el,prev:kids[k-1],lineY:r.top-2,L,R};
+          if(y>fr.bottom-fr.height*.22)return {kind:'gap',before:kids[k+1]||null,prev:el,lineY:r.bottom+2,L,R};
+          const after=x>fr.left+fr.width/2;return {kind:'row',fig:best,after,vx:after?fr.right+3:fr.left-3,top:fr.top,bot:fr.bottom}}}
+      const c=psCaretLineEnd(el,x,y);if(c&&c.range)return {kind:'text',area:el,range:c.range,lineY:c.lineY,L,R};
+      if(c&&c.edge==='before')return {kind:'gap',before:el,prev:kids[k-1],lineY:r.top,L,R};
+      return {kind:'gap',before:kids[k+1]||null,prev:el,lineY:r.bottom,L,R}}}
+  const last=kids[kids.length-1];return {kind:'gap',before:null,prev:last,lineY:last.getBoundingClientRect().bottom+2,L,R}}
+let psLineEl=null;
+function psHint(ctx,x,y){const t=psTarget(ctx,x,y);if(!psLineEl){psLineEl=document.createElement('div');psLineEl.className='ps-line';document.body.appendChild(psLineEl)}
+  if(!t){psLineEl.hidden=true;return}psLineEl.hidden=false;
+  if(t.kind==='row'){Object.assign(psLineEl.style,{left:(t.vx-1)+'px',top:t.top+'px',width:'3px',height:(t.bot-t.top)+'px'})}
+  else Object.assign(psLineEl.style,{left:t.L+'px',top:(t.lineY-1)+'px',width:(t.R-t.L)+'px',height:'3px'})}
+function psDropAt(ctx,s0,x,y){if(psLineEl){psLineEl.remove();psLineEl=null}
+  const t=psTarget(ctx,x,y);if(!t)return false;ctx.syncText();
+  const bs=ctx.draft.blocks,sb=bs.find(b=>b.id===s0.bid);if(!sb||!sb.items[s0.i])return false;const item=sb.items[s0.i];
+  if(t.kind==='row'){const tb=bs.find(b=>b.id===t.fig.closest('.pblock').dataset.bid);if(!tb)return false;let j=+t.fig.dataset.i+(t.after?1:0);
+    if(tb===sb&&j>s0.i)j--;if(tb===sb&&j===s0.i)return false;sb.items.splice(s0.i,1);tb.items.splice(j,0,item);ctx.drawBlocks();ctx.queueAuto();return true}
+  /* 제자리면 그대로 */
+  if(t.kind==='gap'&&sb.items.length===1&&((t.prev&&t.prev.dataset.bid===sb.id)||(t.before&&t.before.dataset.bid===sb.id)))return false;
+  const w=sb.items.length===1?sb.w:undefined,nb={id:uid('b'),type:'photos',items:[item]};if(w)nb.w=w;
+  sb.items.splice(s0.i,1);
+  if(t.kind==='text'){ctx.insertAt(nb,t.area.dataset.bid,t.range);return true}
+  const prev=t.prev,before=t.before;
+  if(prev&&prev.classList.contains('rte-area')){ctx.insertAt(nb,prev.dataset.bid,null);return true}
+  if(before&&before.classList.contains('rte-area')){const r=document.createRange();r.setStart(before,0);r.collapse(true);ctx.insertAt(nb,before.dataset.bid,r);return true}
+  const idx=before?bs.findIndex(b=>b.id===before.dataset.bid):bs.length;bs.splice(idx<0?bs.length:idx,0,nb);ctx.drawBlocks();ctx.queueAuto();return true}
 const psScroller=el=>{for(let n=el;n&&n!==document.body;n=n.parentElement){const cs=getComputedStyle(n);if(/(auto|scroll)/.test(cs.overflowY)&&n.scrollHeight>n.clientHeight+2)return n}return document.scrollingElement};
 function psEnd(drop,x,y){const d=psDrag;psDrag=null;if(!d)return;cancelAnimationFrame(d.raf);d.ghost.remove();d.fig.classList.remove('ps-src');document.documentElement.classList.remove('ps-dragging');
-  if(drop&&psDropAt(d.ctx,d.s0,x,y)){psUnsel();toast('사진을 옮겼어요')}else d.ctx.blocksEl.querySelectorAll('.drop-before,.drop-after,.drop-text').forEach(n=>n.classList.remove('drop-before','drop-after','drop-text'))}
+  if(drop&&psDropAt(d.ctx,d.s0,x,y)){psUnsel();toast('사진을 옮겼어요')}if(psLineEl){psLineEl.remove();psLineEl=null}}
 document.addEventListener('pointerdown',e=>{
   if(!(e.target.closest&&e.target.closest('.pblock.pw-sel')))psUnsel();
   const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn||e.pointerType==='mouse')return;
@@ -5770,7 +5799,7 @@ document.addEventListener('pointermove',e=>{
     psDrag={ctx,fig,ghost:g,gw,s0:{bid:fig.closest('.pblock').dataset.bid,i:+fig.dataset.i},x:e.clientX,y:e.clientY,sc:psScroller(ctx.blocksEl),raf:0};
     const tick=()=>{if(!psDrag)return;const d=psDrag,vh=(window.visualViewport?visualViewport.height:innerHeight);const sp=d.y<90?-(90-d.y)/4:d.y>vh-90?(d.y-(vh-90))/4:0;
       if(sp&&d.sc){d.sc.scrollTop+=sp;psHint(d.ctx,d.x,d.y)}d.raf=requestAnimationFrame(tick)};psDrag.raf=requestAnimationFrame(tick)}
-  if(psDrag){const d=psDrag;d.x=e.clientX;d.y=e.clientY;d.ghost.style.left=(e.clientX-d.gw/2)+'px';d.ghost.style.top=(e.clientY-d.gw*0.4)+'px';psHint(d.ctx,e.clientX,e.clientY)}},true);
+  if(psDrag){const d=psDrag;d.x=e.clientX;d.y=e.clientY;d.ghost.style.left=(e.clientX-d.gw/2)+'px';d.ghost.style.top=(e.clientY-d.gw*1.05)+'px';psHint(d.ctx,e.clientX,e.clientY)}},true);
 document.addEventListener('pointerup',e=>{clearTimeout(psT);psAt=null;
   if(psDrag){psEnd(true,e.clientX,e.clientY);return}
   if(psArm){const {btn,fig}=psArm;psArm=null;fig.classList.remove('ps-lift');psMenu(btn)}},true);

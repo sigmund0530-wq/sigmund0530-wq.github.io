@@ -26,7 +26,7 @@ with sync_playwright() as p:
   pg.evaluate(EV,['pointerdown',x,y]);pg.wait_for_timeout(600)
   for k in range(1,9):pg.evaluate(EV,['pointermove',x+(tx-x)*k/8,y+(ty-y)*k/8]);pg.wait_for_timeout(30)
   ok(pg.locator('.ps-ghost').count()==1,'끄는 동안 사진 그림자가 따라옴')
-  ok(pg.locator('.rte-area.drop-text').count()==1,'놓을 자리 표시')
+  ok(pg.locator('.ps-line:not([hidden])').count()==1,'놓을 자리 가로줄 표시')
   pg.evaluate(EV,['pointerup',tx,ty]);pg.wait_for_timeout(500)
   o1=order(pg);ok(pg.locator('.ps-ghost').count()==0 and pg.locator('.menu').count()==0,'놓으면 그림자 사라지고 메뉴 없음')
   ok(o1.index('P1')<=2,'사진이 위로 옮겨짐',(o0,o1))
@@ -39,6 +39,13 @@ with sync_playwright() as p:
   for k in range(1,9):pg.evaluate(EV,['pointermove',x+(fx-x)*k/8,y+(fy-y)*k/8]);pg.wait_for_timeout(30)
   pg.evaluate(EV,['pointerup',fx,fy]);pg.wait_for_timeout(500)
   ok(any(o=='P2' for o in order(pg)),'다른 사진 옆에 놓으면 한 줄에 두 장',order(pg))
+  # 3-1) 빈 곳(맨 위 글보다 위)으로 끌면 맨 앞으로
+  pg.evaluate("window.scrollTo(0,0);document.querySelectorAll('.win *').forEach(e=>{if(e.scrollTop)e.scrollTop=0})");pg.wait_for_timeout(200)
+  x,y=center(pg,'.blocks .pblock [data-phm]',0);tb=pg.locator('.blocks .rte-area').first.bounding_box();tx,ty=tb['x']+100,tb['y']+3
+  pg.evaluate(EV,['pointerdown',x,y]);pg.wait_for_timeout(600)
+  for k in range(1,9):pg.evaluate(EV,['pointermove',x+(tx-x)*k/8,y+(ty-y)*k/8]);pg.wait_for_timeout(30)
+  pg.evaluate(EV,['pointerup',tx,ty]);pg.wait_for_timeout(500);o3=order(pg)
+  ok(o3[0].startswith('P') or (o3[0]=='t' and o3[1].startswith('P')),'맨 위 글 앞 빈 곳에 놓으면 맨 앞으로',o3)
   # 4) 짧게 누르면 고르기만
   pg.locator('.blocks .pblock [data-phm]').first.tap();pg.wait_for_timeout(300);ok(pg.locator('.pblock.pw-sel').count()==1 and pg.locator('.menu').count()==0,'짧게 누르면 고르기')
   # 5) 저장해도 순서 유지
