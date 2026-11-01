@@ -4,7 +4,7 @@
 // 설정: 이 Worker의 Settings → Bindings → Workers AI, 변수 이름 AI
 // 짤 검색(2026-11-02): POST /zzal/search {q, src:"gif"|"kr", page} → {items:[{id,thumb,full,w,h,title}]}
 //   POST /zzal/img {u} → 그림 바이트(무가당 서버가 대신 받아 줘서, 짤 회사는 누가 찾았는지 몰라요)
-//   비밀 값(Settings → Variables and Secrets, 주인이 직접 넣음): KLIPY_KEY, NAVER_ID, NAVER_SECRET. 없으면 {items:[], need:"key"}
+//   비밀 값(Settings → Variables and Secrets, 주인이 직접 넣음): KLIPY_KEY, NAVER_ID·NAVER_SECRET(네이버 클라우드 API HUB 키). 없으면 {items:[], need:"key"}
 const MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
 const ALLOW = ["https://sigmund0530-wq.github.io"];
 // 잠금: 무가당에 로그인한 사람만. 앱이 보낸 로그인 토큰을 Supabase에 물어 확인해요(공개 키만 씀, 비밀 키 없음).
@@ -74,7 +74,8 @@ async function zzalSearch(body, env){
   }
   if (!env.NAVER_ID || !env.NAVER_SECRET) return { items: [], need: "key" };
   if (!q) return { items: [] };
-  const r = await fetch(`https://openapi.naver.com/v1/search/image?query=${encodeURIComponent(q + " 짤")}&display=30&start=${(page - 1) * 30 + 1}&filter=all`, { headers: { "X-Naver-Client-Id": env.NAVER_ID, "X-Naver-Client-Secret": env.NAVER_SECRET } });
+  // 네이버 검색 API는 2026-07-31부터 네이버 클라우드 API HUB로 옮겨 감(개발자센터 새 신청 막힘). 키는 API HUB 콘솔에서 받은 것
+  const r = await fetch(`https://naverapihub.apigw.ntruss.com/search/v1/image?query=${encodeURIComponent(q + " 짤")}&display=30&start=${(page - 1) * 30 + 1}&filter=all`, { headers: { "X-NCP-APIGW-API-KEY-ID": env.NAVER_ID, "X-NCP-APIGW-API-KEY": env.NAVER_SECRET } });
   if (!r.ok) return { items: [], error: r.status };
   const j = await r.json();
   return { items: (j.items || []).filter(x => /^https?:\/\//.test(x.link || "")).map((x, i) => ({ id: "n" + page + "-" + i, thumb: x.thumbnail || x.link, full: x.link, w: +x.sizewidth || 0, h: +x.sizeheight || 0, title: strip(x.title) })), more: (j.total || 0) > page * 30 };
