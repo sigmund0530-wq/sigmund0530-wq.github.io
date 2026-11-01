@@ -1356,6 +1356,14 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
 html.kb-open .win.editor.m{top:var(--vvt,0px)!important;height:var(--vvh,100%)!important;bottom:auto!important;max-height:none!important}
 body:has(.win.editor.m) #tabbar{display:none!important}
 html.kb-open .win.editor.m>.rte-bar{padding-bottom:6px!important}
+/* 사진 고르기: 골라진 줄만 테두리·손잡이. 손잡이는 네 모서리 */
+.pw-h{opacity:0!important;pointer-events:none}
+.pblock.pw-sel .pw-h{opacity:1!important;pointer-events:auto}
+.pblock.pw-sel .prow-edit{outline:2px solid var(--ink-2);outline-offset:3px;border-radius:6px}
+.pw-h.pw-tl{left:-7px;top:-7px;right:auto;bottom:auto;cursor:nwse-resize}.pw-h.pw-tr{right:-7px;top:-7px;bottom:auto;cursor:nesw-resize}.pw-h.pw-bl{left:-7px;bottom:-7px;right:auto;cursor:nesw-resize}
+@media (pointer:coarse){.pw-h.pw-tl{left:-9px;top:-9px}.pw-h.pw-tr{right:-9px;top:-9px}.pw-h.pw-bl{left:-9px;bottom:-9px}}
+.ps-more{position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:999px;border:0;background:var(--porc-hi,var(--chrome));color:var(--ink);box-shadow:0 1px 6px var(--porc-shade,rgba(0,0,0,.15));font-size:16px;line-height:1;cursor:pointer;z-index:4}
+.pblock .ph-img,.pblock .ph-img img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5684,7 +5692,8 @@ let pwLast=null;
 document.addEventListener('click',e=>{const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn)return;const ctx=pfwCtxOf(btn);if(ctx)pwLast={ctx,bid:btn.closest('.pblock').dataset.bid,at:Date.now()}},true);
 const pwMenu=showMenu;showMenu=function(items,...rest){
   if(pwLast&&Date.now()-pwLast.at<800&&Array.isArray(items)&&items.some(x=>x&&/설명 (쓰기|고치기)/.test(x.label||''))){const {ctx,bid}=pwLast;pwLast=null;const b=ctx.draft.blocks.find(x=>x.id===bid),cur=b&&b.w||100;
-    items=[...items,'-',...PW_SIZES.map(([t,w])=>({label:`크기: ${t}${cur===w?' ✓':''}`,run:()=>pwSet(ctx,bid,w)}))]}
+    /* 크기는 이제 사진을 가볍게 눌러 모서리를 끌어서 바꿈 → 메뉴엔 줄였을 때만 '원래 크기로' 하나 */
+    if(cur<100)items=[...items,'-',{label:'원래 크기로',run:()=>pwSet(ctx,bid,100)}]}
   return pwMenu(items,...rest)};
 const pwBaseBody=renderBody;renderBody=function(p){const bs=blocksOf(p);if(!bs.some(b=>b.type==='photos'&&b.w>=20&&b.w<100))return pwBaseBody(p);
   return bs.map(b=>{const one=pwBaseBody(Object.assign({},p,{bodyJson:Object.assign({},p.bodyJson,{blocks:[b]})}));
@@ -5701,6 +5710,34 @@ if(window.visualViewport){const vvFit=()=>{const v=visualViewport,de=document.do
    글을 쓰다 사진을 누르면 키보드가 떠 있는 채로 메뉴가 나와, 화면이 위아래로 튀고 메뉴가 가려졌음 → 손가락 기기에서 사진을 누르면 먼저 키보드를 내림 */
 document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;const b=e.target.closest&&e.target.closest('.pblock [data-phm],.pblock .pw-h');if(!b)return;
   const a=document.activeElement;if(a&&(a.isContentEditable||/^(INPUT|TEXTAREA)$/.test(a.tagName)))a.blur()},true);
+/* ═════════ 사진: 가볍게 누르면 고르기 · 꾹 누르면 메뉴 (2026-11-02, 주인 결정) ═════════
+   예전엔 사진을 누르자마자 긴 메뉴가 떴음. 주인: "가볍게 터치하면 직접 화면에서 크기를 조절하고, 꾹 누르면 지울지·뭘 할지 고르는 게 직관적"
+   - 가볍게 누름(클릭) → 그 사진 줄이 '골라진' 상태: 옅은 테두리 + 네 모서리 손잡이(끌면 크기, 가운데 기준) + PC는 오른쪽 위 작은 ⋯.
+     다시 누르거나 바깥을 누르면 풀림.
+   - 꾹 누름(손가락·펜 0.45초, 조금이라도 움직이면 취소) / 오른쪽 클릭 / ⋯ → 예전 메뉴(설명·대표·옮기기·더 넣기·빼기 + 크기).
+     메뉴는 기존 onclick을 그대로 부름(그래야 '이 사진에 정보 붙이기'·크기 항목도 같이 붙음).
+   - 사진 길게 누를 때 아이폰 기본 '이미지 저장' 창이 뜨지 않게 막음. */
+let psMenuOK=false,psSkipClick=0;
+const psSel=pb=>{document.querySelectorAll('.pblock.pw-sel').forEach(x=>{if(x!==pb){x.classList.remove('pw-sel');x.querySelectorAll('.pw-h.pw-x,.ps-more').forEach(h=>h.remove())}});
+  if(!pb||pb.classList.contains('pw-sel'))return;pb.classList.add('pw-sel');const row=pb.querySelector('.prow-edit');if(!row)return;
+  ['tl','tr','bl'].forEach(c=>{const h=document.createElement('span');h.className='pw-h pw-x pw-'+c;h.setAttribute('aria-hidden','true');row.appendChild(h)});
+  if(!matchMedia('(pointer:coarse)').matches){const m=document.createElement('button');m.type='button';m.className='ps-more';m.setAttribute('aria-label','사진 메뉴');m.textContent='⋯';
+    m.addEventListener('mousedown',e=>e.preventDefault());m.onclick=e=>{e.stopPropagation();psMenu(pb.querySelector('[data-phm]'))};row.appendChild(m)}};
+const psUnsel=()=>psSel(null);
+function psMenu(btn){if(!btn)return;psMenuOK=true;try{btn.click()}finally{psMenuOK=false}}
+document.addEventListener('click',e=>{const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn||psMenuOK)return;
+  const ctx=pfwCtxOf(btn);if(ctx&&ctx._pfpPin)return; /* 사진 속 위치 찍는 중엔 그대로 */
+  e.preventDefault();e.stopImmediatePropagation();if(Date.now()<psSkipClick)return;
+  const pb=btn.closest('.pblock');if(pb.classList.contains('pw-sel'))psUnsel();else psSel(pb)},true);
+document.addEventListener('contextmenu',e=>{const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn)return;e.preventDefault();psSel(btn.closest('.pblock'));psMenu(btn)});
+let psT=0,psAt=null;
+document.addEventListener('pointerdown',e=>{
+  if(!(e.target.closest&&e.target.closest('.pblock.pw-sel')))psUnsel();
+  const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn||e.pointerType==='mouse')return;
+  psAt={x:e.clientX,y:e.clientY};clearTimeout(psT);psT=setTimeout(()=>{psAt=null;psSkipClick=Date.now()+700;psSel(btn.closest('.pblock'));psMenu(btn)},450)},true);
+const psCancel=e=>{if(!psAt)return;if(e.type!=='pointermove'||Math.hypot(e.clientX-psAt.x,e.clientY-psAt.y)>10){clearTimeout(psT);psAt=null}};
+['pointermove','pointerup','pointercancel','scroll'].forEach(t=>document.addEventListener(t,psCancel,true));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')psUnsel()});
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;

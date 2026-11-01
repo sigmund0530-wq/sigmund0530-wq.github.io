@@ -7,7 +7,7 @@ with sync_playwright() as p:
     pg.locator('[data-tab2="write"]').click() if mob else pg.locator('[data-act="newPostFeed"]:visible').first.click();pg.wait_for_timeout(300)
     pg.locator('input[id^="f-title-"]').fill('책상 사진');pg.locator('.blocks .rte-area').first.click();pg.keyboard.type('5만 원에 팔아요.')
     pg.locator('input[id^="f-ins-"]').set_input_files('cv.jpg');pg.wait_for_timeout(1000)
-    pg.locator('.ph-item [data-phm]').first.click();pg.wait_for_timeout(200)
+    pg.locator('.ph-item [data-phm]').first.click(button='right');pg.wait_for_timeout(200)
     labels=pg.locator('.menu [role=menuitem], .menu button').all_inner_texts()
     assert any('이 사진에 정보 붙이기' in x for x in labels),labels
     pg.locator('.menu').get_by_text('이 사진에 정보 붙이기').click();pg.wait_for_timeout(200)

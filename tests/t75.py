@@ -13,19 +13,29 @@ with sync_playwright() as p:
     pg.locator('[data-tab2="write"]').click() if mob else pg.locator('[data-act="newPostFeed"]:visible').first.click();pg.wait_for_timeout(400)
     pg.locator('input[id^="f-title-"]').fill('크기 글');pg.locator('.blocks .rte-area').first.click();pg.keyboard.type('짤 하나 ')
     pg.evaluate(PASTE,PNG);pg.wait_for_timeout(900)
-    ok(pg.locator('.blocks .pblock .pw-h').count()==1,tag+' 사진에 크기 손잡이')
+    ok(pg.locator('.blocks .pblock .pw-h').count()==1 and not pg.locator('.blocks .pblock .pw-h').first.is_visible() or pg.evaluate("getComputedStyle(document.querySelector('.blocks .pblock .pw-h')).opacity")=='0',tag+' 고르기 전엔 손잡이 안 보임')
+    pg.locator('.blocks .pblock [data-phm]').first.click();pg.wait_for_timeout(300)
+    ok(pg.locator('.pblock.pw-sel').count()==1 and pg.locator('.pblock.pw-sel .pw-h').count()==4,tag+' 가볍게 누르면 골라지고 네 모서리 손잡이')
+    ok(pg.locator('.menu').count()==0,tag+' 가볍게 누르면 메뉴는 안 뜸')
+    ok((pg.locator('.ps-more').count()==1)==(not mob),tag+' PC는 ⋯ 버튼, 휴대폰은 꾹 누르기')
     ok(pw(pg)==100,tag+' 처음엔 꽉 차게',pw(pg))
     pg.locator('.blocks .pblock').scroll_into_view_if_needed();pg.wait_for_timeout(200)
-    h=pg.locator('.blocks .pblock .pw-h').bounding_box();pb=pg.locator('.blocks .pblock').bounding_box()
+    h=pg.locator('.blocks .pblock .pw-h:not(.pw-x)').bounding_box();pb=pg.locator('.blocks .pblock').bounding_box()
     sx,sy=h['x']+h['width']/2,h['y']+h['height']/2;mid=pb['x']+pb['width']/2;tx=mid+(sx-mid)*0.5
     pg.mouse.move(sx,sy);pg.mouse.down();pg.mouse.move((sx+tx)/2,sy,steps=4);pg.mouse.move(tx,sy,steps=4)
     tip=pg.locator('.pw-tip').inner_text() if pg.locator('.pw-tip').count() else '';pg.mouse.up();pg.wait_for_timeout(300)
     w=pw(pg);ok(40<=w<=60,tag+' 끌면 작아짐',w);ok(tip.endswith('%'),tag+' 끄는 동안 % 표시',tip)
-    pg.locator('.blocks .pblock [data-phm]').first.click();pg.wait_for_timeout(300)
-    labels=pg.locator('.menu button,[role=menuitem]').all_text_contents();ok(any('크기: 작게' in t for t in labels),tag+' 사진 메뉴에 크기',labels)
-    pg.locator('.menu button,[role=menuitem]').filter(has_text='크기: 작게').first.click();pg.wait_for_timeout(300);ok(30<=pw(pg)<=36,tag+' 메뉴로 작게(1/3)',pw(pg))
+    if mob:
+      bb=pg.locator('.blocks .pblock [data-phm]').first.bounding_box();cx,cy=bb['x']+bb['width']/2,bb['y']+bb['height']/2
+      pg.evaluate("([x,y])=>{const t=document.elementFromPoint(x,y);t.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,clientX:x,clientY:y,pointerType:'touch'}))}",[cx,cy]);pg.wait_for_timeout(700)
+      pg.evaluate("([x,y])=>{const t=document.elementFromPoint(x,y);t.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,clientX:x,clientY:y,pointerType:'touch'}));t.click()}",[cx,cy]);pg.wait_for_timeout(300)
+    else:
+      pg.locator('.ps-more').click();pg.wait_for_timeout(300)
+    labels=pg.locator('.menu button,[role=menuitem]').all_text_contents();ok(any('이 사진 빼기' in t for t in labels) and any('원래 크기로' in t for t in labels),tag+' 꾹 누르면 메뉴(빼기·원래 크기로)',labels)
+    pg.keyboard.press('Escape');pg.wait_for_timeout(200)
+    if pg.locator('.menu').count():pg.mouse.click(3,3);pg.wait_for_timeout(200)
     if not mob:
-      pg.locator('.blocks .pblock .pw-h').focus();pg.keyboard.press('ArrowRight');pg.keyboard.press('ArrowRight');pg.wait_for_timeout(200);ok(42<=pw(pg)<=46,tag+' 키보드로 5%씩',pw(pg))
+      pg.locator('.blocks .pblock [data-phm]').first.click();pg.wait_for_timeout(200);pg.locator('.blocks .pblock .pw-h:not(.pw-x)').focus();pg.keyboard.press('ArrowRight');pg.keyboard.press('ArrowRight');pg.wait_for_timeout(200);ok(abs(pw(pg)-(w+10))<=2,tag+' 키보드로 5%씩',(w,pw(pg)))
     cur=pw(pg)
     pg.locator('.hpub').click();pg.wait_for_timeout(300);pg.locator('input[name="pv"][value="public"]').check();pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(600)
     post=[x for x in rec(pg)['posts'] if x.get('title')=='크기 글'][0];pbk=[x for x in post['bodyJson']['blocks'] if x['type']=='photos'][0]
@@ -38,10 +48,12 @@ with sync_playwright() as p:
     # 원래대로 → 저장값 없음
     pg.locator('[data-tab2="write"]').click() if mob else pg.locator('[data-act="newPostFeed"]:visible').first.click();pg.wait_for_timeout(400)
     pg.locator('input[id^="f-title-"]').fill('원래 글');pg.locator('.blocks .rte-area').first.click();pg.keyboard.type('하나 ')
-    pg.evaluate(PASTE,PNG);pg.wait_for_timeout(900);pg.locator('.blocks .pblock [data-phm]').first.click();pg.wait_for_timeout(300)
-    pg.locator('.menu button,[role=menuitem]').filter(has_text='크기: 중간').first.click();pg.wait_for_timeout(200)
-    pg.locator('.blocks .pblock [data-phm]').first.click();pg.wait_for_timeout(300)
-    pg.locator('.menu button,[role=menuitem]').filter(has_text='크기: 원래대로').first.click();pg.wait_for_timeout(200)
+    pg.evaluate(PASTE,PNG);pg.wait_for_timeout(900);pg.locator('.blocks .pblock [data-phm]').first.click(button='right');pg.wait_for_timeout(300)
+    pg.keyboard.press('Escape');pg.wait_for_timeout(100)
+    if pg.locator('.menu').count():pg.mouse.click(3,3);pg.wait_for_timeout(200)
+    pg.locator('.blocks .pblock [data-phm]').first.click();pg.wait_for_timeout(200);pg.locator('.blocks .pblock .pw-h:not(.pw-x)').focus();[pg.keyboard.press('ArrowLeft') for _ in range(6)];pg.wait_for_timeout(200)
+    pg.locator('.blocks .pblock [data-phm]').first.click(button='right');pg.wait_for_timeout(300)
+    pg.locator('.menu button,[role=menuitem]').filter(has_text='원래 크기로').first.click();pg.wait_for_timeout(200)
     pg.locator('.hpub').click();pg.wait_for_timeout(300);pg.locator('input[name="pv"][value="private"]').check();pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(600)
     post=[x for x in rec(pg)['posts'] if x.get('title')=='원래 글'][0];pbk=[x for x in post['bodyJson']['blocks'] if x['type']=='photos'][0]
     ok('w' not in pbk,tag+' 원래대로면 저장 안 함(예전 글과 같음)',pbk.keys())
