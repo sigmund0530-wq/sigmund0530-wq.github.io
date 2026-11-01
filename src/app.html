@@ -1417,6 +1417,10 @@ html.ps-dragging,html.ps-dragging *{user-select:none!important;-webkit-user-sele
 .pe-fonts button b{font-weight:400;font-size:17px;white-space:nowrap}
 .pe-fonts button small{font-family:var(--f-body);font-size:11px;color:var(--ink-2)}
 .pe-fonts button[aria-pressed=true]{background:var(--porc-in,var(--chrome-2));box-shadow:inset 0 1px 3px var(--porc-shade,rgba(0,0,0,.1))}
+.au-guest{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:18px}
+.au-guest small{font-size:12px;color:var(--ink-2);text-align:center;line-height:1.5}
+.au-btn.au-ghost{background:none!important;box-shadow:none!important;border:0!important;color:var(--ink-2)!important;text-decoration:underline;text-underline-offset:3px;min-height:0;padding:6px}
+.guest-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;font-size:12.5px;color:var(--ink-2);border-bottom:1px solid var(--line)}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -3758,7 +3762,8 @@ renderOnboard=function(cv){cv.style.height="";cv.style.minHeight="100%";
     <div class="au-btns">${Object.entries(AU_METHODS).map(([k,[t,c]])=>`<button type="button" class="au-btn ${c}" data-au-social="${k}">${t}</button>`).join("")}
     <div class="au-or"><span>또는</span></div>
     <button type="button" class="au-btn au-mail" data-au-go="terms" data-au-method="email">이메일로 가입하기</button></div>
-    <p class="au-foot">이미 계정이 있나요? <button type="button" class="linkbtn" data-au-go="login">로그인</button></p>`;
+    <p class="au-foot">이미 계정이 있나요? <button type="button" class="linkbtn" data-au-go="login">로그인</button></p>
+    <div class="au-guest"><button type="button" class="au-btn au-ghost" data-au-guest>가입 없이 써 보기</button><small>이 기기에만 저장돼요. 나중에 가입하면 쓴 글을 그대로 가져가요.</small></div>`;
   else if(st==="terms"){const ag=auDraft.agree||{};
     h=`${auProg(1)}<h2>약관 동의</h2>
     <label class="au-all"><input type="checkbox" data-au-all ${ag.t&&ag.p&&ag.a?"checked":""}> <b>전체 동의하기</b></label>
@@ -4613,7 +4618,9 @@ function edPhotoDrag(ctx){const host=ctx.blocksEl;let src=null;
    · 로그인하면 서버에서 내 글·공간·파일을 불러오고, 고칠 때마다 조용히 서버에 올림
    · 이 기기 저장본은 '빠르게 열기 + 잠깐 끊겨도 안 잃기' 용도. 서버가 기준
    · 순서: 새 파일 → 글·공간 → 지운 파일 (어디서 끊겨도 글이 없는 파일을 가리키지 않게) */
-const SB={on:!!(window.MGD_SB&&window.MGD_SB.url&&window.supabase&&window.supabase.createClient),c:null,user:null,ready:false,pushing:false,again:false,timer:null,retry:0,last:null,pulledAt:0};
+/* 게스트(가입 없이 이 기기에만, 2026-11-02): 게스트 표시가 있으면 서버를 아예 켜지 않음 */
+const SB_GUEST=(()=>{try{return localStorage.getItem('mgd2.v1.guest')==='1'}catch(e){return false}})();
+const SB={on:!SB_GUEST&&!!(window.MGD_SB&&window.MGD_SB.url&&window.supabase&&window.supabase.createClient),c:null,user:null,ready:false,pushing:false,again:false,timer:null,retry:0,last:null,pulledAt:0};
 const SBK={owner:"mgd2.v1.sbuser",last:"mgd2.v1.sblast",dirty:"mgd2.v1.sbdirty",pending:"mgd2.v1.sbpending"};
 if(SB.on){try{SB.c=window.supabase.createClient(MGD_SB.url,MGD_SB.key,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"mgd-sb-auth"}})}catch(e){SB.on=false}}
 const lsS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,typeof v==="string"?v:JSON.stringify(v))}catch(e){}};
@@ -5967,6 +5974,24 @@ const peSePanel=sePanel;sePanel=function(cv){if(ui.seSel==='profile'&&!ui.roomSe
 function peApplyFonts(){const f=(records&&records.profile&&records.profile.fonts)||{};const set=(sel,k)=>document.querySelectorAll(sel).forEach(n=>{const v=f[k];if(v&&MOOD_FONTS[v]){ensureFont(v);n.style.fontFamily=`'${MOOD_FONTS[v][1]}',var(--f-body)`}else n.style.fontFamily=''});
   set('.nv .nv-cover h1','space');set('.nv .nv-who b,.nv .nv-prof b','name');set('.nv .nv-who small:not(.unset),.nv .nv-prof small:not(.unset)','status')}
 const peRender=render;render=function(){const r=peRender.apply(this,arguments);try{peApplyFonts()}catch(e){}return r};
+/* ═════════ 게스트로 써 보기 (2026-11-02, 주인 결정: 기기에 남는 게스트) ═════════
+   첫 화면 '가입 없이 써 보기' → 초대 코드·이메일 없이 바로 내 공간. 저장은 이 기기(브라우저)에만, 서버는 켜지 않음(SB_GUEST).
+   남에게 보이는 일은 없음(서버에 안 올라가니까). 내 공간 위 얇은 줄 '게스트 · 이 기기에만 저장돼요 · 가입하고 이어 쓰기 ›'.
+   가입하고 이어 쓰기: 게스트 표시만 지우고 다시 열어 가입 화면으로. 이 기기 기록은 그대로 두고, 막 가입한 공간은 원래 흐름대로
+   '이 기기에서 만든 것을 그대로 올림'(sbPull의 fresh) → 게스트로 쓴 글·사진이 새 계정으로 올라감. 이름·주소는 가입 때 정한 것으로. */
+function guestStart(){try{localStorage.setItem('mgd2.v1.guest','1')}catch(e){toast('이 브라우저에서는 저장할 수 없어요. 개인정보 보호 모드를 꺼 주세요.');return}
+  SB.on=false;defaults();records.settings={onboardingComplete:true,account:{method:'guest'}};records.profile.displayName='손님';records.profile.handle='guest-'+Math.random().toString(36).slice(2,7);
+  ui.onboard=false;ui.authStep=null;ui.renderer='desktop';ui.space='blog';commit();toast('게스트로 시작했어요 · 이 기기에만 저장돼요')}
+function guestUpgrade(){try{localStorage.removeItem('mgd2.v1.guest');localStorage.setItem('mgd2.v1.guestUp','1')}catch(e){}
+  if(records.settings){records.settings.onboardingComplete=false;delete records.settings.account}try{writeAll()}catch(e){}location.reload()}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-au-guest]')){e.preventDefault();e.stopImmediatePropagation();guestStart()}
+  if(e.target.closest&&e.target.closest('[data-guest-up]')){e.preventDefault();guestUpgrade()}},true);
+const isGuest=()=>SB_GUEST||(records&&records.settings&&records.settings.account&&records.settings.account.method==='guest');
+const guestRender=render;render=function(){const r=guestRender.apply(this,arguments);try{if(isGuest()&&!ui.onboard){const h=document.querySelector('.home.nv .hm-inner');if(h&&!h.querySelector('.guest-bar')){const b=document.createElement('div');b.className='guest-bar';
+      b.innerHTML=`<span>게스트 · 이 기기에만 저장돼요</span><button type="button" class="linkbtn" data-guest-up>가입하고 이어 쓰기 ›</button>`;h.prepend(b)}}}catch(e){}return r};
+AU_NAMES.guest='게스트';
+/* 가입하고 이어 쓰기로 돌아왔을 때: 가입 첫 화면부터, 한 번 안내 */
+try{if(localStorage.getItem('mgd2.v1.guestUp')==='1'&&SB.on){localStorage.removeItem('mgd2.v1.guestUp');ui.onboard=true;ui.authStep='start';setTimeout(()=>toast('가입하면 게스트로 쓴 글을 그대로 가져가요'),400)}}catch(e){}
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
