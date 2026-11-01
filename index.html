@@ -1349,6 +1349,9 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
    첫 문단은 빈 글일 때 쓸 자리를 넉넉히 잡는데(34vh), 바로 뒤에 사진이 오면 그 빈자리가 사진 위에 남았음 → 사진이 뒤에 오면 내용만큼만 */
 .prow-edit.n1 .ph-img{aspect-ratio:auto;height:auto}
 .win.editor .blocks .rte-area:first-child:has(+ .pblock),.blocks .rte-area:first-child:has(+ .pblock){min-height:0}
+/* 휴대폰 키보드가 올라오면 글쓰기 창을 키보드 위로 올리는데(--kb), 사파리의 키보드 위 막대·주소 막대와 높이가 딱 맞지 않아
+   창 아래로 뒤에 깔린 화면(내 공간 글 카드 등)이 비쳐 보였음(2026-11-02, 주인 아이폰 화면) → 창 아래쪽을 같은 바탕색으로 길게 덮음 */
+.win.editor.m{box-shadow:0 100vh 0 0 var(--chrome)!important}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
