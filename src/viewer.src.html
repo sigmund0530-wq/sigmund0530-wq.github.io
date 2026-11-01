@@ -153,6 +153,12 @@ header h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.01em}
   document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;save();fit()});
   document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{st=b.dataset.st;save();fit()});
   let t;addEventListener("resize",()=>{clearTimeout(t);t=setTimeout(fit,60)});
+  /* 휴대폰 키보드: 미리보기 틀 안의 앱은 키보드가 올라온 걸 모름 → 바깥에서 키보드 높이를 재서 앱에 알려 줌(앱의 --kb).
+     그래야 글쓰기 아래 도구줄(사진·짤·T…)이 키보드 바로 위에 붙음. 화면이 위로 밀려 올라간 것도 되돌림 */
+  if(window.visualViewport){const kb=()=>{if(!document.body.classList.contains("solo"))return;const v=visualViewport,h=Math.max(0,innerHeight-v.height-v.offsetTop);
+      document.querySelectorAll(".device:not([hidden]) iframe").forEach(f=>{try{f.contentDocument.documentElement.style.setProperty("--kb",h+"px")}catch(e){}});
+      if(h>0&&(scrollY||v.offsetTop))scrollTo(0,0)};
+    visualViewport.addEventListener("resize",kb);visualViewport.addEventListener("scroll",kb)}
   fit();
 })();
 </script>
