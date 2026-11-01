@@ -1372,6 +1372,38 @@ html.ps-dragging,html.ps-dragging *{user-select:none!important;-webkit-user-sele
 .rte-area.drop-text{box-shadow:inset 0 -3px 0 var(--ink-2)}
 .ps-line{position:fixed;z-index:100000;background:var(--ink);border-radius:2px;pointer-events:none;box-shadow:0 0 0 2px var(--chrome)}
 .ps-line[hidden]{display:none}
+/* 프로필 편집 화면: 휴대폰은 화면 가득, PC는 가운데 판 하나. 안은 상자 없이 간격·옅은 줄로만 */
+.pe-page{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.28);display:grid;place-items:center}
+.pe-page.m{background:var(--chrome)}
+.pe-sheet{width:min(480px,100vw);max-height:min(760px,100vh);overflow:auto;background:var(--chrome);border-radius:18px;box-shadow:0 20px 60px var(--porc-shade,rgba(0,0,0,.18))}
+.pe-page.m .pe-sheet{width:100%;height:100%;max-height:none;border-radius:0;box-shadow:none}
+.pe-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));background:var(--chrome);border-bottom:1px solid var(--line)}
+.pe-head b{font-size:16px;color:var(--ink)}
+.pe-txt{border:0;background:none;font:inherit;font-size:14px;color:var(--ink-2);padding:6px 4px;cursor:pointer}.pe-txt.danger{color:var(--danger)}
+.pe-body{padding:24px 20px 40px;display:flex;flex-direction:column;gap:20px}
+.pe-photo{display:flex;flex-direction:column;align-items:center;gap:8px}
+.pe-av{width:112px!important;height:112px!important;border:0;padding:0;cursor:pointer}
+.pe-av .ini{font-size:44px}
+.pe-ph-acts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.pe-f{display:flex;flex-direction:column;gap:6px}
+.pe-f>span{font-size:12.5px;color:var(--ink-2);display:flex;justify-content:space-between}
+.pe-f input,.pe-f textarea{border:1px solid var(--line);border-radius:10px;background:var(--chrome);color:var(--ink);padding:11px 12px;font:inherit;font-size:16px;resize:none}
+.pe-f input:focus,.pe-f textarea:focus{outline:none;border-color:var(--ink-2)}
+.pe-addr>div{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
+.pe-addr b{font-weight:500;color:var(--ink)}
+/* 프사 맞추기 */
+.pc-wrap{position:fixed;inset:0;z-index:9500;background:var(--chrome);display:flex;flex-direction:column;align-items:center;overflow:auto}
+.pc-wrap .pe-head{width:100%}
+.pc-stage{position:relative;width:min(86vw,360px);aspect-ratio:1;margin-top:24px;overflow:hidden;border-radius:12px;background:#000;touch-action:none;cursor:grab;flex:none}
+.pc-stage img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.pc-ring{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px rgba(0,0,0,.55);outline:2px solid rgba(255,255,255,.85);outline-offset:-2px;pointer-events:none}
+.pc-zoom{display:flex;align-items:center;gap:10px;width:min(86vw,360px);margin-top:16px;font-size:12.5px;color:var(--ink-2)}
+.pc-zoom input{flex:1;accent-color:var(--ink-2)}
+.pc-tip{font-size:12.5px;color:var(--ink-2);margin:8px 0 0}
+.pc-prevs{display:flex;align-items:flex-end;gap:22px;margin:22px 0 32px}
+.pc-prevs figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pc-prevs canvas{border-radius:50%;display:block;background:var(--chrome-2)}
+.pc-prevs figcaption{font-size:11.5px;color:var(--ink-2)}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -4770,7 +4802,7 @@ function renderSettings(cv){cv.style.height="";cv.style.minHeight="100%";const p
       ${row("로그아웃",srv?"이 기기에서 나가요. 글은 서버에 그대로 있어요.":"",btn("logout","로그아웃"))}
     </section>
     <section class="set-sec"><h2>프로필</h2>
-      ${row("이름 · 소개 · 사진","내 공간 화면에서 직접 고쳐요",btn("profile","편집하러 가기"))}
+      ${row("이름 · 소개 · 사진","프로필 사진은 칸에 맞춰 보일 부분을 고를 수 있어요",btn("profile","프로필 편집"))}
     </section>
     <section class="set-sec"><h2>공개 범위</h2>
       ${row("새 글의 기본 공개 범위","글을 쓸 때마다 바꿀 수 있어요",`<select class="set-sel" data-set-sel="defaultVis" aria-label="새 글의 기본 공개 범위">${opts(SET_VIS,dv)}</select>`)}
@@ -5808,6 +5840,86 @@ document.addEventListener('pointercancel',()=>{clearTimeout(psT);psAt=null;if(ps
 document.addEventListener('touchmove',e=>{if(psArm||psDrag)e.preventDefault()},{passive:false,capture:true});
 document.addEventListener('scroll',()=>{if(psAt){clearTimeout(psT);psAt=null}},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')psUnsel()});
+/* ═════════ 프로필 편집 화면 · 프사 맞추기 (2026-11-02, 주인 결정) ═════════
+   예전엔 작은 창 하나에 사진·이름·소개를 몰아 넣었음. 주인: "인스타나 블로그처럼 다른 창이 나와 자세하게 바꾸고, 프사는 칸 규격에 맞춰 보일 부분을 직접 정하게(확대 등)"
+   - 프로필 편집: 휴대폰은 화면 가득, PC는 가운데 판. 위 '취소 · 프로필 편집 · 완료', 큰 프사 + 사진 바꾸기/위치 맞추기/빼기, 닉네임·공간 이름·소개(글자 수)·공간 주소(설정으로).
+   - 프사 맞추기: 동그란 칸 밖은 어둡게. 한 손가락(마우스)으로 끌어 옮기고, 두 손가락 벌리기·휠·아래 막대로 확대. 칸 밖으로 빈 곳이 생기지 않게 막음.
+     아래에 실제로 보일 크기(내 공간 큰 사진 · 글 옆 · 목록 작은 사진)를 바로 보여 줌. 적용하면 480px 정사각으로 잘라 저장.
+   - 원본(긴 변 1280px)과 맞춘 위치를 따로 둬서(profile.photoSrcId, photoCrop) 나중에 '위치 맞추기'로 다시 고칠 수 있음. 원본은 extraUsedIds가 지킴. */
+const peUsed=extraUsedIds;extraUsedIds=function(){const o=peUsed();const pr=records&&records.profile;if(pr&&pr.photoSrcId)o.push(pr.photoSrcId);return o};
+function peLoadImg(src){return new Promise((res,rej)=>{const im=new Image();if(!/^data:|^blob:/.test(src))im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=()=>rej(new Error('사진을 열 수 없어요.'));im.src=src})}
+function peFileToSrc(file){return new Promise((res,rej)=>{if(!/^image\//.test(file.type))return rej(new Error('이미지 파일만 올릴 수 있어요.'));
+  const u=URL.createObjectURL(file);const im=new Image();im.onload=()=>{const r=Math.min(1,1280/Math.max(im.width,im.height)),w=Math.round(im.width*r),h=Math.round(im.height*r);
+    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);URL.revokeObjectURL(u);const id=uid('asset');
+    assets[id]={id,role:'profile-src',mime:'image/jpeg',width:w,height:h,dataUrl:c.toDataURL('image/jpeg',.88)};res(id)};
+  im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('이 사진은 열 수 없어요. HEIC라면 JPG로 바꿔 올려 주세요.'))};im.src=u})}
+/* 자르기 값 crop={cx,cy,z}: 원본에서 칸 가운데가 놓일 자리(0~1)와 확대(1=칸을 꽉 채우는 최소) */
+function peDraw(im,crop,c,size){const w=im.naturalWidth,h=im.naturalHeight,base=Math.max(1/w,1/h),side=1/(base*crop.z);/* 원본 픽셀 기준 칸 한 변 */
+  const sx=crop.cx*w-side/2,sy=crop.cy*h-side/2;c.width=size;c.height=size;const g=c.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(im,sx,sy,side,side,0,0,size,size)}
+function peClamp(im,crop){const w=im.naturalWidth,h=im.naturalHeight,base=Math.max(1/w,1/h);crop.z=Math.max(1,Math.min(5,crop.z));const side=1/(base*crop.z);
+  const hx=side/2/w,hy=side/2/h;crop.cx=Math.max(hx,Math.min(1-hx,crop.cx));crop.cy=Math.max(hy,Math.min(1-hy,crop.cy));return crop}
+function peCrop(srcId,crop0){return new Promise(async done=>{let im;try{im=await peLoadImg(assets[srcId].dataUrl)}catch(e){toast(e.message);return done(null)}
+  const crop=peClamp(im,Object.assign({cx:.5,cy:.5,z:1},crop0||{}));
+  const el=document.createElement('div');el.className='pc-wrap'+(isMobile()?' m':'');el.setAttribute('role','dialog');el.setAttribute('aria-label','프로필 사진 맞추기');
+  el.innerHTML=`<header class="pe-head"><button type="button" class="pe-txt" data-pc-x>취소</button><b>사진 맞추기</b><button type="button" class="btn primary sm" data-pc-ok>적용</button></header>
+    <div class="pc-stage" aria-label="끌어서 옮기고, 두 손가락이나 아래 막대로 확대해요"><img alt="" draggable="false"><span class="pc-ring" aria-hidden="true"></span></div>
+    <label class="pc-zoom"><span>작게</span><input type="range" min="1" max="5" step="0.01" aria-label="확대"><span>크게</span></label>
+    <p class="pc-tip">끌어서 옮기고, 두 손가락으로 벌리거나 막대로 확대해요</p>
+    <div class="pc-prevs"><figure><canvas class="pc-p96"></canvas><figcaption>내 공간</figcaption></figure><figure><canvas class="pc-p48"></canvas><figcaption>글</figcaption></figure><figure><canvas class="pc-p28"></canvas><figcaption>목록</figcaption></figure></div>`;
+  document.body.appendChild(el);const st=el.querySelector('.pc-stage'),img=st.querySelector('img'),zr=el.querySelector('input[type=range]');img.src=im.src;
+  const W=im.naturalWidth,H=im.naturalHeight;
+  const lay=()=>{const S=st.clientWidth,base=Math.max(S/W,S/H),sc=base*crop.z;img.style.width=W*sc+'px';img.style.height=H*sc+'px';
+    img.style.transform=`translate(${S/2-crop.cx*W*sc}px,${S/2-crop.cy*H*sc}px)`;zr.value=crop.z;
+    [['.pc-p96',96],['.pc-p48',48],['.pc-p28',28]].forEach(([q,s])=>{const c=el.querySelector(q);peDraw(im,crop,c,s*2);c.style.width=c.style.height=s+'px'})};
+  let raf=0;const re=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{peClamp(im,crop);lay()})};
+  const pts=new Map();let last=null;
+  st.addEventListener('pointerdown',e=>{st.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});last=null;e.preventDefault()});
+  st.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;const p0=pts.get(e.pointerId);const S=st.clientWidth,sc=Math.max(S/W,S/H)*crop.z;
+    if(pts.size===1){crop.cx-=(e.clientX-p0.x)/(W*sc);crop.cy-=(e.clientY-p0.y)/(H*sc)}
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(last)crop.z*=d/last;last=d}re()});
+  const up=e=>{pts.delete(e.pointerId);last=null};st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);
+  st.addEventListener('wheel',e=>{e.preventDefault();crop.z*=Math.exp(-e.deltaY*.0015);re()},{passive:false});
+  zr.oninput=()=>{crop.z=+zr.value;re()};
+  const close=v=>{el.remove();removeEventListener('resize',re);done(v)};addEventListener('resize',re);
+  el.querySelector('[data-pc-x]').onclick=()=>close(null);
+  el.querySelector('[data-pc-ok]').onclick=()=>{const c=document.createElement('canvas');peDraw(im,crop,c,480);let url;try{url=c.toDataURL('image/jpeg',.88)}catch(e){toast('이 사진은 다시 맞출 수 없어요. 새로 올려 주세요.');return close(null)}
+    const id=uid('asset');assets[id]={id,role:'profile',mime:'image/jpeg',width:480,height:480,dataUrl:url};close({id,crop:{cx:+crop.cx.toFixed(4),cy:+crop.cy.toFixed(4),z:+crop.z.toFixed(3)}})};
+  el.addEventListener('keydown',e=>{if(e.key==='Escape')close(null)});requestAnimationFrame(lay)})}
+editProfile=async function(){const pr=records.profile;const made=[];
+  let photo=pr.photoAssetId||null,src=pr.photoSrcId||null,crop=pr.photoCrop||null;
+  const el=document.createElement('div');el.className='pe-page'+(isMobile()?' m':'');el.setAttribute('role','dialog');el.setAttribute('aria-label','프로필 편집');
+  el.innerHTML=`<div class="pe-sheet"><header class="pe-head"><button type="button" class="pe-txt" data-pe-x>취소</button><b>프로필 편집</b><button type="button" class="btn primary sm" data-pe-ok>완료</button></header>
+    <div class="pe-body">
+      <div class="pe-photo"><button type="button" class="me-photo pe-av" data-pe-new aria-label="프로필 사진 바꾸기"></button>
+        <div class="pe-ph-acts"><label class="pe-txt">사진 바꾸기<input type="file" accept="image/*" hidden data-pe-file></label><button type="button" class="pe-txt" data-pe-adj>위치 맞추기</button><button type="button" class="pe-txt danger" data-pe-rm>사진 빼기</button></div></div>
+      <label class="pe-f"><span>닉네임</span><input type="text" data-pe-name maxlength="30" value="${esc(pr.displayName||'')}"></label>
+      <label class="pe-f"><span>공간 이름</span><input type="text" data-pe-space maxlength="30" placeholder="${esc((pr.displayName||'나')+'의 공간')}" value="${esc(pr.spaceName||'')}"></label>
+      <label class="pe-f"><span>소개 <small data-pe-cnt></small></span><textarea data-pe-status maxlength="60" rows="2" placeholder="나를 한 줄로">${esc(pr.status||'')}</textarea></label>
+      <div class="pe-f pe-addr"><span>공간 주소</span><div><b>@${esc(pr.handle||'')}</b><button type="button" class="pe-txt" data-pe-handle>설정에서 바꾸기 ›</button></div></div>
+    </div></div>`;
+  document.body.appendChild(el);const $q=s=>el.querySelector(s);
+  const draw=()=>{$q('.pe-av').innerHTML=photo&&assets[photo]?`<img src="${assets[photo].dataUrl}" alt="">`:`<span class="ini">${esc(($q('[data-pe-name]').value||'나').trim().slice(0,1))}</span>`;
+    $q('[data-pe-rm]').hidden=!photo;$q('[data-pe-adj]').hidden=!(photo&&(src&&assets[src]||assets[photo]));$q('[data-pe-cnt]').textContent=`${$q('[data-pe-status]').value.length}/60`};
+  draw();$q('[data-pe-name]').oninput=draw;$q('[data-pe-status]').oninput=draw;
+  const fileIn=$q('[data-pe-file]');$q('[data-pe-new]').onclick=()=>fileIn.click();
+  fileIn.onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;let sid;try{sid=await peFileToSrc(f)}catch(er){toast(er.message);return}made.push(sid);
+    const r=await peCrop(sid,null);if(!r){delete assets[sid];return}made.push(r.id);photo=r.id;src=sid;crop=r.crop;draw()};
+  $q('[data-pe-adj]').onclick=async()=>{const sid=src&&assets[src]?src:photo;const r=await peCrop(sid,sid===src?crop:null);if(!r)return;made.push(r.id);photo=r.id;if(sid!==src){src=sid}crop=r.crop;draw()};
+  $q('[data-pe-rm]').onclick=()=>{photo=null;src=null;crop=null;draw()};
+  $q('[data-pe-handle]').onclick=()=>{close();setRenderer('settings')};
+  const close=()=>{el.remove();document.removeEventListener('keydown',esc_)};
+  const esc_=e=>{if(e.key==='Escape'&&!document.querySelector('.pc-wrap')){made.forEach(id=>{if(id!==pr.photoAssetId&&id!==pr.photoSrcId)delete assets[id]});close()}};document.addEventListener('keydown',esc_);
+  $q('[data-pe-x]').onclick=()=>{made.forEach(id=>{if(id!==pr.photoAssetId&&id!==pr.photoSrcId)delete assets[id]});close()};
+  $q('[data-pe-ok]').onclick=()=>{
+    [pr.photoAssetId,pr.photoSrcId].forEach(id=>{if(id&&id!==photo&&id!==src)delete assets[id]});made.forEach(id=>{if(id!==photo&&id!==src)delete assets[id]});
+    pr.photoAssetId=photo;if(src&&src!==photo){pr.photoSrcId=src;pr.photoCrop=crop}else{delete pr.photoSrcId;delete pr.photoCrop}
+    pr.displayName=$q('[data-pe-name]').value.trim()||'내 공간';pr.status=$q('[data-pe-status]').value.trim();delete pr.statusAt;pr.spaceName=$q('[data-pe-space]').value.trim();
+    close();commit();toast('프로필을 바꿨어요')};
+  if(!isMobile())setTimeout(()=>$q('[data-pe-name]').focus(),30)};
+/* 프로필을 바꾸는 길은 모두 새 프로필 편집 화면으로: 설정의 '편집하러 가기', 내 공간 편집 칸의 '사진 바꾸기'(사진은 칸에 맞춰 잘라야 해서) */
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-set="profile"],.se-panel label:has([data-se-photo]),.se-panel .se-ph-prev');if(!t)return;
+  if(t.matches('[data-set="profile"]')&&ui.renderer!=='settings')return;e.preventDefault();e.stopImmediatePropagation();if(!isVisitor())editProfile()},true);
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
