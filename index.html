@@ -5549,7 +5549,9 @@ function aiTpl(kind,sent,food){
   if(kind==='장소')return food||/먹|마시|카페|식당|빵|맛집|커피|밥/.test(sent)?aiSg('맛집·카페'):aiSg('여행');
   if(kind==='물건')return /팔|판매|중고|내놓/.test(sent)?aiSg('중고 판매'):/샀|사 ?왔|구매|주문|지름|사줬/.test(sent)?aiSg('구매 정보'):aiSg('물건 정리');
   return null}
-const aiOn=()=>settings().aiCollect===true&&SB.on&&!!SB.user;
+/* 보류(2026-11-02, 주인): AI 성능이 애매하면 서비스 질이 떨어질 수 있어 잠시 꺼 둠. 켜 둔 계정도 발행 때 AI를 부르지 않고, 설정에도 안 보임. 다시 열 때 AI_HOLD=false */
+const AI_HOLD=true;
+const aiOn=()=>!AI_HOLD&&settings().aiCollect===true&&SB.on&&!!SB.user;
 let aiBusy=false,aiPass=false;
 function aiFind(area,word){const tw=document.createTreeWalker(area,NodeFilter.SHOW_TEXT);let n;
   while((n=tw.nextNode())){if(n.parentElement.closest('mark[data-pf]'))continue;const i=n.data.indexOf(word);if(i<0)continue;
@@ -5574,7 +5576,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
     if(done.length)setTimeout(()=>toast(`AI가 ${done.slice(0,3).map(w=>'‘'+(w.length>10?w.slice(0,9)+'…':w)+'’').join(', ')}${done.length>3?` 등 ${done.length}개`:''}를 모았어요 · 틀리면 단어를 눌러 빼요`),30)},
     ()=>{aiBusy=false;aiPass=true;try{b.click()}finally{aiPass=false}})},true);
 /* 설정: '알아서 모으기' 켜기 */
-const aiBaseSettings=renderSettings;renderSettings=function(cv){aiBaseSettings(cv);const anchor=[...cv.querySelectorAll('.set-sec')].find(s=>(s.querySelector('h2')||{}).textContent==='내 기록');if(!anchor)return;
+const aiBaseSettings=renderSettings;renderSettings=function(cv){aiBaseSettings(cv);if(AI_HOLD)return;const anchor=[...cv.querySelectorAll('.set-sec')].find(s=>(s.querySelector('h2')||{}).textContent==='내 기록');if(!anchor)return;
   const on=settings().aiCollect===true,srv=SB.on&&!!SB.user;const sec=document.createElement('section');sec.className='set-sec set-ai';
   sec.innerHTML=`<h2>알아서 모으기</h2><div class="set-row"><div class="set-l"><b>발행할 때 AI가 모아 두기</b><small>${srv?'무가당 AI가 글을 읽고 책·물건·장소 같은 말에 정보를 붙여요. 학습에 쓰지 않고, 읽은 뒤 남기지 않아요.':'서버에 로그인하면 쓸 수 있어요.'}</small></div><div class="set-r">${srv?`<button type="button" class="btn sm${on?' on':''}" data-ai-toggle aria-pressed="${on}">${on?'켜짐':'꺼짐'}</button>`:''}</div></div>`;
   anchor.before(sec);const t=sec.querySelector('[data-ai-toggle]');if(t)t.onclick=()=>{const v=!(settings().aiCollect===true);records.settings=Object.assign({},records.settings||{},{aiCollect:v});commit();
@@ -5695,6 +5697,10 @@ const pwBaseBody=renderBody;renderBody=function(p){const bs=blocksOf(p);if(!bs.s
 if(window.visualViewport){const vvFit=()=>{const v=visualViewport,de=document.documentElement,kb=innerHeight-v.height;
     de.classList.toggle('kb-open',kb>80);de.style.setProperty('--vvt',Math.round(v.offsetTop)+'px');de.style.setProperty('--vvh',Math.round(v.height)+'px')};
   visualViewport.addEventListener('resize',vvFit);visualViewport.addEventListener('scroll',vvFit);vvFit()}
+/* ═════════ 휴대폰: 사진을 누르면 키보드 내리기 (2026-11-02, 주인 녹화) ═════════
+   글을 쓰다 사진을 누르면 키보드가 떠 있는 채로 메뉴가 나와, 화면이 위아래로 튀고 메뉴가 가려졌음 → 손가락 기기에서 사진을 누르면 먼저 키보드를 내림 */
+document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;const b=e.target.closest&&e.target.closest('.pblock [data-phm],.pblock .pw-h');if(!b)return;
+  const a=document.activeElement;if(a&&(a.isContentEditable||/^(INPUT|TEXTAREA)$/.test(a.tagName)))a.blur()},true);
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
