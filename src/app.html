@@ -1313,6 +1313,9 @@ body:has(.ink-bar) .toast.m{top:calc(64px + env(safe-area-inset-top,0px));bottom
 .pf-card.pf-fold .pf-head{cursor:pointer;flex-wrap:nowrap;gap:0;min-width:0}
 .pf-card.pf-fold .pf-head .pf-name{flex:0 1 auto;font-weight:500;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pf-card.pf-fold .pf-head::after{content:attr(data-sum) " ›";color:var(--ink-2);font-size:14px;white-space:pre;flex:none}
+/* 알아서 모으기: AI가 찾은 말(제안)은 본문을 건드리지 않고 옅은 점선만 */
+::highlight(mgd-ai){text-decoration:underline dotted var(--ink-2);text-decoration-thickness:1.5px;text-underline-offset:4px;background-color:var(--chrome-2)}
+.pfw-pop.ai-pop button[data-k=no]{color:var(--ink-2)}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5489,12 +5492,15 @@ const pfTopSetup=edSetup;edSetup=function(ctx){pfTopSetup(ctx);const host=ctx.bo
     if(open.has(id))open.delete(id);else open.add(id);fold()});
   new MutationObserver(()=>fold()).observe(list,{childList:true});fold()};
 
-/* ═════════ 알아서 모으기 AI (2026-11-02, 주인 결정) ═════════
-   켠 사람만(설정 → 알아서 모으기). 발행을 누르면 무가당 AI(Cloudflare Workers AI · Qwen3, 학습·보관 안 함)가 본문을 읽고
-   책·물건·장소·음식·음악·영화·드라마를 글 속 단어에 붙여요(드래그로 붙이는 것과 같은 표시). 그다음 원래 발행 창이 떠요.
-   틀린 건 단어를 눌러 '빼기'. 서버에 로그인한 사람만(Worker가 로그인 토큰을 확인). 실패하거나 6초가 넘으면 그냥 발행해요.
-   장소는 같은 문장에 음식이 있거나 먹은 말이 있으면 '맛집·카페', 아니면 '여행'.
-   [data-pub]의 onclick은 edSetup 뒤에 붙으므로, 문서 전체에서 먼저(capture) 받아 AI를 돌린 뒤 다시 누름. */
+/* ═════════ 알아서 모으기 AI (2026-11-02, 주인 결정 · 쓰는 중에 찾아 주기) ═════════
+   켠 사람만(설정 → 알아서 모으기). 서버에 로그인한 사람만(Worker가 로그인 토큰을 확인).
+   처음엔 발행할 때 읽었는데, 주인 결정으로 '쓰는 중'으로 바꿈:
+   - 문장을 마치고(마침표·물음표·줄바꿈, 또는 '…다/…요'로 끝남) 2초 손을 떼면, 아직 안 보낸 문장만 무가당 AI
+     (Cloudflare Workers AI · Qwen3, 학습·보관 안 함)로 보냄. 글자마다 부르지 않아 덜 쓴 말을 잡지 않고 한도도 아낌.
+   - 찾은 말은 바로 붙이지 않고 '제안'만: 본문 DOM은 건드리지 않고 CSS Highlight로 옅은 점선만 그림(저장·발행에 안 섞임).
+     누르면 '‘소년이 온다’ · 읽은 책에 붙이기 / 아니에요'. 붙이기는 드래그로 붙이는 것과 같은 pfwAttach. 아니에요는 이 글에서 다시 안 보여 줌.
+   - 발행할 때는 기다리지 않음. 고르지 않은 제안은 그냥 사라짐.
+   종류 → 양식: 장소는 같은 문장에 음식·먹은 말이 있으면 '맛집·카페', 아니면 '여행'. */
 const AI_URL="https://mugadang-ai.sigmund0530.workers.dev";
 const AI_FOOD={name:'먹은 것',schemaId:'preset:먹은 것',keys:[],fields:[{name:'음식',type:'text'},{name:'가게',type:'text'}]};
 const aiSg=n=>PF_SUGGEST.find(s=>s.name===n);
@@ -5507,35 +5513,57 @@ function aiTpl(kind,sent,food){
   if(kind==='물건')return /팔|판매|중고|내놓/.test(sent)?aiSg('중고 판매'):/샀|사 ?왔|구매|주문|지름|사줬/.test(sent)?aiSg('구매 정보'):aiSg('물건 정리');
   return null}
 const aiOn=()=>settings().aiCollect===true&&SB.on&&!!SB.user;
-let aiBusy=false,aiPass=false;
+const aiHL=typeof Highlight==='function'&&window.CSS&&CSS.highlights;
+const aiCtxs=new Set();let aiHinted=false;
 function aiFind(area,word){const tw=document.createTreeWalker(area,NodeFilter.SHOW_TEXT);let n;
   while((n=tw.nextNode())){if(n.parentElement.closest('mark[data-pf]'))continue;const i=n.data.indexOf(word);if(i<0)continue;
     const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+word.length);return r}return null}
-async function aiCollect(ctx){const areas=[...ctx.body.querySelectorAll('.rte-area')];const text=areas.map(a=>a.innerText||a.textContent||'').join('\n').trim().slice(0,4000);
-  if(text.length<8)return [];let token='';try{const {data}=await SB.c.auth.getSession();token=data&&data.session&&data.session.access_token||''}catch(e){}
-  if(!token)return [];const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),6000);let items=[];
-  try{const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({text}),signal:ac.signal});
-    if(r.ok){const j=await r.json();items=Array.isArray(j.items)?j.items:[]}}catch(e){}finally{clearTimeout(tm)}
-  const done=[],have=new Set([...ctx.body.querySelectorAll('mark[data-pf]')].map(m=>m.textContent.trim()));
-  const quiet=toast;toast=()=>{};
-  try{for(const it of items.slice(0,20)){const w=String(it&&it.word||'').trim();if(!w||w.length>40||have.has(w))continue;if(ctx.draft.functions.length>=12)break;
-    let r=null,area=null;for(const a of areas){r=aiFind(a,w);if(r){area=a;break}}if(!r)continue;
-    const sent=pfwSent(area.innerText||area.textContent,w),s=aiTpl(it.kind,sent,items.some(x=>x&&x.kind==='음식'&&x.word&&sent.includes(x.word)));if(!s)continue;
-    const before=ctx.draft.functions.length;pfwAttach(ctx,r,s);if(ctx.draft.functions.length>before){done.push(w);have.add(w)}}}
-  finally{toast=quiet}
-  return done}
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pub]');if(!b||aiPass||!aiOn())return;
-  const w=b.closest('.win')||document,area=w.querySelector('.rte-area')||document.querySelector('.rte-area'),ctx=area&&pfwCtxOf(area);if(!ctx||!ctx.draft)return;
-  e.preventDefault();e.stopImmediatePropagation();if(aiBusy)return;aiBusy=true;toast('무가당 AI가 글을 읽고 있어요…');
-  aiCollect(ctx).then(done=>{aiBusy=false;aiPass=true;try{b.click()}finally{aiPass=false}
-    if(done.length)setTimeout(()=>toast(`AI가 ${done.slice(0,3).map(w=>'‘'+(w.length>10?w.slice(0,9)+'…':w)+'’').join(', ')}${done.length>3?` 등 ${done.length}개`:''}를 모았어요 · 틀리면 단어를 눌러 빼요`),30)},
-    ()=>{aiBusy=false;aiPass=true;try{b.click()}finally{aiPass=false}})},true);
+/* 다 쓴 문장만: 마침표류·줄바꿈으로 끝났거나 '…다/…요'로 끝난 문장 */
+function aiDone(text){const out=[];String(text).split(/\n/).forEach((line,li,all)=>{const parts=line.split(/(?<=[.!?。…~])\s+/);
+  parts.forEach((s,i)=>{const t=s.trim();if(t.length<4)return;const last=i===parts.length-1&&li===all.length-1;
+    if(!last||/[.!?。…~]$/.test(t)||/[다요]$/.test(t))out.push(t)})});return out}
+function aiPaint(){if(!aiHL)return;const hl=new Highlight();
+  aiCtxs.forEach(ctx=>{if(!ctx.body.isConnected){aiCtxs.delete(ctx);return}const st=ctx._ai;if(!st)return;
+    const have=new Set([...ctx.body.querySelectorAll('mark[data-pf]')].map(m=>m.textContent.trim()));
+    st.sugg=st.sugg.filter(s=>!have.has(s.word)&&!st.no.has(s.word));
+    st.sugg.forEach(s=>{s.range=null;for(const a of ctx.body.querySelectorAll('.rte-area')){const r=aiFind(a,s.word);if(r){s.range=r;s.area=a;hl.add(r);break}}})});
+  CSS.highlights.set('mgd-ai',hl)}
+async function aiAsk(ctx){const st=ctx._ai;if(!aiOn()||st.busy||st.comp)return;
+  const areas=[...ctx.body.querySelectorAll('.rte-area')],full=areas.map(a=>a.innerText||a.textContent||'').join('\n');
+  const fresh=aiDone(full).filter(s=>!st.sent.has(s));if(!fresh.length)return;
+  let token='';try{const {data}=await SB.c.auth.getSession();token=data&&data.session&&data.session.access_token||''}catch(e){}if(!token)return;
+  fresh.forEach(s=>st.sent.add(s));st.busy=true;const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),8000);let items=[];
+  try{const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({text:fresh.join('\n').slice(0,4000)}),signal:ac.signal});
+    if(r.ok){const j=await r.json();items=Array.isArray(j.items)?j.items:[]}else fresh.forEach(s=>st.sent.delete(s))}
+  catch(e){fresh.forEach(s=>st.sent.delete(s))}finally{clearTimeout(tm);st.busy=false}
+  if(!ctx.body.isConnected)return;let added=0;
+  items.slice(0,20).forEach(it=>{const w=String(it&&it.word||'').trim();if(!w||w.length>40||st.no.has(w)||st.sugg.some(s=>s.word===w))return;
+    const sent=fresh.find(s=>s.includes(w))||'';if(!aiTpl(it.kind,sent,false))return;
+    st.sugg.push({word:w,kind:it.kind,food:items.some(x=>x&&x.kind==='음식'&&x.word&&x.word!==w&&sent.includes(x.word))});added++});
+  aiPaint();if(added&&!aiHinted&&st.sugg.some(s=>s.range)){aiHinted=true;toast('AI가 찾은 말에 점선을 그었어요 · 누르면 붙여요')}}
+function aiMenu(ctx,s){const st=ctx._ai,area=s.area,sent=pfwSent(area.innerText||area.textContent,s.word),tpl=aiTpl(s.kind,sent,s.food);if(!tpl)return;
+  const view=(PF_VIEWS[tpl.name]||[])[0]||tpl.name;pfwHide();
+  const el=document.createElement('div');el.className='pfw-pop mini ai-pop';
+  el.innerHTML=`<span>‘${esc(s.word.length>12?s.word.slice(0,11)+'…':s.word)}’</span><button type="button" data-k="yes">${esc(view)}에 붙이기</button><button type="button" data-k="no">아니에요</button>`;
+  el.addEventListener('mousedown',e=>e.preventDefault());
+  el.querySelector('[data-k=yes]').onclick=()=>{pfwHide();const r=aiFind(area,s.word);st.sugg=st.sugg.filter(x=>x!==s);if(r)pfwAttach(ctx,r,tpl);aiPaint()};
+  el.querySelector('[data-k=no]').onclick=()=>{pfwHide();st.no.add(s.word);st.sugg=st.sugg.filter(x=>x!==s);aiPaint()};
+  pfwPop=el;el._kind='ai';pfwPlace(el,s.range.getBoundingClientRect())}
+const aiHit=(s,x,y)=>s.range&&[...s.range.getClientRects()].some(r=>x>=r.left-2&&x<=r.right+2&&y>=r.top-2&&y<=r.bottom+2);
+const aiSetup=edSetup;edSetup=function(ctx){aiSetup(ctx);if(!aiHL)return;ctx._ai={sent:new Set(),sugg:[],no:new Set(),t:0,busy:false,comp:false};aiCtxs.add(ctx);const b=ctx.body;
+  b.addEventListener('compositionstart',()=>{ctx._ai.comp=true});
+  b.addEventListener('compositionend',()=>{ctx._ai.comp=false});
+  b.addEventListener('input',e=>{if(!e.target.closest||!e.target.closest('.rte-area'))return;aiPaint();clearTimeout(ctx._ai.t);if(aiOn())ctx._ai.t=setTimeout(()=>aiAsk(ctx),2000)});
+  b.addEventListener('click',e=>{if(!ctx._ai.sugg.length||!e.target.closest('.rte-area')||e.target.closest('mark[data-pf]'))return;
+    const sel=getSelection();if(sel&&!sel.isCollapsed)return;const s=ctx._ai.sugg.find(x=>aiHit(x,e.clientX,e.clientY));if(s){e.stopPropagation();aiMenu(ctx,s)}})};
+/* 창을 닫으면 그 창의 점선도 지움 */
+const aiCloseWin=closeWin;closeWin=function(w){aiCloseWin(w);if(aiCtxs.size)aiPaint()};
 /* 설정: '알아서 모으기' 켜기 */
 const aiBaseSettings=renderSettings;renderSettings=function(cv){aiBaseSettings(cv);const anchor=[...cv.querySelectorAll('.set-sec')].find(s=>(s.querySelector('h2')||{}).textContent==='내 기록');if(!anchor)return;
   const on=settings().aiCollect===true,srv=SB.on&&!!SB.user;const sec=document.createElement('section');sec.className='set-sec set-ai';
-  sec.innerHTML=`<h2>알아서 모으기</h2><div class="set-row"><div class="set-l"><b>발행할 때 AI가 모아 두기</b><small>${srv?'무가당 AI가 글을 읽고 책·물건·장소 같은 말에 정보를 붙여요. 학습에 쓰지 않고, 읽은 뒤 남기지 않아요.':'서버에 로그인하면 쓸 수 있어요.'}</small></div><div class="set-r">${srv?`<button type="button" class="btn sm${on?' on':''}" data-ai-toggle aria-pressed="${on}">${on?'켜짐':'꺼짐'}</button>`:''}</div></div>`;
+  sec.innerHTML=`<h2>알아서 모으기</h2><div class="set-row"><div class="set-l"><b>쓰는 중에 AI가 찾아 주기</b><small>${srv?'문장을 마치면 무가당 AI가 책·물건·장소 같은 말에 점선을 그어요. 누른 것만 붙어요. 학습에 쓰지 않고, 읽은 뒤 남기지 않아요.':'서버에 로그인하면 쓸 수 있어요.'}</small></div><div class="set-r">${srv?`<button type="button" class="btn sm${on?' on':''}" data-ai-toggle aria-pressed="${on}">${on?'켜짐':'꺼짐'}</button>`:''}</div></div>`;
   anchor.before(sec);const t=sec.querySelector('[data-ai-toggle]');if(t)t.onclick=()=>{const v=!(settings().aiCollect===true);records.settings=Object.assign({},records.settings||{},{aiCollect:v});commit();
-    t.classList.toggle('on',v);t.textContent=v?'켜짐':'꺼짐';t.setAttribute('aria-pressed',String(v));toast(v?'켰어요 · 발행할 때 AI가 모아 둬요':'껐어요')}};
+    t.classList.toggle('on',v);t.textContent=v?'켜짐':'꺼짐';t.setAttribute('aria-pressed',String(v));toast(v?'켰어요 · 쓰는 중에 AI가 찾아 줘요':'껐어요')}};
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
