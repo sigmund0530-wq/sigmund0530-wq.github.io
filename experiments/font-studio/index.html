@@ -1,0 +1,163 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>무가당 글자공방 · 직접 만들고 폰트 파일로 내보내기</title>
+<style>
+#mgd-fontstudio{--bg:#f8f8f5;--paper:#fff;--ink:#252a2d;--muted:#7c8588;--edge:#e2e6e6;--accent:#345e77;--accent-bg:#e9f0f4;--line:#c6cdcf;font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;line-height:1.4;color:var(--ink);width:100%;font-size:13px}
+#mgd-fontstudio *{box-sizing:border-box}#mgd-fontstudio button,#mgd-fontstudio input,#mgd-fontstudio textarea{font:inherit}#mgd-fontstudio button{color:inherit;cursor:pointer}#mgd-fontstudio .studio{background:var(--bg);border-radius:17px;padding:14px;border:1px solid var(--edge)}
+#mgd-fontstudio .head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}#mgd-fontstudio .head strong{font-size:17px;letter-spacing:-.5px}#mgd-fontstudio .hint{font-size:11px;color:var(--muted)}#mgd-fontstudio .pill{border:1px solid var(--edge);padding:7px 10px;border-radius:9px;background:var(--paper);font-size:12px;white-space:nowrap}#mgd-fontstudio .pill.on{background:var(--accent);color:#fff;border-color:var(--accent)}#mgd-fontstudio .pill:disabled{opacity:.4;cursor:not-allowed}
+#mgd-fontstudio .workspace{display:grid;grid-template-columns:minmax(166px,.62fr) minmax(220px,1.35fr);gap:11px}#mgd-fontstudio .panel{background:var(--paper);border:1px solid var(--edge);border-radius:13px;padding:12px;min-width:0}#mgd-fontstudio .panel-title{font-size:12px;font-weight:750;margin:0 0 9px}#mgd-fontstudio .segment{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:9px}#mgd-fontstudio .letters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;max-height:165px;overflow-y:auto}#mgd-fontstudio .letters button{background:var(--paper);padding:7px 0;border:1px solid var(--edge);border-radius:7px;font-size:15px}#mgd-fontstudio .letters button.selected{background:var(--accent-bg);color:var(--accent);border-color:#99adbb;font-weight:750}#mgd-fontstudio .muted{color:var(--muted);font-size:11px}#mgd-fontstudio .thin{height:1px;background:var(--edge);margin:13px 0}
+#mgd-fontstudio .actionrow{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}#mgd-fontstudio .switchrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px}#mgd-fontstudio .range{width:100%;accent-color:var(--accent);margin:7px 0}#mgd-fontstudio .panel label{font-size:12px}
+#mgd-fontstudio .tools{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 10px}#mgd-fontstudio .editing-top{display:flex;align-items:center;justify-content:space-between;gap:8px}#mgd-fontstudio .editing-top .target{font-size:22px;font-weight:700}#mgd-fontstudio .canvaswrap{background:#fafaf8;border:1px solid var(--edge);border-radius:12px;padding:9px;position:relative}#mgd-fontstudio #yf-canvas{display:block;width:100%;height:285px;touch-action:none;user-select:none;cursor:crosshair}#mgd-fontstudio #yf-canvas .point{cursor:grab}#mgd-fontstudio #yf-canvas .point:active{cursor:grabbing}#mgd-fontstudio .helper{font-size:11px;color:var(--muted);min-height:18px;margin:7px 0}
+#mgd-fontstudio .preview{margin-top:10px;background:var(--paper);border:1px solid var(--edge);border-radius:13px;padding:15px 13px}#mgd-fontstudio .preview h4{font-size:12px;margin:0 0 8px}#mgd-fontstudio textarea{display:block;width:100%;background:var(--bg);border:1px solid var(--edge);border-radius:9px;padding:10px;min-height:67px;resize:vertical;color:var(--ink)}#mgd-fontstudio .typeset{display:flex;align-content:start;flex-wrap:wrap;gap:0;min-height:96px;margin-top:13px;align-items:center;overflow-wrap:anywhere}#mgd-fontstudio .char{width:45px;height:49px;border-radius:5px;cursor:pointer;display:inline-flex;justify-content:center;align-items:center;transition:background .12s}#mgd-fontstudio .char:hover{background:var(--accent-bg)}#mgd-fontstudio .char svg{width:100%;height:100%}#mgd-fontstudio .newline{flex-basis:100%;height:0}#mgd-fontstudio .plainchar{font-size:20px}#mgd-fontstudio .preview-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px}#mgd-fontstudio .status{font-size:11px;color:var(--muted);margin-top:10px;min-height:14px}
+@media(max-width:550px){#mgd-fontstudio .studio{padding:11px}#mgd-fontstudio .workspace{grid-template-columns:1fr}#mgd-fontstudio .letters{grid-template-columns:repeat(10,minmax(0,1fr));max-height:86px}#mgd-fontstudio .letters button{font-size:13px;padding:5px 0}#mgd-fontstudio #yf-canvas{height:255px}#mgd-fontstudio .head strong{font-size:15px}}
+#mgd-fontstudio .mgd-exports{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin:9px 0}
+#mgd-fontstudio .mgd-exports input{display:block;margin-top:6px;min-width:170px;padding:9px 10px;border-radius:8px;border:1px solid var(--edge);background:var(--paper);color:var(--ink)}
+#mgd-fontstudio .mgd-exports button{padding:11px 13px;min-height:39px;background:var(--accent);color:white;border-color:var(--accent)}
+#mgd-fontstudio .mgd-exports button:disabled{opacity:.5}
+#mgd-fontstudio .mgd-real{padding:15px 8px;border-top:1px solid var(--edge);font-size:27px;line-height:1.5;overflow-wrap:anywhere}
+#mgd-fontstudio .studio{max-width:980px;margin:0 auto}
+#mgd-fontstudio .preview-foot .muted{max-width:400px}
+@media(max-width:550px){#mgd-fontstudio .mgd-exports label{flex:1;min-width:100%}#mgd-fontstudio .mgd-exports input{width:100%}}
+</style></head><body style="margin:0"><div id="mgd-fontstudio"><div class="studio">
+<div class="head"><div><strong>무가당 · 글자공방</strong><div class="hint">자모를 만들고, 문장을 누르면 글자 하나만 따로 수정</div></div><div class="actionrow"><button class="pill" id="yf-undo" title="되돌리기">↶</button><button class="pill" id="yf-redo" title="다시하기">↷</button></div></div>
+<div class="workspace">
+ <section class="panel"><div class="panel-title">편집할 글자</div><div class="segment" id="yf-tabs"><button class="pill on" data-type="L">초성</button><button class="pill" data-type="V">중성</button><button class="pill" data-type="T">종성</button><button class="pill" data-type="G">개별 글자</button></div><div class="letters" id="yf-letters"></div><p class="muted" id="yf-reach">초성 하나를 고치면 관련 음절 588자가 바뀝니다.</p><div class="thin"></div><div class="panel-title">모양 조절</div><div class="switchrow"><label for="yf-weight">획 굵기</label><span id="yf-weight-val" class="muted">8</span></div><input class="range" type="range" min="2" max="17" step="1" value="8" id="yf-weight"><div class="switchrow"><label for="yf-width">글자 가로폭</label><span id="yf-width-val" class="muted">100%</span></div><input class="range" type="range" min="65" max="135" step="5" value="100" id="yf-width"><div class="switchrow"><label for="yf-round">획 끝 모양</label><button class="pill" id="yf-round">둥글게</button></div><div class="thin"></div><div class="panel-title">선택한 획</div><div class="actionrow"><button class="pill" id="yf-addpoint">점 추가</button><button class="pill" id="yf-deletepoint">점 삭제</button><button class="pill" id="yf-delpath">획 삭제</button><button class="pill" id="yf-smooth">곡선 전환</button><button class="pill" id="yf-closed">선 닫기</button></div><div class="actionrow"><button class="pill" id="yf-up">획 앞으로</button><button class="pill" id="yf-down">획 뒤로</button><button class="pill" id="yf-duplicate">획 복제</button><button class="pill" id="yf-flipx">좌우 반전</button><button class="pill" id="yf-flipy">상하 반전</button><button class="pill" id="yf-rotate">90° 회전</button></div></section>
+ <section class="panel"><div class="editing-top"><div><span class="target" id="yf-target">ㄱ</span> <span class="muted" id="yf-mode-label">초성 · 공통 형태</span></div><button class="pill" id="yf-finish">그리기 끝</button></div><div class="tools" id="yf-tools"><button class="pill on" data-tool="select">↖ 선택·이동</button><button class="pill" data-tool="pen">✎ 자유 획</button><button class="pill" id="yf-line">＋ 선</button><button class="pill" id="yf-circle">◯ 원</button><button class="pill" id="yf-square">▢ 사각</button></div>
+ <div class="canvaswrap"><svg id="yf-canvas" viewBox="0 0 100 100" role="img" aria-label="벡터 획을 직접 편집하는 캔버스"><defs><pattern id="yf-grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#e9edeb" stroke-width=".5"/></pattern></defs><rect width="100" height="100" fill="url(#yf-grid)"/><path d="M50 0V100M0 50H100" stroke="#d4dedb" stroke-width=".4" stroke-dasharray="2 2"/><g id="yf-shapes"></g><g id="yf-handles"></g></svg></div><div class="helper" id="yf-helper">흰 동그라미를 끌어서 획의 모양을 바꿔봐.</div><div class="actionrow"><button class="pill" id="yf-reset-glyph">이 글자 초기화</button><button class="pill" id="yf-copy-glyph">SVG 저장</button><button class="pill" id="yf-save">작업 파일 저장</button><label class="pill" style="cursor:pointer">작업 불러오기<input type="file" accept="application/json,.json" id="yf-import" style="display:none"></label></div></section>
+</div>
+<section class="panel" style="margin-top:12px">
+ <div class="panel-title">실제 폰트 파일로 만들기</div>
+ <div class="mgd-exports"><label>폰트 이름<input type="text" id="yf-fontname" maxlength="30" value="나의 글꼴" aria-label="폰트 이름"></label><button class="pill" id="yf-ttf">TTF 다운로드</button><button class="pill" id="yf-woff">WOFF2 다운로드</button></div>
+ <p class="muted">원본 자모 67개를 공유하고 11,172개 완성형 음절을 실제 폰트로 생성합니다. 파일 생성에는 Python 로컬 서버가 필요합니다.</p>
+ <div id="yf-real-box" style="display:none"><div class="panel-title" style="margin-top:12px">생성된 폰트 그대로 확인</div><div id="yf-real" class="mgd-real">가나다라마바사아자차카타파하<br>무가당 글자공방, 오늘의 작은 기록!</div></div>
+ </section>
+ <section class="preview"><h4>내 문장에 적용</h4><textarea id="yf-text" maxlength="110">안녕하세요 무가당입니다.
+가까운 사람들과 오래 기록하기
+가가가 각 고 구 기</textarea><div class="typeset" id="yf-preview"></div><div class="preview-foot"><span class="muted">미리보기 글자를 누르면 해당 글자만 따로 수정할 수 있어.</span><button class="pill" id="yf-reset-all">모두 초기화</button></div></section>
+<div class="status" id="yf-status">자모 모양을 바꾸면 문장에 즉시 반영돼요. 수정 상태는 이 브라우저에 임시 저장됩니다.</div>
+</div></div>
+<script>
+(function(){
+const R=document.getElementById('mgd-fontstudio');if(!R||R.dataset.ready)return;R.dataset.ready='1';const q=id=>R.querySelector('#'+id);
+const L=[...'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'];const V=[...'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'];const T=[...'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'];
+const p=(...coords)=>({kind:'path',pts:coords.map(c=>({x:c[0],y:c[1]})),smooth:false,closed:false});const e=(cx,cy,rx,ry)=>({kind:'ellipse',cx,cy,rx,ry});
+const consonants={
+'ㄱ':[p([16,20],[83,20],[83,82])], 'ㄴ':[p([18,18],[18,82],[85,82])],
+'ㄷ':[p([83,18],[18,18],[18,83],[83,83])], 'ㄹ':[p([16,18],[82,18],[82,48],[17,48],[17,82],[86,82])],
+'ㅁ':[p([18,18],[82,18],[82,83],[18,83],[18,18])],
+'ㅂ':[p([22,17],[22,84]),p([78,17],[78,84]),p([22,50],[78,50]),p([17,84],[83,84])],
+'ㅅ':[p([49,16],[16,84]),p([49,16],[85,84])], 'ㅇ':[e(50,50,31,31)],
+'ㅈ':[p([14,20],[86,20]),p([50,30],[18,84]),p([50,30],[82,84])],
+'ㅊ':[p([50,7],[50,15]),p([12,31],[88,31]),p([50,39],[18,86]),p([50,39],[83,86])],
+'ㅋ':[p([16,19],[83,19],[83,84]),p([45,52],[83,52])],
+'ㅌ':[p([84,18],[17,18],[17,82],[84,82]),p([18,50],[83,50])],
+'ㅍ':[p([14,18],[86,18]),p([28,22],[28,78]),p([72,22],[72,78]),p([14,82],[86,82])],
+'ㅎ':[p([50,4],[50,13]),p([17,23],[83,23]),e(50,65,28,24)]};
+const compoundD={'ㄲ':'ㄱ','ㄸ':'ㄷ','ㅃ':'ㅂ','ㅆ':'ㅅ','ㅉ':'ㅈ'};
+const combinedT={'ㄳ':'ㄱㅅ','ㄵ':'ㄴㅈ','ㄶ':'ㄴㅎ','ㄺ':'ㄹㄱ','ㄻ':'ㄹㅁ','ㄼ':'ㄹㅂ','ㄽ':'ㄹㅅ','ㄾ':'ㄹㅌ','ㄿ':'ㄹㅍ','ㅀ':'ㄹㅎ','ㅄ':'ㅂㅅ'};
+function mapShape(s,x,y,w,h){const z=structuredClone(s);if(z.kind==='ellipse'){z.cx=x+z.cx*w/100;z.cy=y+z.cy*h/100;z.rx*=w/100;z.ry*=h/100}else z.pts=z.pts.map(a=>({x:x+a.x*w/100,y:y+a.y*h/100}));return z}
+function initialShapes(c){if(compoundD[c]){const g=initialShapes(compoundD[c]);return [...g.map(s=>mapShape(s,0,0,45,100)),...g.map(s=>mapShape(s,53,0,45,100))]};return structuredClone(consonants[c]||[])}
+function finalShapes(c){if(combinedT[c]){const [a,b]=[...combinedT[c]];return [...initialShapes(a).map(s=>mapShape(s,0,0,45,100)),...initialShapes(b).map(s=>mapShape(s,53,0,45,100))]};return initialShapes(c)}
+function medialShapes(c){
+const vertical=(right=false,two=false,side=false)=>{let x=right?72:28;let bars=two?[37,66]:[52];let z=[p([x,10],[x,90]),...bars.map(y=>p([x,y],[right?12:88,y]))];if(side)z.push(p([right?45:55,10],[right?45:55,90]));return z};
+if(c==='ㅏ')return vertical();if(c==='ㅑ')return vertical(false,true);if(c==='ㅐ')return vertical(false,false,true);if(c==='ㅒ')return vertical(false,true,true);
+if(c==='ㅓ')return vertical(true);if(c==='ㅕ')return vertical(true,true);if(c==='ㅔ')return vertical(true,false,true);if(c==='ㅖ')return vertical(true,true,true);
+if(c==='ㅣ')return [p([50,11],[50,90])];if(c==='ㅡ')return [p([10,50],[90,50])];
+if(c==='ㅗ')return [p([11,75],[89,75]),p([50,75],[50,14])];if(c==='ㅛ')return [p([11,75],[89,75]),p([31,75],[31,18]),p([69,75],[69,18])];
+if(c==='ㅜ')return [p([11,28],[89,28]),p([50,28],[50,90])];if(c==='ㅠ')return [p([11,28],[89,28]),p([31,28],[31,89]),p([69,28],[69,89])];
+if('ㅘㅙㅚ'.includes(c)){const b={'ㅘ':'ㅏ','ㅙ':'ㅐ','ㅚ':'ㅣ'}[c];return [...medialShapes('ㅗ').map(s=>mapShape(s,1,3,56,94)),...medialShapes(b).map(s=>mapShape(s,58,0,39,100))]}
+if('ㅝㅞㅟ'.includes(c)){const b={'ㅝ':'ㅓ','ㅞ':'ㅔ','ㅟ':'ㅣ'}[c];return [...medialShapes('ㅜ').map(s=>mapShape(s,1,3,56,94)),...medialShapes(b).map(s=>mapShape(s,58,0,39,100))]}
+if(c==='ㅢ')return [...medialShapes('ㅡ').map(s=>mapShape(s,2,0,58,100)),...medialShapes('ㅣ').map(s=>mapShape(s,63,0,34,100))];return []}
+const bases={L:Object.fromEntries(L.map(x=>[x,initialShapes(x)])),V:Object.fromEntries(V.map(x=>[x,medialShapes(x)])),T:Object.fromEntries(T.map(x=>[x,finalShapes(x)]))};
+const fresh=()=>({bases:structuredClone(bases),overrides:{},weight:8,width:100,round:true});let data=fresh();let mode='L',target='ㄱ',tool='select',selected=0,selPoint=null,penActive=false,dragging=null;let past=[],future=[],status='';let generatedFont=null;
+const savedKey='mgd-font-craft-2026-v03';try{const s=JSON.parse(localStorage.getItem(savedKey)||'null');if(s?.bases?.L?.['ㄱ']&&s?.bases?.V?.['ㅏ']&&s?.weight)data=s}catch{}
+function saveLocal(){try{localStorage.setItem(savedKey,JSON.stringify(data))}catch{}}
+function snapshot(){past.push(JSON.stringify(data));if(past.length>60)past.shift();future=[]}
+function change(fn){snapshot();fn();saveLocal();render()}
+function current(){if(mode==='G'){if(!data.overrides[target])data.overrides[target]=compose(target);return data.overrides[target]}return data.bases[mode][target]||[]}
+function compose(ch){if(data.overrides[ch])return structuredClone(data.overrides[ch]);const cp=ch.codePointAt(0);if(cp<44032||cp>55203)return [];const n=cp-44032,li=Math.floor(n/588),vi=Math.floor((n%588)/28),ti=n%28;
+const v=V[vi],has=ti!==0,stem='ㅏㅐㅑㅒㅓㅔㅕㅖㅣ'.includes(v),hor='ㅗㅛㅜㅠㅡ'.includes(v);
+let a=[];const add=(s,type,x,y,w,h)=>a.push(...s.map(g=>mapShape(g,x,y,w,h)));
+if(stem){add(data.bases.L[L[li]],'L',6,6,has?41:42,has?68:88);add(data.bases.V[v],'V',51,7,40,has?66:86)}
+else if(hor){add(data.bases.L[L[li]],'L',19,4,62,has?47:53);add(data.bases.V[v],'V',12,has?53:60,76,has?23:29)}
+else{add(data.bases.L[L[li]],'L',5,7,42,has?64:86);add(data.bases.V[v],'V',51,7,43,has?64:86)}
+if(has)add(data.bases.T[T[ti-1]],'T',19,75,62,23);
+return a}
+function dOf(s){if(s.kind==='ellipse')return null;const pts=s.pts;if(!pts.length)return '';if(!s.smooth||pts.length<3){return pts.map((v,i)=>(i?'L':'M')+v.x.toFixed(2)+' '+v.y.toFixed(2)).join(' ')+(s.closed?' Z':'')}
+let d=`M ${pts[0].x} ${pts[0].y}`;for(let i=1;i<pts.length-1;i++){let a=pts[i],b=pts[i+1];d+=` Q ${a.x} ${a.y} ${(a.x+b.x)/2} ${(a.y+b.y)/2}`}let last=pts[pts.length-1];d+=` L ${last.x} ${last.y}`;return d+(s.closed?' Z':'')}
+function xmlEscape(x){return x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function svgShapes(shapes,interactive=false){return shapes.map((s,i)=>s.kind==='ellipse'?`<ellipse data-shape="${i}" cx="${s.cx}" cy="${s.cy}" rx="${s.rx}" ry="${s.ry}"/>`:`<path data-shape="${i}" d="${dOf(s)}"/>`).join('')}
+function glyphSVG(ch,width='100%',height='100%'){const shapes=compose(ch);return `<svg viewBox="0 0 100 100" width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g transform="translate(${(100-data.width)/2} 0) scale(${data.width/100} 1)" fill="none" stroke="#343c3c" stroke-width="${data.weight/2.9}" stroke-linejoin="${data.round?'round':'miter'}" stroke-linecap="${data.round?'round':'square'}">${svgShapes(shapes)}</g></svg>`}
+function drawEditor(){let shapes=current(),svg=q('yf-canvas');let elems=q('yf-shapes'),dots=q('yf-handles');const baseline=2.3;elems.innerHTML=shapes.map((s,i)=>{const color=i===selected?'#315f81':'#313b3f',w=i===selected?data.weight/2.6:data.weight/2.9;
+return s.kind==='ellipse'?`<ellipse data-shape="${i}" cx="${s.cx}" cy="${s.cy}" rx="${s.rx}" ry="${s.ry}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="${data.round?'round':'square'}"/>`:`<path data-shape="${i}" d="${dOf(s)}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linejoin="${data.round?'round':'miter'}" stroke-linecap="${data.round?'round':'square'}"/>`}).join('');
+const item=shapes[selected];dots.innerHTML=tool!=='select'||!item?'':item.kind==='ellipse'?`<circle class="point" data-part="center" cx="${item.cx}" cy="${item.cy}" r="2.7" fill="#fff" stroke="#315f81" stroke-width=".9"/><circle class="point" data-part="rx" cx="${item.cx+item.rx}" cy="${item.cy}" r="2.3" fill="#fff" stroke="#315f81" stroke-width=".9"/><circle class="point" data-part="ry" cx="${item.cx}" cy="${item.cy+item.ry}" r="2.3" fill="#fff" stroke="#315f81" stroke-width=".9"/>`:item.pts.map((a,i)=>`<circle class="point" data-pt="${i}" cx="${a.x}" cy="${a.y}" r="2.55" fill="${i===selPoint?'#315f81':'#ffffff'}" stroke="#315f81" stroke-width=".8"/>`).join('');
+q('yf-target').textContent=target;q('yf-mode-label').textContent=mode==='G'?'이 글자만 · 개별 보정':({L:'초성 · 공통 형태',V:'중성 · 공통 형태',T:'종성 · 공통 형태'})[mode];q('yf-helper').textContent=tool==='pen'?'캔버스를 눌러 점을 이어 그려. 「그리기 끝」으로 획을 완성해.':tool==='select'?'점은 형태 수정, 선 자체는 위치 이동. 선·원·사각 도구로 새 획도 추가해.':'도구를 선택해.';
+q('yf-weight').value=data.weight;q('yf-weight-val').textContent=data.weight;q('yf-width').value=data.width;q('yf-width-val').textContent=data.width+'%';q('yf-round').textContent=data.round?'둥근 획 끝':'각진 획 끝';q('yf-round').classList.toggle('on',data.round);
+q('yf-addpoint').disabled=!item||item.kind!=='path';q('yf-deletepoint').disabled=!item||item.kind!=='path'||item.pts.length<3;q('yf-closed').disabled=!item||item.kind!=='path';q('yf-closed').textContent=item?.closed?'선 열기':'선 닫기';q('yf-smooth').disabled=!item||item.kind!=='path';q('yf-smooth').textContent=item&&item.smooth?'직선 전환':'곡선 전환';q('yf-delpath').disabled=!item;q('yf-finish').disabled=!penActive;
+R.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool));q('yf-undo').disabled=!past.length;q('yf-redo').disabled=!future.length;
+}
+function drawLetters(){const arr=mode==='L'?L:mode==='V'?V:mode==='T'?T:[...new Set([...q('yf-text').value].filter(c=>c.codePointAt(0)>=44032&&c.codePointAt(0)<=55203))].slice(0,35);const holder=q('yf-letters');holder.replaceChildren();for(const c of arr){const b=document.createElement('button');b.textContent=c;b.classList.toggle('selected',c===target);b.addEventListener('click',()=>selectTarget(mode,c));holder.append(b)}
+q('yf-reach').textContent=mode==='G'?'이 글자만 수정돼. 원래 자모 디자인은 유지돼.':mode==='L'?'같은 초성을 쓰는 한글 588자에 반영':mode==='V'?'같은 중성을 쓰는 한글 532자에 반영':'같은 종성을 쓰는 한글 399자에 반영';R.querySelectorAll('[data-type]').forEach(b=>b.classList.toggle('on',b.dataset.type===mode))}
+function drawPreview(){const el=q('yf-preview');el.replaceChildren();const str=q('yf-text').value.slice(0,110);for(const ch of str){if(ch==='\n'){const br=document.createElement('span');br.className='newline';el.append(br);continue}if(ch===' '){const sp=document.createElement('span');sp.style.width='15px';el.append(sp);continue}const c=document.createElement('span'),cp=ch.codePointAt(0);if(cp>=44032&&cp<=55203){c.className='char';c.innerHTML=glyphSVG(ch);c.title=ch+' 글자만 따로 편집';c.onclick=()=>selectTarget('G',ch)}else{c.className='plainchar';c.textContent=ch}el.append(c)}if(mode==='G')drawLetters()}
+function render(){drawLetters();drawEditor();drawPreview();q('yf-status').textContent=status||'자모를 수정하면 관련 글자에 실시간 반영돼요. 작업은 브라우저에 임시 보관돼요.'}
+function selectTarget(m,c){mode=m;target=c;tool='select';penActive=false;selected=0;selPoint=null;if(mode==='G'&&!data.overrides[c]){snapshot();data.overrides[c]=compose(c);saveLocal()}render()}
+R.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>{const m=b.dataset.type;const a=m==='L'?L:m==='V'?V:m==='T'?T:[...q('yf-text').value].filter(c=>c.codePointAt(0)>=44032&&c.codePointAt(0)<=55203);selectTarget(m,a[0]||(m==='G'?'가':'ㄱ'))});
+R.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;penActive=false;selected=Math.max(0,Math.min(selected,current().length-1));drawEditor()});
+function addShape(s){change(()=>{current().push(s);selected=current().length-1;selPoint=null;tool='select'})}
+q('yf-line').onclick=()=>addShape(p([24,50],[76,50]));q('yf-circle').onclick=()=>addShape(e(50,50,25,25));q('yf-square').onclick=()=>addShape({...p([25,25],[75,25],[75,75],[25,75],[25,25]),closed:false});
+q('yf-finish').onclick=()=>{penActive=false;tool='select';drawEditor()};
+q('yf-delpath').onclick=()=>{if(!current().length)return;change(()=>{current().splice(selected,1);selected=Math.max(0,Math.min(selected,current().length-1));selPoint=null})};
+q('yf-addpoint').onclick=()=>{const s=current()[selected];if(!s||s.kind!=='path'||s.pts.length<2)return;change(()=>{let longest=-1,idx=0;for(let i=0;i<s.pts.length-1;i++){const a=s.pts[i],b=s.pts[i+1],d=(a.x-b.x)**2+(a.y-b.y)**2;if(d>longest){longest=d;idx=i}}const a=s.pts[idx],b=s.pts[idx+1];s.pts.splice(idx+1,0,{x:(a.x+b.x)/2,y:(a.y+b.y)/2});selPoint=idx+1})};
+q('yf-deletepoint').onclick=()=>{const s=current()[selected];if(!s||s.kind!=='path'||s.pts.length<3)return;change(()=>{s.pts.splice(selPoint==null?s.pts.length-1:selPoint,1);selPoint=null})};
+q('yf-smooth').onclick=()=>{const s=current()[selected];if(!s||s.kind!=='path')return;change(()=>{s.smooth=!s.smooth})};
+q('yf-closed').onclick=()=>{const s=current()[selected];if(!s||s.kind!=='path')return;change(()=>{s.closed=!s.closed})};
+q('yf-duplicate').onclick=()=>{const s=current()[selected];if(!s)return;change(()=>{const clone=structuredClone(s);if(clone.kind==='ellipse'){clone.cx+=7;clone.cy+=7}else clone.pts.forEach(v=>{v.x+=7;v.y+=7});current().splice(selected+1,0,clone);selected++})};
+function flipShape(shapes,axis){const s=shapes[selected];if(!s)return;change(()=>{if(s.kind==='ellipse'){if(axis==='x')s.cx=100-s.cx;else if(axis==='y')s.cy=100-s.cy;else{s.rx=[s.ry,s.ry=s.rx][0];s.cx=100-s.cy;s.cy=50}}else{s.pts=s.pts.map(({x,y})=>axis==='x'?{x:100-x,y}:axis==='y'?{x,y:100-y}:{x:100-y,y:x})}})}
+q('yf-flipx').onclick=()=>flipShape(current(),'x');q('yf-flipy').onclick=()=>flipShape(current(),'y');
+q('yf-rotate').onclick=()=>{const s=current()[selected];if(!s)return;change(()=>{if(s.kind==='ellipse'){const v=s.rx;s.rx=s.ry;s.ry=v;const x=s.cx;s.cx=100-s.cy;s.cy=x}else s.pts=s.pts.map(p=>({x:100-p.y,y:p.x}))})};
+q('yf-up').onclick=()=>{if(selected<=0)return;change(()=>{const a=current();[a[selected],a[selected-1]]=[a[selected-1],a[selected]];selected--})};
+q('yf-down').onclick=()=>{if(selected>=current().length-1)return;change(()=>{const a=current();[a[selected],a[selected+1]]=[a[selected+1],a[selected]];selected++})};
+q('yf-round').onclick=()=>change(()=>{data.round=!data.round});
+q('yf-weight').oninput=ev=>{data.weight=+ev.target.value;saveLocal();render()};q('yf-width').oninput=ev=>{data.width=+ev.target.value;saveLocal();render()};
+q('yf-undo').onclick=()=>{if(!past.length)return;future.push(JSON.stringify(data));data=JSON.parse(past.pop());selPoint=null;saveLocal();render()};q('yf-redo').onclick=()=>{if(!future.length)return;past.push(JSON.stringify(data));data=JSON.parse(future.pop());selPoint=null;saveLocal();render()};
+q('yf-reset-glyph').onclick=()=>change(()=>{if(mode==='G')delete data.overrides[target];else data.bases[mode][target]=structuredClone(bases[mode][target]);selected=0;selPoint=null});q('yf-reset-all').onclick=()=>{if(!confirm('모든 자모 수정과 글자별 보정을 초기화할까요?'))return;change(()=>{data=fresh();selected=0;selPoint=null;mode='L';target='ㄱ'})};
+q('yf-text').oninput=()=>{drawPreview();if(mode==='G')drawLetters()};
+const svg=q('yf-canvas');function coordinate(evt){const pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;const matrix=svg.getScreenCTM();if(!matrix)return {x:50,y:50};const s=pt.matrixTransform(matrix.inverse());return {x:Math.round(Math.max(0,Math.min(100,s.x))*10)/10,y:Math.round(Math.max(0,Math.min(100,s.y))*10)/10}}
+svg.addEventListener('pointerdown',evt=>{if(evt.button!==0)return;const z=evt.target,xy=coordinate(evt);if(tool==='pen'){snapshot();if(!penActive){current().push(p([xy.x,xy.y]));selected=current().length-1;penActive=true}else{current()[selected].pts.push(xy)}saveLocal();drawEditor();drawPreview();evt.preventDefault();return}
+if(tool!=='select')return;const n=z.closest('[data-pt],[data-part],[data-shape]');if(!n)return;let idx=n.dataset.shape==null?selected:Number(n.dataset.shape);if(Number.isFinite(idx))selected=idx;let pt=n.dataset.pt,part=n.dataset.part;if(pt!==undefined||part||n.dataset.shape!==undefined){snapshot();selPoint=pt!==undefined?Number(pt):null;dragging={part:part||null,pt:pt!==undefined?Number(pt):null,moveWhole:n.dataset.shape!==undefined,original:structuredClone(current()[selected]),start:xy,pointerId:evt.pointerId};svg.setPointerCapture(evt.pointerId);evt.preventDefault()}drawEditor()});
+svg.addEventListener('pointermove',evt=>{if(!dragging||dragging.pointerId!==evt.pointerId)return;const xy=coordinate(evt),s=current()[selected];if(!s)return;if(dragging.moveWhole){const dx=xy.x-dragging.start.x,dy=xy.y-dragging.start.y;const orig=dragging.original;if(s.kind==='path')s.pts=orig.pts.map(a=>({x:Math.max(0,Math.min(100,a.x+dx)),y:Math.max(0,Math.min(100,a.y+dy))}));else{s.cx=Math.max(0,Math.min(100,orig.cx+dx));s.cy=Math.max(0,Math.min(100,orig.cy+dy))}}else if(s.kind==='path'&&dragging.pt!==null&&s.pts[dragging.pt])s.pts[dragging.pt]=xy;else if(s.kind==='ellipse'){if(dragging.part==='center'){s.cx=xy.x;s.cy=xy.y}else if(dragging.part==='rx')s.rx=Math.max(2,Math.abs(xy.x-s.cx));else if(dragging.part==='ry')s.ry=Math.max(2,Math.abs(xy.y-s.cy))}drawEditor();drawPreview()});
+function endDrag(){if(!dragging)return;dragging=null;saveLocal();drawEditor()}svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',endDrag);svg.addEventListener('dblclick',()=>{if(tool==='pen'){penActive=false;tool='select';drawEditor()}});
+function download(name,text,type){const blob=new Blob([text],{type}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+q('yf-copy-glyph').onclick=()=>{let svgtext=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g fill="none" stroke="#252a2d" stroke-width="${data.weight/2.9}" stroke-linecap="${data.round?'round':'square'}" stroke-linejoin="round">${svgShapes(current())}</g></svg>`;download('mgd-'+target+'.svg',svgtext,'image/svg+xml');status=target+' SVG를 저장했어.';q('yf-status').textContent=status};
+q('yf-save').onclick=()=>{download('mgd-font-work.json',JSON.stringify({format:'mgd-font-work-v1',data},null,2),'application/json');status='편집 가능한 작업 파일을 저장했어.';q('yf-status').textContent=status};
+function isValidWork(x){if(!x||!['mgd-font-work-v1','mgd-font-work-v03'].includes(x.format)||!x.data||!Number.isFinite(x.data.weight)||!Number.isFinite(x.data.width)||x.data.weight<2||x.data.weight>17||x.data.width<65||x.data.width>135||typeof x.data.round!=='boolean')return false;
+let d=x.data;for(const [m,letters] of [['L',L],['V',V],['T',T]]){if(!d.bases||!d.bases[m]||Object.keys(d.bases[m]).length!==letters.length)return false;for(const c of letters)if(!validShapes(d.bases[m][c]))return false}
+if(!d.overrides||Object.keys(d.overrides).length>1000)return false;for(const [ch,shapes] of Object.entries(d.overrides)){if(ch.length!==1||ch.codePointAt(0)<0xAC00||ch.codePointAt(0)>0xD7A3||!validShapes(shapes))return false}return true}
+function validShapes(shapes){if(!Array.isArray(shapes)||shapes.length>100)return false;return shapes.every(s=>{if(s?.kind==='ellipse')return ['cx','cy','rx','ry'].every(k=>Number.isFinite(s[k])&&Math.abs(s[k])<=500)&&s.rx>0&&s.ry>0;
+if(s?.kind==='path')return Array.isArray(s.pts)&&s.pts.length<=250&&s.pts.every(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&Math.abs(p.x)<=500&&Math.abs(p.y)<=500)&&typeof s.smooth==='boolean'&&typeof s.closed==='boolean';return false})}
+q('yf-import').onchange=async ev=>{let f=ev.target.files?.[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!isValidWork(x))throw Error('자모 또는 획 데이터가 올바르지 않음');snapshot();data=x.data;saveLocal();render();status='작업을 불러왔어.';q('yf-status').textContent=status}catch(err){q('yf-status').textContent='불러오기 실패: '+err.message}ev.target.value=''};
+async function exportFont(format){
+  const buttons=[q('yf-ttf'),q('yf-woff')];buttons.forEach(b=>b.disabled=true);
+  status='폰트를 생성하고 있어요. 한글 11,172자를 구성하는 중…';q('yf-status').textContent=status;
+  try{
+    if(location.protocol==='file:')throw new Error('파일로 연 화면에서는 폰트를 생성할 수 없습니다. Python 서버로 실행해 주세요.');
+    const name=q('yf-fontname').value.trim()||'나의 글꼴';
+    const res=await fetch('/api/build',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project:{format:'mgd-font-work-v1',data},name,format})});
+    if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||'폰트 생성 서버에 연결할 수 없습니다.')}
+    const blob=await res.blob();if(blob.size<10000)throw new Error('폰트 파일이 너무 작습니다.');
+    const filename='mgd-'+name.replace(/[^a-zA-Z0-9가-힣_-]/g,'-')+'.'+format;
+    const href=URL.createObjectURL(blob);const a=document.createElement('a');a.href=href;a.download=filename;document.body.append(a);a.click();a.remove();
+    try{
+      if(generatedFont){document.fonts.delete(generatedFont);generatedFont=null}
+      const family='MGD-Preview-'+Date.now();
+      generatedFont=new FontFace(family,'url('+href+')');await generatedFont.load();document.fonts.add(generatedFont);
+      q('yf-real').style.fontFamily='"'+family+'", sans-serif';q('yf-real').textContent=q('yf-text').value;
+      q('yf-real-box').style.display='block';
+    }catch(e){console.warn('실제 폰트 미리보기 생략:',e)}
+    setTimeout(()=>URL.revokeObjectURL(href),120000);
+    status='완료: '+filename+' · '+(blob.size/1024).toFixed(0)+'KB · 한글 11,172자';
+  }catch(e){status='생성 실패: '+e.message}finally{q('yf-status').textContent=status;buttons.forEach(b=>b.disabled=false)}
+}
+q('yf-ttf').onclick=()=>exportFont('ttf');q('yf-woff').onclick=()=>exportFont('woff2');
+q('yf-text').addEventListener('input',()=>{if(generatedFont)q('yf-real').textContent=q('yf-text').value});
+render();
+})();
+</script></body></html>
