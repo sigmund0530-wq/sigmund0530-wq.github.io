@@ -7,7 +7,7 @@ with sync_playwright() as p:
     if mac:ctx.add_init_script("Object.defineProperty(navigator,'platform',{get:()=>'MacIntel'})")
     pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));M='Meta' if mac else 'Control';tag='mac' if mac else 'win'
     pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
-    pg.locator('[data-pn="room"]').click();pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(200)
+    pg.locator('[data-pn="me"]').click();pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(200)
     n=lambda:pg.locator('.rm-it').count()
     n0=n();pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name='전광판').click();pg.wait_for_timeout(300);n1=n()
     pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name='누르지 마시오 버튼').click();pg.wait_for_timeout(300);n2=n()

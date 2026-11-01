@@ -7,7 +7,7 @@ with sync_playwright() as p:
   for name,vp,mob in [('pc',{'width':1280,'height':860},False),('m',{'width':390,'height':800},True)]:
     ctx=b.new_context(viewport=vp,has_touch=mob);pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)))
     pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
-    room=lambda:(pg.locator('[data-tab2="room"]').click() if mob else pg.locator('.pc-nav [data-pn="room"]').click(),pg.wait_for_timeout(300))
+    room=lambda:(pg.locator('[data-tab2="me"]').click() if mob else pg.locator('.pc-nav [data-pn="me"]').click(),pg.wait_for_timeout(300))
     begin=lambda:(pg.locator('[data-se-begin]:visible').first.click(),pg.wait_for_timeout(300))
     def add(w):pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=w).click();pg.wait_for_timeout(300)
     apply=lambda:(pg.locator('[data-se-pok]').click(),pg.wait_for_timeout(300))

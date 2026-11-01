@@ -9,8 +9,8 @@ with sync_playwright() as p:
     write(pg,mob,'바다','아침 일찍 바다에 갔다. 바람이 많이 불었다. 그래도 좋았다. 파도 소리가 컸다.',['p1.jpg'],vis='public');closeall(pg)
     write(pg,mob,'퇴근길','오늘은 그냥 걸어서 왔다. 하늘이 예뻤다. 나쁜 하루도 끝은 난다.',None,vis='public')
     pg.get_by_role('button',name='내 공간에 놓기').click();pg.wait_for_timeout(200);pg.locator('[data-sk="quote"]').first.click();pg.wait_for_timeout(200);closeall(pg)
-    if mob:pg.locator('[data-tab2="room"]').click()
-    else:pg.locator('[data-pn="room"]').click()
+    if mob:pg.locator('[data-tab2="me"]').click()
+    else:pg.locator('[data-pn="me"]').click()
     pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(200)
     for w in ['뜯어 가는 전단지','영수증 운세','누르지 마시오 버튼','전광판']:
       pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=w).click();pg.wait_for_timeout(200)

@@ -1,39 +1,31 @@
+# 내 방 = 위젯 만들고 보관하는 곳(2026-11-02): 내 방 탭 → 내가 만든 위젯 + 담아 온 위젯 · 위젯 만들기 · 피드 예시를 '내 방에 담기' · 배치는 내 공간 편집(꺼낸 조각은 내 공간 글 위에)
 from base import *
-def ok(k,v):print(('OK  ' if v else 'FAIL'),k)
+def ok(k,v,x=''):print(('OK  ' if v else 'FAIL'),k,x)
+HTML='<!doctype html><html><body style="margin:0;display:grid;place-items:center;height:100vh;font:24px sans-serif">안녕</body></html>'
 with sync_playwright() as p:
   b=p.chromium.launch()
-  for name,vp,mob in [('pc',{'width':1280,'height':860},False),('m',{'width':390,'height':800},True)]:
-    ctx=b.new_context(viewport=vp,has_touch=mob);pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)))
-    pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
-    # 글 하나
-    if mob:pg.locator('[data-tab2="write"]').click()
-    else:pg.locator('text=글쓰기').first.click()
-    pg.wait_for_timeout(300);pg.locator('.win.editor .rte-area').first.click();pg.keyboard.type('오늘은 비가 왔다. 우산을 샀다.')
-    pg.locator('.win.editor .hpub').click();pg.wait_for_timeout(250);pg.locator('.dialog input[value="public"]').check();pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(400)
-    pg.evaluate("document.querySelectorAll('.win .x,.win .back').forEach(b=>b.click())");pg.wait_for_timeout(200)
-    go=lambda k:(pg.locator(f'[data-tab2="{k}"]').click() if mob else pg.locator(f'.pc-nav [data-pn="{k}"]').click(),pg.wait_for_timeout(400))
-    go('me');ok(f'{name} blog: posts list visible',pg.locator('.home.sp-blog .nv-posts:visible').count()==1);ok(f'{name} blog: no widget board',pg.locator('.home .rm-canvas').count()==0)
-    ok(f'{name} blog: post listed','오늘은 비가' in pg.locator('.nv-posts').inner_text() or pg.locator('.nv-posts [data-open-post]').count()>=1)
-    pg.screenshot(path=f'axis_{name}_blog.png')
-    go('room');ok(f'{name} room: board',pg.locator('.home.sp-room .rm-canvas').count()==1);ok(f'{name} room: no posts list',pg.locator('.nv-posts').count()==0);ok(f'{name} room: head',pg.locator('.room-head').count()==1)
-    sel=f'[data-tab2="room"]' if mob else '.pc-nav [data-pn="room"]';ok(f'{name} room pressed',pg.locator(sel).get_attribute('aria-pressed')=='true')
-    pg.screenshot(path=f'axis_{name}_room.png')
-    # 내 방 편집 → 위젯 추가 가능
-    pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(300);ok(f'{name} room edit has add',pg.locator('[data-se-add]:visible').count()==1);pg.locator('[data-se-save]').click();pg.wait_for_timeout(300)
-    # 내 공간 편집 → 추가 숨김
-    go('me');pg.locator('[data-se-begin]:visible').first.click() if pg.locator('[data-se-begin]:visible').count() else None;pg.wait_for_timeout(300)
-    if pg.locator('.se-bar').count():ok(f'{name} blog edit hides add',pg.locator('[data-se-add]:visible').count()==0);pg.locator('[data-se-save]').click();pg.wait_for_timeout(300)
-    if not mob:
-      # 방문자 미리보기
-      pg.locator('.pc-nav [data-pn="menu"]').click();pg.wait_for_timeout(200);pg.get_by_role('menuitem',name='내 공간 미리 보기').click()
-      pg.wait_for_timeout(400)
-      ok('visitor sees room entry',pg.locator('[data-go-room]').count()==1)
-      if pg.locator('[data-go-room]').count():pg.locator('[data-go-room]').click();pg.wait_for_timeout(300);ok('visitor room title',"의 방" in pg.locator('.room-head h2').inner_text());pg.screenshot(path='axis_visitor_room.png')
-    print(name,'ERR',errs)
-  # 나만 공개 → 방문자 잠김
-  ctx=b.new_context(viewport={'width':1280,'height':860});pg=ctx.new_page();errs=[];pg.on('pageerror',lambda e:errs.append(str(e)))
-  pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
-  pg.locator('.pc-nav [data-pn="room"]').click();pg.wait_for_timeout(300);pg.select_option('[data-room-vis]','private');pg.wait_for_timeout(300)
-  pg.locator('.pc-nav [data-pn="menu"]').click();pg.wait_for_timeout(200);pg.get_by_role('menuitem',name='내 공간 미리 보기').click();pg.wait_for_timeout(400)
-  ok('private: no entry for visitor',pg.locator('[data-go-room]').count()==0)
-  print('ERR',errs)
+  for name,mob in [('pc',False),('m',True)]:
+    pg=setup(b,mob);errs=pg.errs
+    room=lambda:(pg.locator('[data-tab2="room"]').click() if mob else pg.locator('.pc-nav [data-pn="room"]').click(),pg.wait_for_timeout(400))
+    me=lambda:(pg.locator('[data-tab2="me"]').click() if mob else pg.locator('.pc-nav [data-pn="me"]').click(),pg.wait_for_timeout(400))
+    room()
+    ok(f'{name} 내 방 = 위젯 보관함',pg.locator('.myroom').count()==1 and pg.locator('.myroom h3').all_text_contents()==['내가 만든 위젯','담아 온 위젯'])
+    ok(f'{name} 자유 배치 판은 내 방에 없음',pg.locator('.myroom section.room,.myroom .rm-it').count()==0)
+    # 위젯 만들기(코드 붙여 넣기)
+    pg.locator('.myroom [data-wf-add]').click();pg.wait_for_timeout(300)
+    pg.locator('[data-wt="paste"]').click();pg.fill('#wf-code',HTML);pg.fill('#wf-title','인사 위젯') if pg.locator('#wf-title').count() else None
+    pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(600)
+    ok(f'{name} 만든 위젯이 내 방에',pg.locator('.myroom .mr-sec').first.locator('.wf-card').count()==1)
+    # 피드 예시를 내 방에 담기
+    pg.locator('[data-mr-feed]').click();pg.wait_for_timeout(500)
+    ok(f'{name} 담아 온 게 없으면 위젯 둘러보기 → 위젯 피드',pg.locator('.wfeed:not(.myroom) .wf-card').count()>0)
+    pg.locator('.wf-card:not([data-wf^="w"]) [data-wf-open]').first.click() if False else pg.locator('.wf-card [data-wf-open]').filter(has_text='무가당 예시').first.click();pg.wait_for_timeout(500)
+    ok(f'{name} 남의(예시) 위젯 크게 보기에 내 방에 담기',pg.locator('[data-ws-toggle]').count()==1 and '담기' in pg.locator('[data-ws-toggle]').inner_text())
+    pg.locator('[data-ws-toggle]').click();pg.wait_for_timeout(300);ok(f'{name} 담으면 빼기로 바뀜','빼기' in pg.locator('[data-ws-toggle]').inner_text())
+    closeall(pg);room()
+    ok(f'{name} 담아 온 위젯이 내 방에',pg.locator('.myroom .mr-sec').nth(1).locator('.wf-card').count()==1)
+    ok(f'{name} 저장',len(pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).wsaved||[]"))==1)
+    # 배치는 내 공간 편집: 편집에 ＋ 추가가 보이고, 꺼낸 조각은 내 공간 글 위에
+    me();pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(400)
+    ok(f'{name} 내 공간 편집에 ＋ 추가',pg.locator('.se-bar [data-se-add]').is_visible())
+    ok(f'{name} ERR',not errs,errs);pg.context.close()
