@@ -1,3 +1,4 @@
+import re
 from base import *
 def ok(k,v):print(('OK  ' if v else 'FAIL'),k)
 LAY="JSON.stringify(JSON.parse(localStorage.getItem('mgd2.v1.layout.desktop')).shelf)"
@@ -9,7 +10,7 @@ with sync_playwright() as p:
     pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
     room=lambda:(pg.locator('[data-tab2="me"]').click() if mob else pg.locator('.pc-nav [data-pn="me"]').click(),pg.wait_for_timeout(300))
     begin=lambda:(pg.locator('[data-se-begin]:visible').first.click(),pg.wait_for_timeout(300))
-    def add(w):pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=w).click();pg.wait_for_timeout(300)
+    def add(w):pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('판 안에 놓기')).click();pg.get_by_role('menuitem',name=w).click();pg.wait_for_timeout(300)
     apply=lambda:(pg.locator('[data-se-pok]').click(),pg.wait_for_timeout(300))
     room();begin();pg.locator('.se-bar [data-se-save]').click();pg.wait_for_timeout(300)   # 기본 상자 자리 잡고 저장
     L0=pg.evaluate(LAY)

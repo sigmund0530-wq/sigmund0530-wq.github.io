@@ -1,3 +1,4 @@
+import re
 from base import *
 import json
 def ok(k,v):print(('OK  ' if v else 'FAIL'),k)
@@ -37,14 +38,14 @@ with sync_playwright() as p:
     if pg.locator('.dialog [data-d]').count():pg.locator('.dialog [data-d]').click();pg.wait_for_timeout(200)
   # 편집: 패널 '적용' 후 위 '취소' → 편집 전으로
   pg.locator('.pc-nav [data-pn="me"]').click();pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(200)
-  n0=pg.evaluate("(JSON.parse(localStorage.getItem('mgd2.v1.layout.desktop')).shelf||[]).length");pg.locator('[data-se-add]').click();pg.wait_for_timeout(150)
+  n0=pg.evaluate("(JSON.parse(localStorage.getItem('mgd2.v1.layout.desktop')).shelf||[]).length");pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('판 안에 놓기')).click();pg.wait_for_timeout(150)
   ok('code box under 고급 at bottom',pg.get_by_role('menuitem',name='고급 · 코드 상자').count()==1)
   pg.get_by_role('menuitem',name='전광판').click();pg.wait_for_timeout(300)
   ok('panel button says 적용',pg.locator('[data-se-pok]').inner_text().strip()=='적용')
   pg.click('[data-se-pok]');pg.wait_for_timeout(300);pg.click('.se-bar [data-se-cancel]');pg.wait_for_timeout(400)
   n1=pg.evaluate("(JSON.parse(localStorage.getItem('mgd2.v1.layout.desktop')).shelf||[]).length");ok(f'top cancel returns to edit start ({n0} -> {n1})',n1==n0)
   # 글 · 사진 · 문장 놓기 (원래 고르기 창)
-  pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(200);pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name='글 · 사진 · 문장 놓기').click();pg.wait_for_timeout(300)
+  pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(200);pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('판 안에 놓기')).click();pg.get_by_role('menuitem',name='글 · 사진 · 문장 놓기').click();pg.wait_for_timeout(300)
   ok('place picker is original (not 함께 읽기 picker)',pg.locator('#pk-q').count()==0 and pg.locator('.dialog,.scrim').count()>=1)
   pg.keyboard.press('Escape');pg.wait_for_timeout(200);pg.click('.se-bar [data-se-cancel]');pg.wait_for_timeout(300)
   # 단어장 뜻 보기 없음

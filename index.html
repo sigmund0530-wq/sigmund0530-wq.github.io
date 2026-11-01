@@ -1426,6 +1426,25 @@ html.ps-dragging,html.ps-dragging *{user-select:none!important;-webkit-user-sele
 .myroom .mr-sec{padding:18px 0 6px}.myroom .mr-sec h3{margin:0 0 12px;font-size:14px;color:var(--ink-2);font-weight:600}
 @media (max-width:640px){.myroom .mr-head{flex-direction:column}.myroom .mr-head .btn{align-self:stretch}}
 body.sp-blog-edit .se-bar [data-se-add]{display:inline-flex!important}
+/* 내 공간 덩어리: 상자 없이 간격으로, 편집 중에만 옅은 점선과 작은 막대 */
+.hb-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px 20px;align-items:start}
+.hb{grid-column:span 2;position:relative;min-width:0}
+.hb.half{grid-column:span 1}
+#app.mobile .hb-grid{grid-template-columns:1fr}#app.mobile .hb,#app.mobile .hb.half{grid-column:span 1}
+.hb-edit .hb{outline:1px dashed var(--line);outline-offset:6px;border-radius:8px;padding-top:40px}
+.hb-edit .hb.mhide{opacity:.55}
+.hb-bar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);z-index:5}
+.hb-bar button{border:0;background:none;font:inherit;font-size:12.5px;color:var(--ink-2);padding:4px 7px;border-radius:999px;cursor:pointer}
+.hb-bar button:disabled{opacity:.3;cursor:default}.hb-bar button.danger{color:var(--danger)}
+.hb-bar button[aria-pressed=true]{background:var(--porc-in,var(--chrome-2));color:var(--ink)}
+.hb-bar .hb-name{flex:1;font-size:12px;color:var(--ink-2);padding-left:2px}
+.hb-grip{cursor:grab;touch-action:none;font-size:16px!important;line-height:1}
+.hb.hb-drag{opacity:.45}
+.hb-line{position:fixed;height:3px;background:var(--ink);border-radius:2px;z-index:100000;pointer-events:none}
+.hb-miss{font-size:13px;color:var(--ink-2);margin:6px 0}
+.hb-photo{margin:0}.hb-photo img{width:100%;height:auto;display:block;border-radius:10px}.hb-photo figcaption{font-size:12.5px;color:var(--ink-2);margin-top:6px}
+.hb-q{margin:0;padding:6px 0 6px 16px;border-left:2px solid var(--line);font-size:17px;line-height:1.8;color:var(--ink)}
+.hb-wf{grid-template-columns:1fr!important}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -6024,6 +6043,91 @@ const wsBaseOpen=wfOpen;wfOpen=function(id){wsBaseOpen(id);if(isVisitor()||wfLis
   const big=wn.node.querySelector('.wf-big');if(!big||big.querySelector('[data-ws-toggle]'))return;const d=document.createElement('div');d.className='wf-acts';
   const b=document.createElement('button');b.type='button';b.className='btn';b.dataset.wsToggle='';const lab=()=>b.textContent=wsHas(id)?'내 방에서 빼기':'내 방에 담기';lab();
   b.onclick=()=>{wsToggle(id);lab()};d.appendChild(b);big.appendChild(d)};
+/* ═════════ 내 공간 덩어리 쌓기 + 틀 고르기 (2026-11-02, 주인 결정: A 덩어리 쌓기 + C 틀을 시작점으로, 휴대폰은 제한적으로) ═════════
+   예전 내 공간은 '커버 → 프로필 → (판) → 글 목록' 순서가 고정이라 자유도가 낮았음.
+   - 커버·프로필은 그대로 위에 두고, 그 아래 본문 칸을 '덩어리'를 세로로 쌓은 것으로 봄(layout.blocks, 순서대로).
+     덩어리: 글 목록(늘 하나, 뺄 수 없음) · 꺼낸 조각·기본 위젯 판 · 지난 오늘 · 위젯(내 방에서 만들거나 담아 온 것) · 사진 한 장 · 문장.
+   - 내 공간 '편집'에서: 덩어리마다 작은 막대(⠿ 끌어 옮기기 · ↑ · ↓ · 반 칸/한 칸 · 휴대폰에서 숨김 · 빼기). '＋ 추가' 위쪽에 덩어리 넣기, 막대에 '틀 고르기'.
+   - 틀(시작점): 블로그형 · 사진첩형 · 한 줄 흐름 · 잡지형. 고르면 글 목록 보기 방식과 덩어리 순서·넓이를 한 번에 맞춤(넣어 둔 위젯·사진·문장은 지우지 않고 뒤에 붙임). 그다음 자유롭게 옮김.
+   - 휴대폰은 제한적으로: 반 칸도 한 칸으로 쌓이고, '휴대폰에서 숨김'을 켠 덩어리는 안 보임. 위젯은 썸네일 → 화면 가운데 오면 움직임(피드와 같음). 휴대폰 편집은 순서·숨김·빼기만(넓이 버튼 없음).
+   - 글 목록 보기 방식(카드·목록·사진첩)을 주인이 바꾸면 layout.homeView로 기억해 방문자에게도 그 방식으로 보임. */
+const HB_NAME={posts:'글 목록',board:'꺼낸 조각·기본 위젯',lookback:'지난 오늘',widget:'위젯',photo:'사진',quote:'문장'};
+const hbDefault=()=>[{id:'hb-board',type:'board'},{id:'hb-look',type:'lookback'},{id:'hb-posts',type:'posts'}];
+const hbList=()=>{if(!Array.isArray(layout.blocks)||!layout.blocks.some(b=>b.type==='posts'))layout.blocks=[...(Array.isArray(layout.blocks)?layout.blocks.filter(b=>b.type!=='posts'):hbDefault().filter(b=>b.type!=='posts')),{id:'hb-posts',type:'posts'}];return layout.blocks};
+const HB_TPL={
+  blog:{name:'블로그형',desc:'글 카드가 중심',view:'card',order:[['board','full'],['lookback','full'],['posts','full']]},
+  album:{name:'사진첩형',desc:'사진이 격자로',view:'album',order:[['posts','full'],['board','full'],['lookback','full']]},
+  line:{name:'한 줄 흐름',desc:'제목만 차례로',view:'list',order:[['lookback','full'],['posts','full'],['board','full']]},
+  mag:{name:'잡지형',desc:'덩어리를 두 칸으로',view:'card',order:[['lookback','half'],['board','half'],['posts','full']]}};
+function hbApplyTpl(k){const t=HB_TPL[k];if(!t)return;seChange(()=>{const old=hbList(),keep=old.filter(b=>!['posts','board','lookback'].includes(b.type));
+  layout.blocks=[...t.order.map(([type,w])=>{const o=old.find(b=>b.type===type)||{id:'hb-'+type};return Object.assign({},o,{type,w:w==='half'?'half':undefined})}),...keep];
+  layout.homeView=t.view;ui.homeView=t.view;layout.tpl=k});toast(`‘${t.name}’ 틀로 맞췄어요 · 덩어리를 옮겨 더 꾸며 보세요`)}
+/* 글 목록 보기 방식: 주인이 고르면 기억 */
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-act="homeView"]');if(b&&!isVisitor()){layout.homeView=b.dataset.v;persist()}},true);
+const hbUsed=extraUsedIds;extraUsedIds=function(){const o=hbUsed();(Array.isArray(layout&&layout.blocks)?layout.blocks:[]).forEach(b=>{if(b.type==='photo'&&b.assetId)o.push(b.assetId)});return o};
+/* 서버: 방문자가 덩어리 사진을 볼 수 있게 내 방(rooms)의 사진 목록에 함께 올림 */
+const hbRows=sbRows;sbRows=function(uid){const r=hbRows(uid);try{const ids=(layout.blocks||[]).filter(b=>b.type==='photo'&&b.assetId).map(b=>b.assetId);if(ids.length&&r.room)r.room.media_ids=[...new Set([...(r.room.media_ids||[]),...ids])]}catch(e){}return r};
+function hbBody(b,owner){
+  if(b.type==='widget'){const w=wfFind(b.wid);if(!w)return owner?`<p class="hb-miss">위젯을 찾을 수 없어요(지웠거나 내 방에서 뺐어요).</p>`:'';if(!owner&&w.vis==='private')return '';return `<div class="wf-grid hb-wf">${wfCardHTML(Object.assign({mine:wfList().some(x=>x.id===w.id)},w))}</div>`}
+  if(b.type==='photo'){const a=assets[b.assetId];if(!a)return '';return `<figure class="hb-photo"><img src="${esc(a.dataUrl||'')}" alt="${esc(b.cap||'사진')}">${b.cap?`<figcaption>${esc(b.cap)}</figcaption>`:''}</figure>`}
+  if(b.type==='quote'){return b.text?`<blockquote class="hb-q">${esc(b.text).replace(/\n/g,'<br>')}</blockquote>`:''}
+  return ''}
+const hbBaseHome=renderHome;renderHome=function(cv){
+  if(ui.space!=='room'&&!ui._hvTouched&&layout.homeView&&ui.homeView!==layout.homeView){ui.homeView=layout.homeView}
+  const r=hbBaseHome(cv);if(ui.space==='room')return r;
+  const main=cv.querySelector('.home.nv .nv-main-col');if(!main)return r;
+  const owner=!isVisitor(),ed=owner&&!!ui.spaceEdit,M=isMobile();
+  const parts={posts:main.querySelector('section.nv-posts'),board:main.querySelector('section.room,section.room-empty'),lookback:main.querySelector('.hm-band')};
+  const grid=document.createElement('div');grid.className='hb-grid'+(ed?' hb-edit':'');const L=hbList();
+  L.forEach((b,i)=>{let node=null;
+    if(parts[b.type]!==undefined){node=parts[b.type];parts[b.type]=null;if(!node&&!ed)return}
+    else{const h=hbBody(b,owner);if(!h&&!ed)return;node=document.createElement('div');node.innerHTML=h||'<p class="hb-miss">비어 있어요</p>'}
+    if(M&&b.mHide&&!ed)return;
+    const box=document.createElement('div');box.className='hb hb-'+b.type+(b.w==='half'&&!M?' half':'')+(b.mHide?' mhide':'');box.dataset.hb=b.id;
+    if(ed){const bar=document.createElement('div');bar.className='hb-bar';
+      bar.innerHTML=`<button type="button" class="hb-grip" data-hb-grip aria-label="끌어서 옮기기" title="끌어서 옮기기">⠿</button><span class="hb-name">${HB_NAME[b.type]||''}${b.mHide?' · 휴대폰에선 숨김':''}</span>
+        <button type="button" data-hb-up ${i?'':'disabled'} aria-label="위로">↑</button><button type="button" data-hb-down ${i<L.length-1?'':'disabled'} aria-label="아래로">↓</button>
+        ${M||b.type==='posts'?'':`<button type="button" data-hb-w>${b.w==='half'?'한 칸으로':'반 칸으로'}</button>`}
+        <button type="button" data-hb-m aria-pressed="${!!b.mHide}">${b.mHide?'휴대폰에 보이기':'휴대폰에서 숨김'}</button>
+        ${b.type==='posts'?'':`<button type="button" class="danger" data-hb-x>빼기</button>`}`;box.appendChild(bar)}
+    if(node){if(node.parentNode)node.parentNode.removeChild(node);box.appendChild(node)}else{const p=document.createElement('p');p.className='hb-miss';p.textContent=b.type==='lookback'?'1년 전 오늘 쓴 글이 있을 때 나와요':'아직 꺼낸 게 없어요 · ＋ 추가로 넣어요';box.appendChild(p)}
+    grid.appendChild(box)});
+  Object.values(parts).forEach(n=>{if(n&&n.parentNode)n.parentNode.removeChild(n)});
+  main.appendChild(grid);if(grid.querySelector('.wf-card'))wfBind(grid);
+  return r};
+/* 편집 막대 동작 */
+const hbIdx=id=>hbList().findIndex(b=>b.id===id);
+document.addEventListener('click',e=>{const box=e.target.closest&&e.target.closest('.hb-edit .hb');if(!box)return;const t=e.target.closest('button');if(!t||!box.querySelector('.hb-bar').contains(t))return;
+  e.preventDefault();e.stopPropagation();const id=box.dataset.hb,i=hbIdx(id);if(i<0)return;
+  if(t.matches('[data-hb-up],[data-hb-down]')){const j=i+(t.matches('[data-hb-up]')?-1:1);seChange(()=>{const L=hbList();[L[i],L[j]]=[L[j],L[i]]});return}
+  if(t.matches('[data-hb-w]')){seChange(()=>{const b=hbList()[i];b.w=b.w==='half'?undefined:'half'});return}
+  if(t.matches('[data-hb-m]')){seChange(()=>{const b=hbList()[i];b.mHide=!b.mHide||undefined});return}
+  if(t.matches('[data-hb-x]')){seChange(()=>{hbList().splice(i,1)});toast('덩어리를 뺐어요 · 되돌리기는 위 막대에서');return}},true);
+/* ⠿ 끌어서 순서 바꾸기(마우스·손가락) */
+document.addEventListener('pointerdown',e=>{const g=e.target.closest&&e.target.closest('.hb-edit [data-hb-grip]');if(!g)return;e.preventDefault();
+  const box=g.closest('.hb'),grid=box.parentElement,id=box.dataset.hb;box.classList.add('hb-drag');let to=hbIdx(id);
+  const line=document.createElement('div');line.className='hb-line';document.body.appendChild(line);
+  const mv=ev=>{const kids=[...grid.children].filter(k=>k.classList.contains('hb'));let k=kids.length;for(let n=0;n<kids.length;n++){const r=kids[n].getBoundingClientRect();if(ev.clientY<r.top+r.height/2){k=n;break}}
+    to=k;const ref=kids[Math.min(k,kids.length-1)].getBoundingClientRect(),gr=grid.getBoundingClientRect();const y=k<kids.length?ref.top-6:ref.bottom+6;Object.assign(line.style,{left:gr.left+'px',width:gr.width+'px',top:(y-1)+'px'})};
+  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);line.remove();box.classList.remove('hb-drag');
+    const from=hbIdx(id);let dest=to>from?to-1:to;if(dest!==from&&from>=0)seChange(()=>{const L=hbList();const [it]=L.splice(from,1);L.splice(dest,0,it)})};
+  addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)},true);
+document.addEventListener('touchmove',e=>{if(document.querySelector('.hb.hb-drag'))e.preventDefault()},{passive:false,capture:true});
+/* ＋ 추가: 맨 위에 덩어리 넣기 */
+async function hbPickWidget(anchor){const mine=wfList(),saved=wsList().map(x=>wfFind(x.id)).filter(Boolean);const all=[...mine,...saved];
+  if(!all.length){toast('내 방에 위젯이 없어요 · 내 방에서 만들거나 담아 와요');return}
+  const r=anchor.getBoundingClientRect();showMenu(all.slice(0,30).map(w=>({label:w.title+(mine.includes(w)?'':' · 담아 온'),run:()=>seChange(()=>hbList().unshift({id:uid('hb'),type:'widget',wid:w.id}))})),r.left,r.bottom+4,anchor)}
+const hbBaseAdd=seAdd;seAdd=async function(btn){if(ui.space==='room')return hbBaseAdd(btn);const r=btn.getBoundingClientRect();const L=hbList(),has=t=>L.some(b=>b.type===t);
+  showMenu([{label:'덩어리 · 위젯(내 방에서)',run:()=>hbPickWidget(btn)},
+    {label:'덩어리 · 사진 한 장',run:()=>{const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=async()=>{const x=f.files[0];if(!x)return;try{const id=await addAsset(x,1400,'post',.85);seChange(()=>hbList().unshift({id:uid('hb'),type:'photo',assetId:id}))}catch(er){toast(er.message)}};f.click()}},
+    {label:'덩어리 · 문장',run:async()=>{const v=await askText('문장 덩어리','',{multiline:true,ok:'넣기'});if(v&&v.trim())seChange(()=>hbList().unshift({id:uid('hb'),type:'quote',text:v.trim().slice(0,400)}))}},
+    ...(has('board')?[]:[{label:'덩어리 · 꺼낸 조각·기본 위젯 판',run:()=>seChange(()=>hbList().unshift({id:'hb-board',type:'board'}))}]),
+    ...(has('lookback')?[]:[{label:'덩어리 · 지난 오늘',run:()=>seChange(()=>hbList().unshift({id:'hb-look',type:'lookback'}))}]),
+    '-',{label:'판 안에 놓기 · 글·사진·문장·기본 위젯 ›',run:()=>hbBaseAdd(btn)}],r.left,r.bottom+4,btn)};
+/* 편집 막대에 '틀 고르기' */
+const hbBaseBar=seBar;seBar=function(cv){hbBaseBar(cv);if(ui.space==='room')return;const b=document.querySelector('.se-bar');const add=b&&b.querySelector('[data-se-add]');if(!add||b.querySelector('[data-hb-tpl]'))return;
+  const t=document.createElement('button');t.className='pill';t.dataset.hbTpl='';t.textContent='틀 고르기';add.after(t);
+  t.onclick=()=>{const r=t.getBoundingClientRect();showMenu(Object.entries(HB_TPL).map(([k,x])=>({label:`${x.name} · ${x.desc}${layout.tpl===k?' ✓':''}`,run:()=>hbApplyTpl(k)})),r.left,r.bottom+4,t)}};
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
