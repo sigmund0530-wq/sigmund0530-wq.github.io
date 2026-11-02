@@ -1705,7 +1705,11 @@ html.fm-open,html.fm-open body{overflow:hidden}
  .mgd-fx-sliders{gap:0}
  .mgd-fx-row{min-height:39px;grid-template-columns:64px minmax(0,1fr) 39px}
  .mgd-fx-sheet header{padding-bottom:8px}
- .mgd-fx-hint{margin:7px 0}
+ .mgd-fx-hint{display:none}
+ .mgd-fx-lab{margin:5px 0 4px}
+ .mgd-fx-presets{padding:1px 1px 3px}
+ .mgd-fx-row{min-height:33px}
+ .mgd-fx-sheet footer{margin-top:5px;padding-top:7px}
  .mgd-fx-more{margin-top:5px}
  .mgd-photo-tools{gap:18px}
 }
@@ -7642,6 +7646,23 @@ function mgdPhotoFilter(ctx,id,i){
    ctx.queueAuto();close(true);toast("사진 보정을 적용했어요.");
  };
  document.body.append(el);update();place();
+ /* 휴대폰: 아래에서 열린 도구판 뒤에 사진이 가려지지 않도록 사진의 보이는 위치만 조정 */
+ if(innerWidth<=680||matchMedia("(pointer:coarse) and (max-width:900px)").matches){
+   requestAnimationFrame(()=>{
+     if(done||!target.isConnected)return;
+     const photo=target.getBoundingClientRect(),pane=sheet.getBoundingClientRect();
+     if(photo.top<185||photo.bottom<=pane.top-14)return;
+     const delta=Math.max(0,photo.top-185);
+     let scroll=target.parentElement;
+     while(scroll&&scroll!==document.body){
+       const st=getComputedStyle(scroll);
+       if(/auto|scroll/.test(st.overflowY)&&scroll.scrollHeight>scroll.clientHeight+2)break;
+       scroll=scroll.parentElement;
+     }
+     if(scroll&&scroll!==document.body)scroll.scrollBy({top:delta,behavior:"smooth"});
+     else window.scrollBy({top:delta,behavior:"smooth"});
+   });
+ }
  document.addEventListener("pointerdown",outside,true);
  document.addEventListener("keydown",keyboard,true);
  addEventListener("resize",place);addEventListener("scroll",place,true);
