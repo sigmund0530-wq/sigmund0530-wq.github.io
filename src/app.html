@@ -1495,6 +1495,57 @@ body.sp-blog-edit .se-bar [data-se-add]{display:inline-flex!important}
 .fl-seg button{border:0;background:none;font:inherit;font-size:13px;color:var(--ink-2);height:30px;padding:0 12px;border-radius:999px;cursor:pointer}
 .fl-seg button[aria-pressed=true]{background:linear-gradient(var(--porc-hi,var(--chrome)),var(--porc,var(--chrome)));color:var(--ink);box-shadow:0 1px 4px var(--porc-shade,rgba(0,0,0,.08))}
 .home.nv.fl-phone-on .hm-inner{border:0;background:none}
+/* 다른 사람 · 쪽지(2026-11-02): 상자 없이, 편지처럼 날짜와 옅은 줄로 나눔. 새 쪽지는 숫자 없이 점 하나 */
+.tbtn{border:0;background:none;font:inherit;font-size:13px;color:var(--ink-2);padding:6px 8px;border-radius:999px;cursor:pointer}
+.tbtn:hover{color:var(--ink)}.tbtn.danger{color:var(--danger)}
+.nt-dot{display:none;width:7px;height:7px;border-radius:50%;background:var(--danger);vertical-align:middle;margin-left:6px}
+.has-new .nt-dot,.nt-row.fresh .nt-dot{display:inline-block}
+.pc-nav>.pn-note{position:relative;display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;margin-right:8px;border:0;background:none;color:var(--ink-2);cursor:pointer}
+.pc-nav>.pn-note:hover{background:var(--chrome-2);color:var(--ink)}
+.pc-nav>.pn-note .nt-dot{position:absolute;top:5px;right:5px;margin:0}
+#tabbar [data-tab2="notice"]{position:relative}
+#tabbar [data-tab2="notice"].has-new::after{content:"";position:absolute;top:8px;left:calc(50% + 8px);width:7px;height:7px;border-radius:50%;background:var(--danger)}
+.peer-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.peer-btns .pill{height:34px;padding:0 16px}
+.nt-page{min-height:72vh}
+.peer-empty{text-align:center;margin:18px 0}
+.peer-note{max-width:720px;margin:24px auto 40px;display:grid;gap:0}
+.peer-note .wrapto{margin-top:12px}
+.nt-page{padding:24px 24px 60px!important;max-width:1080px}
+.nt-h1{font-size:22px;margin:0 0 14px;color:var(--ink)}
+.nt-cols{display:grid;grid-template-columns:300px minmax(0,1fr);gap:32px;align-items:start}
+.nt-list{display:grid;gap:0;align-content:start}
+.nt-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 6px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;cursor:pointer;color:var(--ink);font:inherit;border-radius:0}
+.nt-row:hover,.nt-row.on{background:var(--porc-in,var(--chrome-2))}
+.nt-row-m{flex:1;min-width:0;display:grid;gap:3px}.nt-row-m b{font-size:14.5px;font-weight:600}.nt-row-m span{font-size:13px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nt-row small{font-size:12px;color:var(--ink-2)}
+.nt-sub{font-size:13px;color:var(--ink-2);font-weight:600;margin:22px 0 2px}.nt-sub-d{margin:0 0 6px;font-size:12.5px}
+.nt-foot{margin:14px 0 0}
+.nt-thread{min-width:0}
+.nt-empty{padding-top:60px;text-align:center}
+.nt-th-h{display:flex;align-items:center;gap:12px;padding:0 0 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.nt-th-n{flex:1;min-width:0;display:grid}.nt-th-n b{font-size:16px;color:var(--ink)}.nt-th-n small{font-size:12.5px;color:var(--ink-2)}
+.nt-letters{display:grid;gap:0;max-height:calc(100vh - 360px);overflow:auto;padding-right:4px}
+#app.mobile .nt-letters{max-height:none;overflow:visible}
+.nt-letter{padding:20px 4px 22px;border-bottom:1px solid var(--line)}
+.nt-letter.mine{padding-left:28px}
+.nt-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+.nt-ctx{border:0;background:none;padding:0;font:inherit;font-size:12.5px;color:var(--ink-2);text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
+.nt-x{margin-left:auto;border:0;background:none;font:inherit;font-size:12px;color:var(--ink-2);opacity:0;cursor:pointer}
+.nt-letter:hover .nt-x,.nt-x:focus{opacity:1}
+@media (hover:none){.nt-x{opacity:.7}}
+.nt-body{margin:10px 0 0;white-space:pre-wrap;line-height:1.85;font-size:15.5px;color:var(--ink);font-family:var(--f-body)}
+.nt-img{display:block;max-width:min(100%,360px);margin-top:12px;border-radius:10px}
+.nt-firstnote,.nt-gate{margin:14px 0 0}
+.nt-write{display:grid;gap:10px;padding-top:18px}
+.nt-write textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--chrome);padding:12px;font:inherit;font-size:15px;line-height:1.7;color:var(--ink);resize:vertical}
+.nt-ctx-chip{margin:0;font-size:12.5px;color:var(--ink-2)}
+.nt-img-prev{display:flex;align-items:center;gap:10px}.nt-img-prev img{height:64px;border-radius:8px}
+.nt-acts{display:flex;align-items:center;gap:10px}.nt-note{flex:1;font-size:12px;color:var(--ink-2)}
+.nt-att{display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:999px;cursor:pointer;font-size:13px}
+.nt-inbox-row{margin:0 0 10px}
+.nt-bl{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+@media (max-width:699px){.nt-page{padding:16px 16px 90px!important}.nt-back{margin-left:-8px;width:100%;text-align:left}}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -2768,7 +2819,8 @@ function renderBody(p){
 function clearAuto(slot){try{localStorage.removeItem(AUTOSAVE+slot)}catch(e){}}
 const hm=iso=>{const d=new Date(iso);return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`};
 function closestIn(root,tag){let n=getSelection().anchorNode;while(n&&n!==root){if(n.nodeName&&n.nodeName.toLowerCase()===tag)return n;n=n.parentNode}return null}
-const textOf=html=>{const d=document.createElement("div");d.innerHTML=html;return d.textContent||""};
+/* 글자만 뽑기: DOMParser는 그림을 불러오거나 코드를 실행하지 않음(2026-11-02 보안: 예전 div.innerHTML은 남의 글의 onerror가 실행될 수 있었음) */
+const textOf=html=>{try{return new DOMParser().parseFromString(String(html||""),"text/html").body.textContent||""}catch(e){return ""}};
 /* 허용한 태그만 남기고 속성은 모두 지움 */
 const ALIGN_ICON={left:'<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 3.5h12M2 6.5h8M2 9.5h12M2 12.5h8"/></svg>',
   center:'<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 3.5h12M4 6.5h8M2 9.5h12M4 12.5h8"/></svg>',
@@ -3983,7 +4035,7 @@ function renderSearch(cv){cv.style.height="";cv.style.minHeight="100%";const q0=
   const draw=()=>{const raw=inp.value.trim();ui.searchQ=inp.value;const q=raw.replace(/^@/,"").toLowerCase();
     if(!q){const fl=follows().map(id=>SAMPLE_AUTHORS.find(a=>a.id===id)).filter(Boolean);
       res.innerHTML=`<p class="hint">이름이나 공간 주소(@)로 사람을 찾고, 글 내용으로 글을 찾아요. 추천이나 인기 목록은 보여 주지 않아요.</p>${fl.length?`<h2 class="srch-h">팔로잉</h2>${fl.map(personRow).join("")}`:""}`;return}
-    const people=[{me:true,id:"me",name:records.profile.displayName,handle:records.profile.handle,status:records.profile.status},...SAMPLE_AUTHORS.map(a=>({...a,handle:SAMPLE_HANDLES[a.id]}))]
+    const people=[{me:true,id:"me",name:records.profile.displayName,handle:records.profile.handle,status:records.profile.status},...SAMPLE_AUTHORS.map(a=>({...a,handle:a.handle||SAMPLE_HANDLES[a.id]}))]
       .filter(a=>(a.name||"").toLowerCase().includes(q)||(a.handle||"").includes(q));
     const posts=[...samples().filter(x=>((x.title||"")+" "+(x.text||"")).toLowerCase().includes(q)),...records.posts.filter(p=>p.status==="published"&&postVisible(p)&&(titleOf(p)+" "+textOfPost(p)+" "+pfSearchText(p)).toLowerCase().includes(q)).map(p=>({key:"m:"+p.id,mine:true,title:titleOf(p),text:textOfPost(p),author:{name:records.profile.displayName},date:dateOf(p)}))].slice(0,30);
     res.innerHTML=`${people.length?`<h2 class="srch-h">사람</h2>${people.map(personRow).join("")}`:""}${posts.length?`<h2 class="srch-h">글</h2>${posts.map(x=>`<button type="button" class="srch-post" data-feed="${x.key}"><b>${esc(x.title||(x.text||"").slice(0,30))}</b><span>${esc((x.text||"").replace(/\s+/g," ").slice(0,80))}</span><small>${esc(x.author.name)}${x.date?" · "+fmtDay(x.date):""}</small></button>`).join("")}`:""}${!people.length&&!posts.length?`<p class="empty">‘${esc(raw)}’에 맞는 사람이나 글이 없어요.</p>`:""}`};
@@ -6048,7 +6100,7 @@ const peSePanel=sePanel;sePanel=function(cv){if(ui.seSel==='profile'&&!ui.roomSe
     document.querySelectorAll('.se-sel').forEach(n=>n.classList.remove('se-sel'));if(!document.querySelector('.pe-page'))setTimeout(()=>editProfile(),0);return}
   return peSePanel(cv)};
 /* 프로필 글꼴 적용: 내 공간의 공간 이름·닉네임·소개에 각각 고른 글꼴(pr.fonts). 화면을 그린 뒤 그 자리 글자에만 입힘 */
-function peApplyFonts(){const f=(records&&records.profile&&records.profile.fonts)||{};const set=(sel,k)=>document.querySelectorAll(sel).forEach(n=>{const v=f[k];if(v&&MOOD_FONTS[v]){ensureFont(v);n.style.fontFamily=`'${MOOD_FONTS[v][1]}',var(--f-body)`}else n.style.fontFamily=''});
+function peApplyFonts(root,sc){root=root||document;sc=sc||'.nv:not(.peer)';const f=(records&&records.profile&&records.profile.fonts)||{};const set=(sel,k)=>root.querySelectorAll(sel.split(',').map(x=>x.replace(/^\.nv\b/,sc)).join(',')).forEach(n=>{const v=f[k];if(v&&MOOD_FONTS[v]){ensureFont(v);n.style.fontFamily=`'${MOOD_FONTS[v][1]}',var(--f-body)`}else n.style.fontFamily=''});
   set('.nv .nv-cover h1,.nv .fl-title h1','space');set('.nv .nv-who b,.nv .nv-prof b','name');set('.nv .nv-who small:not(.unset),.nv .nv-prof small:not(.unset)','status')}
 const peRender=render;render=function(){const r=peRender.apply(this,arguments);try{peApplyFonts()}catch(e){}return r};
 /* ═════════ 게스트로 써 보기 (2026-11-02, 주인 결정: 기기에 남는 게스트) ═════════
@@ -6441,6 +6493,243 @@ const flBaseBar=seBar;seBar=function(cv){flBaseBar(cv);if(ui.space==='room')retu
   if(!isMobile()){const g=document.createElement('span');g.className='fl-seg';g.setAttribute('role','group');g.setAttribute('aria-label','어느 화면 배치');
     const D=flDev();g.innerHTML=`<button type="button" data-fl-dev="pc" aria-pressed="${D==='pc'}">PC 배치</button><button type="button" data-fl-dev="m" aria-pressed="${D==='m'}">휴대폰 배치</button>`;t.after(g);
     g.onclick=ev=>{const x=ev.target.closest('[data-fl-dev]');if(!x)return;ui.flDev=x.dataset.flDev;ui.flSel=[];ui.seSel=null;ui.roomSel=null;render();scrollTo(0,0)}}};
+
+/* ═════════ 다른 사람 · 서버 1단계 + 쪽지 (2026-11-02, 주인 결정) ═════════
+   1) 다른 사람의 공간·글을 서버에서 불러옴(실제 사이트에서만). 공개 범위는 서버 규칙(can_read_post 등)이 지키고,
+      화면은 받은 것만 그림. 실제 사이트에선 예시 사용자(소금빵 등)를 빼고 진짜 사람만 보임.
+      - 남의 공간: 그 사람의 자유 배치 그대로(withPeer: 그리는 동안만 그 사람의 기록으로 바꿔 끼우고 바로 되돌림.
+        그사이 저장은 막음). 글도 같은 방식으로 열림.
+      - 피드: 전체 공개 글(무작위) + 내가 이웃으로 맺은 사람의 글. 이웃 맺기는 서버 follows 표에.
+      - 검색: 이름·@주소로 서버에서 사람 찾기.
+   2) 쪽지(주인: "쪽지가 죽은 이유가 있을 거야. 감성은 살리면서 개선") — A안
+      - 맥락: 글·공간을 보다가 그 자리에서 쓰면 '‘글 제목’을 보고' 가 붙음
+      - 편지첩: 한 사람과 주고받은 쪽지가 날짜 붙은 편지처럼 쌓임(말풍선 아님)
+      - 읽음 표시·입력 중·안 읽은 수 없음. 새 쪽지는 작은 점 하나
+      - 처음 온 쪽지: 내가 이웃으로 맺지 않았고 내가 보낸 적 없는 사람의 쪽지는 따로. 답장 받기 전엔 한 통만(서버 note_ok)
+      - 받기 범위(전체/내 이웃만/가까운 사람만/받지 않기), 그만 받기, 내 쪽에서 지우기
+      - 제목 없이 한 줄도 됨. 사진 한 장 붙이기 */
+const PEERS={};
+const PEER_TONES=[["#ece6dc","#8a6f52"],["#e3e7ee","#4f5f7a"],["#e5ebe1","#56704f"],["#efe4e6","#8a5a63"],["#e9e6ef","#6a5a86"],["#eceae0","#7a7348"]];
+function peerTone(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return PEER_TONES[h%PEER_TONES.length]}
+function peerAuthor(P){if(!P||!P.id)return null;if(SB.user&&P.id===SB.user.id)return null;const a=PEERS[P.id]||{id:P.id,peer:true,cats:[]};const t=peerTone(P.id);
+  Object.assign(a,{name:P.display_name||P.handle||'이름 없음',handle:P.handle,status:P.status||'',bio:(P.data&&P.data.bio)||'',bg:t[0],tone:t[1],noteFrom:P.note_from||'all',photoId:P.photo_id||null,row:P});
+  if(!PEERS[P.id]){PEERS[P.id]=a;SAMPLE_AUTHORS.push(a)}return a}
+/* 실제 사이트: 예시 사용자는 빼고, 예시 글 대신 서버의 글 */
+if(SB.on){for(let i=SAMPLE_AUTHORS.length-1;i>=0;i--)if(!SAMPLE_AUTHORS[i].peer)SAMPLE_AUTHORS.splice(i,1)}
+const peerBaseAvatar=avatarHTML;avatarHTML=function(a,size){if(a&&a.peer&&a.photoUrl)return `<span class="fav" style="width:${size}px;height:${size}px"><img src="${esc(a.photoUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></span>`;return peerBaseAvatar(a,size)};
+VIEWAS.peer=['public','followers','close','custom','private'];
+const sbq=t=>SB.c.from(t);
+/* 파일 주소(7일 서명) 받아 오기 */
+async function peerSign(rows){const out={};const ps=rows.filter(r=>r&&r.path);if(!ps.length)return out;
+  const s=await SB.c.storage.from('media').createSignedUrls(ps.map(r=>r.path),60*60*24*7);const byPath={};(s.data||[]).forEach(x=>{if(x&&x.signedUrl)byPath[x.path]=x.signedUrl});
+  ps.forEach(r=>{if(byPath[r.path])out[r.id]={id:r.id,mime:r.mime,width:r.width,height:r.height,remote:r.path,dataUrl:byPath[r.path]}});return out}
+async function peerProfiles(ids){ids=[...new Set(ids)].filter(id=>id&&(!SB.user||id!==SB.user.id));if(!ids.length)return;
+  const r=await sbq('profiles').select('*').in('id',ids);(r.data||[]).forEach(peerAuthor);
+  const need=(r.data||[]).filter(P=>P.photo_id&&!(PEERS[P.id]&&PEERS[P.id].photoUrl));if(need.length){const m=await sbq('media').select('*').in('id',need.map(P=>P.photo_id));const S=await peerSign(m.data||[]);need.forEach(P=>{if(S[P.photo_id]&&PEERS[P.id])PEERS[P.id].photoUrl=S[P.photo_id].dataUrl})}}
+/* 그 사람의 기록으로 잠깐 바꿔 끼우기. 저장은 막힘 */
+function blankState(){const s=[records,layout,assets];try{defaults();return {records,layout,assets}}finally{records=s[0];layout=s[1];assets=s[2]}}
+function withPeer(pd,fn){const keep={records,layout,assets},K=['viewer','viewAs','space','homeView','homeCat','homeLimit','spaceEdit','roomEdit','flSel','_hvTouched','seSel','roomSel'],u={};K.forEach(k=>u[k]=ui[k]);
+  records=pd.records;layout=pd.layout;assets=pd.assets;ui.viewer='visitor';ui.viewAs='peer';ui.space='blog';ui.spaceEdit=false;ui.roomEdit=false;ui.flSel=[];ui.seSel=null;ui.roomSel=null;
+  ui.homeView=pd.view||layout.homeView||'card';ui._hvTouched=true;ui.homeCat=pd.cat||'all';ui.homeLimit=pd.limit||10;ui._peer=pd;
+  try{return fn()}finally{records=keep.records;layout=keep.layout;assets=keep.assets;K.forEach(k=>ui[k]=u[k]);ui._peer=null}}
+const peerPersist=persist;persist=function(){if(ui._peer)return;return peerPersist.apply(this,arguments)};
+const peerWriteAll=writeAll;writeAll=function(){if(ui._peer)return true;return peerWriteAll.apply(this,arguments)};
+const PD={};
+/* 남이 만든 데이터는 그대로 화면 코드에 넣지 않음(2026-11-02 보안): 글 본문(html)은 그릴 때 sanitize가 거르고,
+   그 밖의 글자는 따옴표·꺾쇠를 비슷한 모양의 안전한 글자로 바꿈(속성 깨기 막기). 배경·분위기는 정해진 값만, 공간 CSS·코드 상자는 빼고 그림 */
+const PEER_CH={'<':'‹','>':'›','"':'＂',"'":'’','`':'‘','\\':'＼'};
+function peerSafe(v,k){if(typeof v==='string')return k==='html'?v:v.replace(/[<>"'`\\]/g,c=>PEER_CH[c]);if(Array.isArray(v))return v.map(x=>peerSafe(x,k));
+  if(v&&typeof v==='object'){const o={};for(const [kk,vv] of Object.entries(v)){if(kk==='__proto__'||kk==='constructor'||kk==='prototype')continue;o[kk]=peerSafe(vv,kk)}return o}
+  if(typeof v==='number'&&!isFinite(v))return 0;return v}
+function peerScrub(st){st.records=peerSafe(st.records);const L=st.layout=peerSafe(st.layout);
+  delete L.spaceCss;if(Array.isArray(L.shelf))L.shelf=L.shelf.filter(x=>x&&x.type!=='w-code');
+  (L.pages||[]).forEach(pg=>{const b=pg.background||{};const ok=(b.type==='image'&&/^[\w-]{1,80}$/.test(b.assetId||''))||(b.type==='color'&&/^#[0-9a-f]{3,8}$/i.test(b.value||''))||(b.type==='preset'&&BG_PRESETS.some(x=>x.id===b.value));
+    if(!ok)pg.background={type:'preset',value:BG_PRESETS[0].id};pg.elements=[]});
+  const m=L.mood||{};L.mood={};if(m.font&&MOOD_FONTS[m.font])L.mood.font=m.font;if(/^#[0-9a-f]{3,8}$/i.test(m.accent||''))L.mood.accent=m.accent;if(m.paper&&MOOD_PAPER[m.paper])L.mood.paper=m.paper;if(/^[a-z]{1,12}$/.test(m.gap||''))L.mood.gap=m.gap;
+  if(!['low','high'].includes(L.coverH))delete L.coverH;if(!['card','list','album'].includes(L.homeView))delete L.homeView;
+  const f=st.records.profile&&st.records.profile.fonts;if(f&&typeof f==='object')Object.keys(f).forEach(k=>{if(!MOOD_FONTS[f[k]])delete f[k]})}
+const peerApplyCss=applySpaceCss;applySpaceCss=function(){if(ui._peer)return;return peerApplyCss()};
+async function peerLoad(id,force){if(PD[id]&&!force&&Date.now()-PD[id].at<60000)return PD[id];
+  const [pr,ps,rm,cs,md]=await Promise.all([sbq('profiles').select('*').eq('id',id).maybeSingle(),sbq('posts').select('data,status').eq('owner',id).eq('status','published'),
+    sbq('rooms').select('layout,media_ids').eq('owner',id).maybeSingle(),sbq('categories').select('data').eq('owner',id),sbq('media').select('*').eq('owner',id)]);
+  if(pr.error||!pr.data)throw new Error('공간을 찾을 수 없어요');peerAuthor(pr.data);const P=pr.data;const st=blankState();
+  st.records.profile=Object.assign({},P.data||{},{id:'peer-'+id,displayName:P.display_name,status:P.status,handle:P.handle,photoAssetId:P.photo_id||null},P.space_name?{spaceName:P.space_name}:{});
+  st.records.settings={onboardingComplete:true};st.records.posts=(ps.data||[]).map(r=>r.data).filter(p=>p&&p.status==='published');st.records.categories=(cs.data||[]).map(r=>r.data);
+  st.records.widgets=[];st.records.follows=[];
+  if(rm.data&&rm.data.layout&&rm.data.layout.pages)st.layout=rm.data.layout;
+  peerScrub(st);
+  st.assets=await peerSign(md.data||[]);
+  const old=PD[id]||{};PD[id]=Object.assign(st,{id,at:Date.now(),view:old.view,cat:old.cat,limit:old.limit});return PD[id]}
+/* ── 이웃 맺기: 진짜 사람은 서버 follows 표에 ── */
+let FOLLOWED_BY=new Set();
+async function peerFollowsLoad(){if(!SB.on||!SB.user)return;const r=await sbq('follows').select('*');if(r.error)return;const me=SB.user.id;
+  const mine=(r.data||[]).filter(f=>f.follower===me).map(f=>f.followee);FOLLOWED_BY=new Set((r.data||[]).filter(f=>f.followee===me).map(f=>f.follower));
+  const keep=(records.follows||[]).filter(x=>!/^[0-9a-f-]{20,}$/i.test(x)&&!String(x).startsWith('u-'));records.follows=[...new Set([...keep,...mine])];
+  await peerProfiles([...mine,...FOLLOWED_BY])}
+document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-act="follow"]');if(!b||!SB.on)return;const id=b.dataset.author;if(!PEERS[id])return;
+  e.preventDefault();e.stopImmediatePropagation();if(!SB.user){toast('로그인하면 이웃을 맺을 수 있어요.');return}
+  const on=(records.follows||[]).includes(id);const r=on?await sbq('follows').delete().eq('follower',SB.user.id).eq('followee',id):await sbq('follows').insert({follower:SB.user.id,followee:id});
+  if(r.error){toast('지금은 바꿀 수 없어요. 잠시 뒤에 다시 해 주세요.');return}
+  const f=(records.follows||[]).filter(x=>x!==id);if(!on)f.push(id);records.follows=f;persist();PF.at=0;delete PD[id];
+  toast(on?`${PEERS[id].name} 님과 이웃을 그만뒀어요.`:`${PEERS[id].name} 님과 이웃이 됐어요.`);render();refreshWindows()},true);
+/* ── 피드: 서버의 글 ── */
+const PF={items:[],at:0,loading:false};
+function peerItem(r){const p=r.data||{};const a=PEERS[r.owner];if(!a)return null;const ph=allPhotos(blocksOf(p));const cid=p.coverAssetId||(ph[0]&&ph[0].assetId);const c=cid&&PF.media[cid];
+  return {key:'p:'+r.owner+':'+r.id,peer:true,owner:r.owner,postId:r.id,author:a,catName:'',title:p.title||'',text:textOfPost(p),photoUrl:c?c.dataUrl:null,pw:c&&c.width||4,ph:c&&c.height||3,
+    gallery:c?[c.dataUrl,...ph.map(x=>PF.media[x.assetId]).filter(m=>m&&m!==c).map(m=>m.dataUrl)]:[],firstPublishedAt:r.first_published_at||p.firstPublishedAt||p.createdAt||new Date(0).toISOString(),date:dateOf(p),showDate:showDateOf(p)}}
+async function peerFeedLoad(force){if(!SB.on||!SB.ready||!SB.user||PF.loading)return;if(!force&&Date.now()-PF.at<60000)return;PF.loading=true;
+  try{const me=SB.user.id,fl=(records.follows||[]).filter(id=>PEERS[id]||/^[0-9a-f-]{20,}$/i.test(id)||String(id).startsWith('u-'));const cols='id,owner,data,media_ids,first_published_at';
+    const [pub,fol]=await Promise.all([sbq('posts').select(cols).eq('status','published').eq('visibility','public').order('first_published_at',{ascending:false}).limit(80),
+      fl.length?sbq('posts').select(cols).in('owner',fl).eq('status','published').order('first_published_at',{ascending:false}).limit(80):Promise.resolve({data:[]})]);
+    const seen=new Set(),rows=[];[...(pub.data||[]),...(fol.data||[])].forEach(r=>{if(r.owner!==me&&!seen.has(r.id)){seen.add(r.id);rows.push(r)}});
+    await peerProfiles(rows.map(r=>r.owner));
+    const ids=[...new Set(rows.flatMap(r=>{const p=r.data||{};const ph=allPhotos(blocksOf(p));return [p.coverAssetId,...ph.slice(0,4).map(x=>x.assetId)].filter(Boolean)}))];
+    PF.media=PF.media||{};const need=ids.filter(id=>!PF.media[id]);if(need.length){const m=await sbq('media').select('*').in('id',need);Object.assign(PF.media,await peerSign(m.data||[]))}
+    PF.items=rows.map(peerItem).filter(Boolean);PF.at=Date.now();sampleCache=null;feedDeck=null;
+    if(['feed','search'].includes(ui.renderer)&&!ui.onboard)render()}catch(e){}finally{PF.loading=false}}
+const peerBaseSamples=samples;samples=function(){return SB.on?PF.items:peerBaseSamples()};
+const peerBaseOpenFeed=openFeedItem;openFeedItem=function(key){if(String(key).startsWith('p:')){const [,o,pid]=key.split(':');peerOpenPost(o,pid);return}return peerBaseOpenFeed(key)};
+const peerBaseOpenAuthor=openAuthor;openAuthor=function(aid,cat){if(PEERS[aid]){peerOpenSpace(aid);return}return peerBaseOpenAuthor(aid,cat)};
+/* ── 남의 공간 ── */
+function peerOpenSpace(id){const a=PEERS[id];if(!a)return;
+  openWin('peer:'+id,{title:a.name+'의 공간',icon:avatarHTML(a,18),full:true,canFull:true,keep:false,
+    render(body,foot,w){body.style.padding='0';body.style.background='var(--chrome-2)';const pd=PD[id];
+      if(!pd||Date.now()-pd.at>60000&&!w.loading){if(!pd)body.innerHTML='<p class="hint" style="padding:32px 24px">불러오는 중…</p>';w.loading=true;
+        peerLoad(id,true).then(()=>{w.loading=false;if(wins.includes(w))drawWin(w)}).catch(er=>{w.loading=false;body.innerHTML=`<p class="hint" style="padding:32px 24px">${esc(er.message||'불러오지 못했어요.')}</p>`});if(!pd)return}
+      withPeer(pd,()=>{renderHome(body);peApplyFonts(body,'.nv.peer')});const home=body.querySelector('.home.nv');if(home)home.classList.add('peer','in-win');
+      const following=(records.follows||[]).includes(id);
+      const btns=`<div class="peer-btns"><button type="button" class="pill${following?' on':''}" data-act="follow" data-author="${id}" aria-pressed="${following}">${following?'이웃 ✓':'이웃 맺기'}</button><button type="button" class="pill" data-note-to="${id}" data-note-kind="space">쪽지</button></div>`;
+      const pb=body.querySelector('.fl-prof')||body.querySelector('.nv-prof');if(pb)pb.insertAdjacentHTML(pb.classList.contains('fl-prof')?'beforeend':'afterend',btns);else if(home)home.insertAdjacentHTML('afterbegin',btns);
+      if(!pd.records.posts.length){const ps=body.querySelector('.nv-posts');if(ps&&!ps.querySelector('.peer-empty'))ps.insertAdjacentHTML('beforeend','<p class="hint peer-empty">아직 나에게 보이는 글이 없어요.</p>')}
+      if(!w.peerBound){w.peerBound=true;w.node.addEventListener('click',ev=>{const t=ev.target;const op=t.closest('[data-open-post]');
+          if(op&&w.node.contains(op)){ev.preventDefault();ev.stopImmediatePropagation();peerOpenPost(id,op.dataset.openPost);return}
+          const hv=t.closest('[data-act="homeView"]');if(hv){ev.preventDefault();ev.stopImmediatePropagation();PD[id].view=hv.dataset.v;drawWin(w);return}
+          const mo=t.closest('[data-act="homeMore"],[data-act="moreHome"]');if(mo){ev.preventDefault();ev.stopImmediatePropagation();PD[id].limit=(PD[id].limit||10)+10;drawWin(w)}},true);
+        w.node.addEventListener('change',ev=>{if(ev.target.id==='hm-cat'){ev.stopImmediatePropagation();PD[id].cat=ev.target.value;drawWin(w)}},true)}}})}
+/* ── 남의 글 ── */
+async function peerOpenPost(oid,pid){let pd=PD[oid];if(!pd){try{toast('불러오는 중…');pd=await peerLoad(oid)}catch(e){toast('볼 수 없는 글이에요.');return}}
+  if(!pd.records.posts.some(p=>p.id===pid)){try{pd=await peerLoad(oid,true)}catch(e){}if(!pd.records.posts.some(p=>p.id===pid)){toast('볼 수 없는 글이에요.');return}}
+  withPeer(pd,()=>openPost(pid));const w=wins.find(x=>x.key==='post:'+pid);if(!w||w.peer)return;w.peer=oid;
+  const r0=w.opts.render,a0=w.opts.alive;w.opts.foot=false;
+  w.opts.alive=()=>!PD[oid]||withPeer(PD[oid],()=>!a0||a0());
+  w.opts.render=(body,foot,ww)=>{withPeer(PD[oid]||pd,()=>r0(body,foot,ww));const p=(PD[oid]||pd).records.posts.find(x=>x.id===pid);const a=PEERS[oid];
+    if(a&&p&&!body.querySelector('.peer-note')){body.insertAdjacentHTML('beforeend',`<div class="peer-note"><button class="wrapto visit" data-note-to="${oid}" data-note-kind="post" data-note-id="${pid}"><span class="wt"><span class="wl">이 글을 보고</span><b>${esc(a.name)}</b> 님에게 쪽지 쓰기</span><span class="go">›</span></button>
+      <button class="wrapto visit" data-act="authorSpace" data-author="${oid}">${avatarHTML(a,40)}<span class="wt"><span class="wl">이 사람이 궁금하다면</span><b>${esc(a.name)}</b>의 공간 둘러보기</span><span class="go">›</span></button></div>`)}};
+  drawWin(w)}
+/* ── 검색: 서버에서 사람 찾기 ── */
+let peerSrchT=null;
+const peerBaseSearch=renderSearch;renderSearch=function(cv){peerBaseSearch(cv);if(!SB.on||!SB.user)return;const inp=cv.querySelector('#srch-q');if(!inp)return;
+  const go=()=>{clearTimeout(peerSrchT);const q=inp.value.trim().replace(/^@/,'').replace(/[%,().*]/g,'');if(q.length<1)return;
+    peerSrchT=setTimeout(async()=>{const r=await sbq('profiles').select('*').or(`handle.ilike.%${q}%,display_name.ilike.%${q}%`).limit(20);if(r.error)return;
+      await peerProfiles((r.data||[]).map(P=>P.id));(r.data||[]).forEach(peerAuthor);if((r.data||[]).length&&inp.isConnected&&inp.value.trim().replace(/^@/,'').replace(/[%,().*]/g,'')===q){inp.removeEventListener('input',go);inp.dispatchEvent(new Event('input'));inp.addEventListener('input',go)}},250)};
+  inp.addEventListener('input',go);go()};
+/* ── 쪽지 ── */
+const NT={rows:[],at:0,loading:false,err:null};
+const ntSeen=()=>{const s=records.settings||(records.settings={});return s.notesSeen||(s.notesSeen={})};
+const ntBlocks=()=>Array.isArray(records.settings&&records.settings.noteBlocks)?records.settings.noteBlocks:[];
+async function ntLoad(force){if(!SB.on||!SB.ready||!SB.user||NT.loading)return;if(!force&&Date.now()-NT.at<20000)return;NT.loading=true;
+  try{const r=await sbq('notes').select('*').order('created_at',{ascending:false}).limit(500);if(r.error)throw r.error;NT.rows=r.data||[];NT.at=Date.now();NT.err=null;
+    const me=SB.user.id;await peerProfiles(NT.rows.map(n=>n.sender===me?n.recipient:n.sender));
+    const mids=NT.rows.filter(n=>n.media_id&&n.sender!==me&&!(NT.media||{})[n.media_id]).map(n=>n.media_id);NT.media=NT.media||{};
+    if(mids.length){const m=await sbq('media').select('*').in('id',[...new Set(mids)]);Object.assign(NT.media,await peerSign(m.data||[]))}
+    ntDot();if(ui.renderer==='notes')ntDraw()}catch(e){NT.err=e}finally{NT.loading=false}}
+function ntThreads(){const me=SB.user&&SB.user.id;const T={};NT.rows.forEach(n=>{const o=n.sender===me?n.recipient:n.sender;(T[o]=T[o]||[]).push(n)});
+  return Object.entries(T).map(([id,ns])=>{ns.sort((a,b)=>a.created_at.localeCompare(b.created_at));const last=ns[ns.length-1];const sent=ns.some(n=>n.sender===me);
+    const fresh=ns.some(n=>n.sender!==me&&n.created_at>(ntSeen()[id]||''));const first=!sent&&!(records.follows||[]).includes(id);return {id,ns,last,sent,fresh,first}}).sort((a,b)=>b.last.created_at.localeCompare(a.last.created_at))}
+function ntHasNew(){return SB.on&&!!SB.user&&ntThreads().some(t=>t.fresh)}
+function ntDot(){const on=ntHasNew();document.querySelectorAll('.pn-note,#tabbar [data-tab2="notice"]').forEach(n=>n.classList.toggle('has-new',on));document.querySelectorAll('.nt-inbox-row').forEach(n=>n.classList.toggle('has-new',on))}
+/* 위 막대(PC): 검색 옆 편지 그림 · 휴대폰: 알림 화면 맨 위 '쪽지함' */
+const NT_IC='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 7l8 6 8-6"/></svg>';
+(function(){const n=document.querySelector('.pc-nav');if(!n||n.querySelector('.pn-note'))return;const s=n.querySelector('.pn-srch');const b=document.createElement('button');b.type='button';b.className='pn-note';b.dataset.openNotes='';b.setAttribute('aria-label','쪽지함');b.title='쪽지함';b.innerHTML=NT_IC+'<i class="nt-dot" aria-hidden="true"></i>';if(s)s.after(b);else n.prepend(b)})();
+const ntBaseNotice=renderNotice;renderNotice=function(cv){ntBaseNotice(cv);const h=cv.querySelector('.nt-h');if(h)h.insertAdjacentHTML('afterend',`<button type="button" class="nv-row nt-inbox-row${ntHasNew()?' has-new':''}" data-open-notes><span class="nv-row-m"><span class="t">쪽지함 <i class="nt-dot" aria-hidden="true"></i></span><span class="d">주고받은 쪽지는 편지처럼 차곡차곡 쌓여요</span></span></button>`)};
+function ntOpen(withId,ctx){ui.noteWith=withId||null;ui.noteCtx=ctx||null;ui.renderer='notes';if(ui.mode==='edit')doneEdit();wins.slice().forEach(w=>{if(String(w.key).startsWith('peer:')||String(w.key).startsWith('post:'))closeWin(w)});$('#desk').scrollTop=0;render();ntLoad(true)}
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-open-notes],[data-note-to]');if(!t)return;e.preventDefault();e.stopPropagation();
+  if(t.matches('[data-open-notes]')){ntOpen(null);return}
+  const id=t.dataset.noteTo,k=t.dataset.noteKind;let ctx=null;
+  if(k==='post'){const pd=PD[id],p=pd&&pd.records.posts.find(x=>x.id===t.dataset.noteId);if(p)ctx={kind:'post',owner:id,id:p.id,title:(titleOf(p)||'').slice(0,60)}}
+  else if(k==='space')ctx={kind:'space',owner:id,title:((PD[id]&&PD[id].records.profile.spaceName)||((PEERS[id]||{}).name||'')+'의 공간').slice(0,60)};
+  if(!SB.on||!SB.user){toast('쪽지는 가입한 사람끼리 주고받아요.');return}ntOpen(id,ctx)},true);
+const ntBaseRender=render;render=function(){if(ui.renderer==='notes'&&!ui.onboard){const desk=$('#desk'),cv=$('#canvas');document.querySelectorAll('.se-bar,.se-panel').forEach(n=>n.remove());
+    $('#app').classList.toggle('mobile',isMobile());desk.style.background='var(--chrome-2)';desk.classList.remove('dark-ink');cv.style.height='';cv.style.minHeight='100%';
+    cv.innerHTML='<div class="home nv"><main class="hm-inner nt-page"></main></div>';ntDraw();try{syncNav()}catch(e){}try{syncPcNav()}catch(e){}renderTopbar();return}
+  const r=ntBaseRender.apply(this,arguments);if(SB.on&&SB.ready){if(['feed','search'].includes(ui.renderer))peerFeedLoad();ntDot()}return r};
+function ntWho(id){return PEERS[id]||{id,name:'(떠난 사람)',bg:'var(--chrome-2)',tone:'var(--ink-2)',peer:true}}
+function ntCtxLine(n,me){const c=n.ctx||{};if(!c.kind)return '';const mine=c.owner===me;const where=c.kind==='post'?`‘${esc(c.title||'글')}’`:(mine?'내 공간':`‘${esc(c.title||'공간')}’`);
+  return `<button type="button" class="nt-ctx" data-nt-ctx="${esc(c.kind)}" data-owner="${esc(c.owner||'')}" data-id="${esc(c.id||'')}">${where}을(를) 보고</button>`}
+function ntDraw(){const page=document.querySelector('.nt-page');if(!page)return;
+  if(!SB.on||!SB.user){page.innerHTML=`<h1 class="nt-h1">쪽지함</h1><p class="hint">쪽지는 가입한 사람끼리 주고받아요. 이 미리보기에서는 쓸 수 없어요.</p>`;return}
+  const me=SB.user.id,T=ntThreads(),sel=ui.noteWith,M=isMobile();
+  const row=t=>{const a=ntWho(t.id),l=t.last;return `<button type="button" class="nt-row${t.id===sel?' on':''}${t.fresh?' fresh':''}" data-nt-with="${t.id}">${avatarHTML(a,34)}<span class="nt-row-m"><b>${esc(a.name)}${t.fresh?'<i class="nt-dot" aria-label="새 쪽지"></i>':''}</b><span>${l.sender===me?'나: ':''}${esc(l.body.replace(/\s+/g,' ').slice(0,40))}</span></span><small>${fmtDay(l.created_at.slice(0,10))}</small></button>`};
+  const firsts=T.filter(t=>t.first),rest=T.filter(t=>!t.first);
+  const list=`<div class="nt-list"><h1 class="nt-h1">쪽지함</h1>${!T.length&&!sel?`<p class="hint">아직 주고받은 쪽지가 없어요. 누군가의 글이나 공간을 보다가 ‘쪽지’를 눌러 보세요.</p>`:''}
+    ${rest.map(row).join('')}${firsts.length?`<h2 class="nt-sub">처음 온 쪽지</h2><p class="hint nt-sub-d">이웃이 아닌 사람이 처음 보낸 쪽지예요. 답장하기 전까지 한 통만 보낼 수 있어요.</p>${firsts.map(row).join('')}`:''}
+    <p class="nt-foot"><button type="button" class="tbtn" data-set-notes>쪽지 받기 설정</button></p></div>`;
+  let th='',ctx=null;
+  if(sel){const a=ntWho(sel),t=T.find(x=>x.id===sel)||{id:sel,ns:[],sent:false,first:false};const blocked=ntBlocks().includes(sel);
+    if(t.ns.some(n=>n.sender!==me&&n.created_at>(ntSeen()[sel]||''))){ntSeen()[sel]=new Date().toISOString();persist();setTimeout(ntDot,0)}
+    const letters=t.ns.map(n=>{const mine=n.sender===me;const img=n.media_id?(mine?(assets[n.media_id]&&assets[n.media_id].dataUrl):(NT.media[n.media_id]&&NT.media[n.media_id].dataUrl)):null;
+      return `<article class="nt-letter${mine?' mine':''}" data-nt-id="${n.id}"><div class="nt-meta"><span>${mine?'내가 보낸 쪽지':esc(a.name)+' 님의 쪽지'} · ${fmtDay(n.created_at.slice(0,10))}</span>${ntCtxLine(n,me)}<button type="button" class="nt-x" data-nt-hide="${n.id}" aria-label="이 쪽지 지우기" title="내 쪽에서 지우기">지우기</button></div>
+        <p class="nt-body">${esc(n.body)}</p>${img?`<img class="nt-img" src="${esc(img)}" alt="">`:''}</article>`}).join('');
+    const theirs=t.ns.some(n=>n.sender!==me),mineN=t.ns.filter(n=>n.sender===me).length;
+    let gate='';
+    if(a.noteFrom==='none')gate='이 사람은 지금 쪽지를 받지 않아요.';
+    else if(!theirs&&mineN>=1&&!FOLLOWED_BY.has(sel))gate='답장을 받으면 이어서 쓸 수 있어요. 처음에는 한 통만 보낼 수 있어요.';
+    else if(a.noteFrom==='followers'&&!FOLLOWED_BY.has(sel))gate='이 사람은 자기가 이웃으로 맺은 사람에게서만 쪽지를 받아요.';
+    ctx=ui.noteCtx&&ui.noteCtx.owner===sel?ui.noteCtx:null;
+    th=`<section class="nt-thread" aria-label="${esc(a.name)} 님과 주고받은 쪽지">
+      <header class="nt-th-h">${M?'<button type="button" class="tbtn nt-back" data-nt-with="">‹ 쪽지함</button>':''}${avatarHTML(a,40)}<span class="nt-th-n"><b>${esc(a.name)}</b>${a.handle?`<small>@${esc(a.handle)}</small>`:''}</span>
+        <button type="button" class="tbtn" data-act="authorSpace" data-author="${sel}">공간 보기</button><button type="button" class="tbtn${blocked?'':' danger'}" data-nt-block="${sel}">${blocked?'다시 받기':'그만 받기'}</button></header>
+      ${t.first&&theirs?`<p class="hint nt-firstnote">처음 온 쪽지예요. 답장하면 편지첩으로 옮겨지고, 원치 않으면 ‘그만 받기’를 눌러요.</p>`:''}
+      <div class="nt-letters">${letters||`<p class="hint">아직 주고받은 쪽지가 없어요. 첫 쪽지를 써 보세요.</p>`}</div>
+      ${blocked?'<p class="hint">그만 받기 중이에요. 이 사람의 쪽지는 오지 않아요.</p>':gate?`<p class="hint nt-gate">${gate}</p>`:`<form class="nt-write" autocomplete="off">
+        ${ctx?`<p class="nt-ctx-chip">${ctx.kind==='post'?`‘${esc(ctx.title)}’`:`‘${esc(ctx.title)}’`}을(를) 보고 <button type="button" class="tbtn" data-nt-ctx-x aria-label="붙은 맥락 빼기">✕</button></p>`:''}
+        <label class="sr" for="nt-text">쪽지</label><textarea id="nt-text" rows="${M?3:4}" maxlength="2000" placeholder="제목 없이, 한 줄이어도 괜찮아요"></textarea>
+        <div class="nt-img-prev" hidden></div>
+        <div class="nt-acts"><label class="pill nt-att">사진<input type="file" accept="image/*" hidden data-nt-file></label><span class="nt-note">읽었는지는 서로 보이지 않아요</span><button type="submit" class="btn primary">보내기</button></div></form>`}
+    </section>`}
+  page.classList.toggle('nt-one',M&&!!sel);
+  page.innerHTML=M?(sel?th:list):`<div class="nt-cols">${list}${th||'<section class="nt-thread nt-empty"><p class="hint">왼쪽에서 사람을 고르면 주고받은 쪽지가 편지처럼 보여요.</p></section>'}</div>`;
+  const lt=page.querySelector('.nt-letters');if(lt&&!M)lt.scrollTop=lt.scrollHeight;
+  const f=page.querySelector('.nt-write');if(f){const ta=f.querySelector('textarea');ta.value=ui.noteDraft&&ui.noteDraft.to===sel?ui.noteDraft.text:'';ta.oninput=()=>{ui.noteDraft={to:sel,text:ta.value}};
+    const fi=f.querySelector('[data-nt-file]'),pv=f.querySelector('.nt-img-prev');let file=null;
+    fi.onchange=()=>{file=fi.files[0]||null;if(!file){pv.hidden=true;return}const u=URL.createObjectURL(file);pv.hidden=false;pv.innerHTML=`<img src="${u}" alt=""><button type="button" class="tbtn" data-x>빼기</button>`;pv.querySelector('[data-x]').onclick=()=>{file=null;fi.value='';pv.hidden=true}};
+    f.onsubmit=async ev=>{ev.preventDefault();const body=ta.value.trim();if(!body){ta.focus();return}const btn=f.querySelector('[type=submit]');btn.disabled=true;btn.textContent='보내는 중…';
+      try{await ntSend(sel,body,ctx,file);ui.noteDraft=null;ui.noteCtx=null;toast('쪽지를 보냈어요.')}catch(er){toast(er.message||'보내지 못했어요.');btn.disabled=false;btn.textContent='보내기'}}}}
+async function ntSend(to,body,ctx,file){let media_id=null;
+  if(file){media_id=await addAsset(file,1400,'post',.85);const s=records.settings||(records.settings={});s.noteMedia=[...(s.noteMedia||[]),media_id].slice(-200);persist();
+    for(let i=0;i<40&&!(assets[media_id]&&assets[media_id].remote);i++){if(!SB.pushing)sbPush();await new Promise(r=>setTimeout(r,250))}
+    if(!(assets[media_id]&&assets[media_id].remote))throw new Error('사진을 올리지 못했어요. 잠시 뒤에 다시 보내 주세요.')}
+  const row={recipient:to,body:body.slice(0,2000),ctx:ctx?{kind:ctx.kind,owner:ctx.owner,id:ctx.id||null,title:ctx.title||''}:{}};if(media_id)row.media_id=media_id;
+  const r=await sbq('notes').insert(row);if(!r.error){ui.noteDraft=null;ui.noteCtx=null}if(r.error){if(/row-level|policy/i.test(r.error.message||''))throw new Error('지금은 이 사람에게 쪽지를 보낼 수 없어요(받는 사람이 정한 범위 밖이거나, 답장을 기다리는 중이에요).');throw new Error('보내지 못했어요. 잠시 뒤에 다시 해 주세요.')}
+  await ntLoad(true)}
+const ntUsed=extraUsedIds;extraUsedIds=function(){const o=ntUsed();const s=records.settings&&records.settings.noteMedia;if(Array.isArray(s))o.push(...s);return o};
+document.addEventListener('click',async e=>{const t=e.target.closest&&e.target.closest('[data-nt-with],[data-nt-hide],[data-nt-block],[data-nt-ctx],[data-nt-ctx-x],[data-set-notes]');if(!t||!document.querySelector('.nt-page,.set-page'))return;
+  if(t.matches('[data-nt-with]')){e.preventDefault();ui.noteWith=t.dataset.ntWith||null;if(ui.noteCtx&&ui.noteCtx.owner!==ui.noteWith)ui.noteCtx=null;ntDraw();if(isMobile())scrollTo(0,0);return}
+  if(t.matches('[data-nt-ctx-x]')){e.preventDefault();ui.noteCtx=null;ntDraw();return}
+  if(t.matches('[data-nt-ctx]')){e.preventDefault();const me=SB.user&&SB.user.id,o=t.dataset.owner,id=t.dataset.id;
+    if(t.dataset.ntCtx==='post'){if(o===me)openPost(id);else peerOpenPost(o,id)}else{if(o===me){ui.renderer='desktop';ui.space='blog';render()}else if(PEERS[o])peerOpenSpace(o)}return}
+  if(t.matches('[data-nt-hide]')){e.preventDefault();if(!await confirmDlg('이 쪽지를 내 쪽에서 지울까요?','상대 쪽지함에는 그대로 남아요.','지우기'))return;
+    const r=await SB.c.rpc('hide_note',{p_id:t.dataset.ntHide});if(r.error){toast('지우지 못했어요.');return}await ntLoad(true);return}
+  if(t.matches('[data-nt-block]')){e.preventDefault();const id=t.dataset.ntBlock,on=ntBlocks().includes(id);
+    if(!on&&!await confirmDlg(`${ntWho(id).name} 님의 쪽지를 그만 받을까요?`,'상대에게 알리지 않아요. 설정에서 다시 받을 수 있어요.','그만 받기'))return;
+    const r=on?await sbq('note_blocks').delete().eq('owner',SB.user.id).eq('blocked',id):await sbq('note_blocks').insert({owner:SB.user.id,blocked:id});
+    if(r.error){toast('지금은 바꿀 수 없어요.');return}const s=records.settings||(records.settings={});s.noteBlocks=on?ntBlocks().filter(x=>x!==id):[...ntBlocks(),id];persist();toast(on?'다시 받아요.':'그만 받기로 했어요.');ntDraw();return}
+  if(t.matches('[data-set-notes]')){e.preventDefault();ui.renderer='settings';render();setTimeout(()=>{const s=document.querySelector('[data-note-from]');if(s)s.scrollIntoView({block:'center'})},50)}},true);
+function confirmDlg(title,body,ok){const pm=modal(`<h3>${esc(title)}</h3><p>${esc(body)}</p><div class="acts"><button class="btn" data-c>취소</button><button class="btn danger" data-o>${esc(ok)}</button></div>`);
+  const m=modal.cur;m.querySelector('[data-c]').onclick=()=>m._done(false);m.querySelector('[data-o]').onclick=()=>m._done(true);return pm}
+/* 설정: 쪽지 받기 */
+const NOTE_FROM=[['all','누구나'],['followers','내가 이웃으로 맺은 사람만'],['close','가까운 사람만'],['none','받지 않기']];
+const ntBaseSettings=renderSettings;renderSettings=function(cv){ntBaseSettings(cv);if(!SB.on||!SB.user)return;const sec=[...cv.querySelectorAll('.set-sec')].find(s=>/보기/.test(s.querySelector('h2')?.textContent||''));
+  const cur=(records.settings&&records.settings.noteFrom)||'all';const bl=ntBlocks();
+  const h=`<section class="set-sec"><h2>쪽지</h2><div class="set-row"><div class="set-l"><b>쪽지 받기</b><small>처음 보내는 사람은 답장을 받기 전까지 한 통만 보낼 수 있어요</small></div><div class="set-r"><select class="set-sel" data-note-from aria-label="쪽지 받기">${NOTE_FROM.map(([v,t])=>`<option value="${v}" ${v===cur?'selected':''}>${t}</option>`).join('')}</select></div></div>
+    ${bl.length?`<div class="set-row"><div class="set-l"><b>그만 받기 한 사람</b><small>상대는 알지 못해요</small></div><div class="set-r nt-bl">${bl.map(id=>`<button type="button" class="tbtn" data-nt-block="${id}">${esc(ntWho(id).name)} · 다시 받기</button>`).join('')}</div></div>`:''}</section>`;
+  if(sec)sec.insertAdjacentHTML('beforebegin',h);else cv.querySelector('.set-page')?.insertAdjacentHTML('beforeend',h);
+  const s=cv.querySelector('[data-note-from]');s.onchange=async()=>{const v=s.value;const r=await sbq('profiles').update({note_from:v}).eq('id',SB.user.id);if(r.error){toast('지금은 바꿀 수 없어요.');s.value=cur;return}
+    records.settings.noteFrom=v;persist();toast('쪽지 받기를 바꿨어요.')}};
+/* 로그인하면 이웃 관계와 쪽지를 불러오고, 열려 있는 동안 가끔 새 쪽지를 확인(1분, 화면이 보일 때만) */
+const peerBasePull=sbPull;sbPull=async function(){const r=await peerBasePull.apply(this,arguments);if(r==='ok'||r==='fresh'){try{await peerFollowsLoad()}catch(e){}ntLoad(true);PF.at=0}return r};
+setInterval(()=>{if(document.visibilityState==='visible')ntLoad()},60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ntLoad()});
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
