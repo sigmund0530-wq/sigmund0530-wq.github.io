@@ -7,6 +7,7 @@ from threading import BoundedSemaphore
 import json
 from font_service import (FONTS,StudioError,MAX_PROJECT_BYTES,ensure_font,
                           glyph_outline,build_font,read_font_info)
+from draw_service import apply_paint
 ROOT=Path(__file__).resolve().parent
 SLOTS=BoundedSemaphore(2)
 class Handler(BaseHTTPRequestHandler):
@@ -39,12 +40,13 @@ class Handler(BaseHTTPRequestHandler):
     font_id=route.removeprefix('/api/fonts/')
     if font_id not in FONTS:return self.json({'error':'없는 글꼴입니다.'},404)
     return self.respond(ensure_font(font_id).read_bytes(),'font/ttf',headers={'Cache-Control':'private, max-age=3600'})
-   if route=='/health':return self.json({'ok':True,'version':'2.0','local_only':True})
+   if route=='/health':return self.json({'ok':True,'version':'3.0','local_only':True})
    return self.json({'error':'없는 페이지입니다.'},404)
   except StudioError as e:return self.json({'error':str(e)},400)
   except (OSError,ValueError) as e:return self.json({'error':'파일이나 데이터를 읽는 중 오류가 발생했습니다.'},500)
  def do_POST(self):
-  if urlsplit(self.path).path!='/api/build':return self.json({'error':'없는 API입니다.'},404)
+  route=urlsplit(self.path).path
+  if route not in ('/api/build','/api/paint'):return self.json({'error':'없는 API입니다.'},404)
   origin=self.headers.get('Origin','')
   if origin and origin not in (f'http://127.0.0.1:{self.server.server_port}',f'http://localhost:{self.server.server_port}'):
    return self.json({'error':'이 주소에서는 요청할 수 없습니다.'},403)
@@ -57,6 +59,7 @@ class Handler(BaseHTTPRequestHandler):
    try:
     data=json.loads(self.rfile.read(length))
     if not isinstance(data,dict):raise StudioError('올바른 프로젝트가 아닙니다.')
+    if route=='/api/paint':return self.json(apply_paint(data))
     fmt=data.get('format','ttf')
     raw,meta=build_font(data.get('project'),fmt)
     return self.respond(raw,'font/woff2' if fmt=='woff2' else 'font/ttf',headers={
@@ -75,7 +78,7 @@ def main():
  import argparse
  p=argparse.ArgumentParser();p.add_argument('--port',type=int,default=8770);args=p.parse_args()
  server=ThreadingHTTPServer(('127.0.0.1',args.port),Handler)
- print(f'무가당 폰트 공방 v2: http://127.0.0.1:{args.port} (로컬 전용)',flush=True)
+ print(f'무가당 폰트 공방 v3: http://127.0.0.1:{args.port} (로컬 전용)',flush=True)
  try:server.serve_forever()
  except KeyboardInterrupt:pass
  finally:server.server_close()

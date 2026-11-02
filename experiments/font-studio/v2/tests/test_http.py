@@ -11,7 +11,7 @@ from pathlib import Path
 from fontTools.ttLib import TTFont
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from font_service import project_default
+from font_service import project_default,glyph_outline
 
 class ServerTests(unittest.TestCase):
  @classmethod
@@ -36,6 +36,18 @@ class ServerTests(unittest.TestCase):
   with urllib.request.urlopen(req,timeout=40) as r:
    self.assertEqual(r.headers['X-Hangul-Count'],'11172')
    font=TTFont(io.BytesIO(r.read()));self.assertEqual(len([c for c in font.getBestCmap() if 0xAC00<=c<=0xD7A3]),11172)
+ def test_post_paint_and_eraser(self):
+  base=glyph_outline('gothic','가')['contours']
+  data={'tool':'brush','contours':base,'width':70,'points':[[140,360],[480,330],[800,320]]}
+  req=urllib.request.Request(self.url('/api/paint'),data=json.dumps(data).encode(),headers={'Content-Type':'application/json'},method='POST')
+  with urllib.request.urlopen(req,timeout=20) as r:
+   out=json.load(r)
+   self.assertTrue(out['changed']);self.assertGreater(len(out['contours']),0)
+  data.update(tool='eraser',contours=out['contours'],width=85)
+  req=urllib.request.Request(self.url('/api/paint'),data=json.dumps(data).encode(),headers={'Content-Type':'application/json'},method='POST')
+  with urllib.request.urlopen(req,timeout=20) as r:
+   erased=json.load(r)
+   self.assertLess(erased['area'],out['area'])
  def test_reject_bad_request(self):
   bad={'project':dict(project_default(),width=999),'format':'ttf'}
   req=urllib.request.Request(self.url('/api/build'),data=json.dumps(bad).encode(),headers={'Content-Type':'application/json'},method='POST')

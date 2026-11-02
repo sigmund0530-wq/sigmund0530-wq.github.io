@@ -5,3 +5,27 @@
 @media(max-width:480px){main{padding:22px 13px 28px}.intro h1{font-size:27px}.tabbar{gap:12px}.section-heading h2{font-size:18px}.panel{padding:18px}.view-pills{width:100%}.view-pills button{flex:1}.preview-pane{padding:18px 17px}.preview-label{max-width:210px}#specimen{font-size:25px;min-height:168px}.editor-toolbar{padding:9px}.editor-toolbar .tool{padding:8px 9px}.editor-canvas-wrap{aspect-ratio:1/1}.glyph-inspector{display:block}.exports{flex-direction:column}.export-card,.export-sample{padding:20px}.final-specimen{font-size:28px}.crumb{display:none}.slash{display:none}.intro{min-height:92px}}
 
 #glyph-handles .handle-grab{cursor:grab;touch-action:none}#glyph-handles .handle-grab:active{cursor:grabbing}
+
+/* v3 advanced vector drawing studio */
+.painting-settings{display:flex;align-items:center;gap:13px;padding:11px 15px;background:#fafbf8;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.painting-settings label{font-size:11px;color:var(--muted);white-space:nowrap}
+.painting-settings input{width:clamp(90px,22vw,160px);accent-color:var(--accent)}
+.painting-settings output{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:650}
+.editor-zoom{display:flex;gap:6px;align-items:center;margin-left:auto}
+.editor-zoom button{border:1px solid var(--line);background:white;border-radius:8px;min-width:33px;height:32px;padding:4px 8px;color:var(--ink)}
+.editor-zoom output{font-size:11px;min-width:38px;text-align:center}
+.editor-canvas-wrap{touch-action:none}
+.editor-canvas-wrap svg.brush-mode{cursor:crosshair}
+.editor-canvas-wrap svg.eraser-mode{cursor:cell}
+.editor-canvas-wrap svg.move-mode{cursor:move}
+.editor-canvas-wrap svg.pan-mode{cursor:grab}
+.editor-canvas-wrap svg.pen-mode{cursor:crosshair}
+#paint-preview path,#paint-preview circle{vector-effect:non-scaling-stroke;stroke:#5f946d;stroke-opacity:.75;fill:#5f946d33}
+#paint-preview .erase-stroke{stroke:#ca7766;fill:#ca776633}
+#paint-preview .brush-stroke{fill:none;stroke:#477853;stroke-linejoin:round;stroke-linecap:round;vector-effect:none}
+#paint-preview .erase-stroke{fill:none;stroke:#b84e4b;stroke-linejoin:round;stroke-linecap:round;vector-effect:none}
+#paint-preview .shape-preview{fill:#628a7333;stroke:#567c5d;stroke-dasharray:7 5;stroke-width:3;vector-effect:non-scaling-stroke}
+#paint-preview .polygon-preview{fill:#628a7333;stroke:#4f8059;stroke-width:3;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}
+.editor-grid:has(.brush-mode) #glyph-handles,.editor-grid:has(.eraser-mode) #glyph-handles,.editor-grid:has(.pen-mode) #glyph-handles{pointer-events:none;opacity:0}
+.editor-toolbar{scrollbar-width:thin}
+@media (max-width:480px){.editor-canvas-wrap{min-height:350px;aspect-ratio:1/1}.painting-settings{gap:7px;padding:8px}.painting-settings input{width:96px}.editor-zoom{margin-left:0;flex:1;justify-content:flex-end}.editor-toolbar{flex-wrap:nowrap}.tool{min-height:40px}}
