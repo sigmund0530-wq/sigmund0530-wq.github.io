@@ -1550,6 +1550,30 @@ body.sp-blog-edit .se-bar [data-se-add]{display:inline-flex!important}
 .wf-netask{position:absolute;inset:0;z-index:5;display:grid;align-content:center;gap:12px;padding:16px;background:color-mix(in srgb,var(--chrome) 94%,transparent);font-size:13px;color:var(--ink);line-height:1.6;text-align:center}
 .wf-netask p{margin:0}.wf-netask div{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .wf-stage{position:relative}
+/* 글자 크기·색(2026-11-02): 정해 둔 색은 밝은/어두운 화면에서 각각 읽기 좋은 값 */
+:root{--tc-red:#d93d42;--tc-orange:#e0640f;--tc-yellow:#b98a00;--tc-green:#2b8a4e;--tc-teal:#11897d;--tc-blue:#3a5bd0;--tc-purple:#8045ba;--tc-pink:#d6386f;--tc-brown:#8f5b34;--tc-gray:#8e8e8e;
+  --tc-rose:#c98f86;--tc-sand:#c2a173;--tc-butter:#c9b45e;--tc-sage:#8fa27e;--tc-fog:#8c95ad;--tc-lilac:#a493b8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--tc-red:#ff7b7f;--tc-orange:#ff9b55;--tc-yellow:#f5cf4a;--tc-green:#5fcf8a;--tc-teal:#4fd1c2;--tc-blue:#8aa4ff;--tc-purple:#c49af0;--tc-pink:#ff86b0;--tc-brown:#d29f76;--tc-gray:#a8a8aa;
+  --tc-rose:#e3aaa2;--tc-sand:#dfc193;--tc-butter:#e8d78e;--tc-sage:#b3c6a2;--tc-fog:#b0b9d1;--tc-lilac:#c9b8dc}}
+:root[data-theme="dark"]{--tc-red:#ff7b7f;--tc-orange:#ff9b55;--tc-yellow:#f5cf4a;--tc-green:#5fcf8a;--tc-teal:#4fd1c2;--tc-blue:#8aa4ff;--tc-purple:#c49af0;--tc-pink:#ff86b0;--tc-brown:#d29f76;--tc-gray:#a8a8aa;
+  --tc-rose:#e3aaa2;--tc-sand:#dfc193;--tc-butter:#e8d78e;--tc-sage:#b3c6a2;--tc-fog:#b0b9d1;--tc-lilac:#c9b8dc}
+.fs-s{font-size:.85em}.fs-l{font-size:1.25em}.fs-xl{font-size:1.6em;line-height:1.35}.fs-xxl{font-size:2.1em;line-height:1.25;font-weight:600}
+.tc-red{color:var(--tc-red)}.tc-orange{color:var(--tc-orange)}.tc-yellow{color:var(--tc-yellow)}.tc-green{color:var(--tc-green)}.tc-teal{color:var(--tc-teal)}.tc-blue{color:var(--tc-blue)}.tc-purple{color:var(--tc-purple)}.tc-pink{color:var(--tc-pink)}.tc-brown{color:var(--tc-brown)}.tc-gray{color:var(--tc-gray)}
+.tc-rose{color:var(--tc-rose)}.tc-sand{color:var(--tc-sand)}.tc-butter{color:var(--tc-butter)}.tc-sage{color:var(--tc-sage)}.tc-fog{color:var(--tc-fog)}.tc-lilac{color:var(--tc-lilac)}
+.tc-bg-red{background:var(--tc-red)}.tc-bg-orange{background:var(--tc-orange)}.tc-bg-yellow{background:var(--tc-yellow)}.tc-bg-green{background:var(--tc-green)}.tc-bg-teal{background:var(--tc-teal)}.tc-bg-blue{background:var(--tc-blue)}.tc-bg-purple{background:var(--tc-purple)}.tc-bg-pink{background:var(--tc-pink)}.tc-bg-brown{background:var(--tc-brown)}.tc-bg-gray{background:var(--tc-gray)}
+.tc-bg-rose{background:var(--tc-rose)}.tc-bg-sand{background:var(--tc-sand)}.tc-bg-butter{background:var(--tc-butter)}.tc-bg-sage{background:var(--tc-sage)}.tc-bg-fog{background:var(--tc-fog)}.tc-bg-lilac{background:var(--tc-lilac)}
+.fmt-ic{display:inline-flex;align-items:baseline;gap:1px;font-weight:600;line-height:1;position:relative}.fmt-ic small{font-size:.7em}
+.fmt-bar{position:absolute;left:-2px;right:-2px;bottom:-4px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--tc-red),var(--tc-yellow),var(--tc-green),var(--tc-blue),var(--tc-purple))}
+.fmt-pop{position:fixed;z-index:100001;width:min(300px,calc(100vw - 16px));padding:12px;border-radius:14px;background:linear-gradient(var(--porc-hi,var(--chrome)),var(--porc,var(--chrome)));box-shadow:0 1px 0 var(--porc-glint,transparent) inset,0 10px 30px var(--porc-shade,rgba(0,0,0,.12));display:grid;gap:8px}
+.fmt-pop-h{font-size:12px;color:var(--ink-2)}
+.fmt-sws{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.fmt-sws:nth-of-type(2){grid-template-columns:repeat(10,1fr)}
+.fmt-sw{aspect-ratio:1;width:100%;min-width:22px;border:0;border-radius:50%;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.fmt-sw:hover{transform:scale(1.12)}
+.fmt-pop-f{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fmt-own{position:relative;display:inline-flex;align-items:center;height:34px;padding:0 14px;cursor:pointer;font-size:13px}.fmt-own input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ink-own{position:relative;overflow:hidden}.ink-own:not([style*="background"]){background:conic-gradient(#e5484d,#f5c518,#30a46c,#3e63dd,#8e4ec6,#e5484d)!important}
+.ink-own input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
+.ink-colors{flex-wrap:wrap}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -4405,20 +4429,22 @@ function edBindExtra(blocksEl,ctx){if(ctx.updQ)setTimeout(ctx.updQ,0);blocksEl.q
     const r=btn.getBoundingClientRect();showMenu([{label:b.caption?"설명 고치기":"설명 쓰기",run:async()=>{const v=await askText("음성 설명",b.caption||"",{ok:"저장"});if(v==null)return;b.caption=v.trim();re()}},
       {label:"위로",run:()=>mv(-1)},{label:"아래로",run:()=>mv(1)},"-",{label:"이 음성 빼기",danger:true,run:()=>{ctx.syncText();ctx.draft.blocks.splice(ctx.draft.blocks.indexOf(b),1);ctx.drawBlocks();ctx.queueAuto()}}],Math.min(r.left,innerWidth-220),Math.min(r.bottom,innerHeight-220),btn)}})}
 
+/* 펜 색(2026-11-02, 주인: "색상도 제한돼 있고"): 흐린 색 8개(도자기 무드) + 또렷한 색 8개 + '다른 색 고르기'(아무 색) */
+const PEN_COLORS=["#5a5a5c","#c98f86","#d9b98a","#e2d6a0","#a9b89a","#a0a8bf","#b7a9c4","#fcfcfc","#1f1f22","#e5484d","#f76b15","#f5c518","#30a46c","#3e63dd","#8e4ec6","#e93d82"];
 /* ── 그리기: 빈 종이에, 또는 사진 위에. 원본 사진과 그린 선을 따로 남겨 다시 고칠 수 있음 ── */
 function openDraw(opt){return new Promise(res=>{
   const src=opt&&opt.assetId?assets[opt.assetId]:null,prev=src&&src.draw?src.draw:null;
   const baseId=prev?prev.baseId:(src?opt.assetId:null),base=baseId?assets[baseId]:null;
   let W=prev?prev.w:(base?base.width:900),H=prev?prev.h:(base?base.height:640);const sc=Math.min(1,1000/Math.max(W,H));W=Math.round(W*sc);H=Math.round(H*sc);
   let strokes=prev?clone(prev.strokes):[],redo=[],bg=prev?prev.bg:(base?"photo":"paper"),tool="pen",color="#222222",size=6,zoom=1,cur=null;
-  const COLORS=["#5a5a5c","#fcfcfc","#c98f86","#d9b98a","#e2d6a0","#a9b89a","#a0a8bf","#b7a9c4"];
+  const COLORS=PEN_COLORS;
   const ov=document.createElement("div");ov.className="drw";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label",base?"사진 위에 그리기":"그리기");
   ov.innerHTML=`<div class="drw-top"><button type="button" class="btn" data-x>취소</button><b>${base?"사진 위에 그리기":"그리기"}</b><button type="button" class="btn primary" data-ok>넣기</button></div>
     <div class="drw-stage"><div class="drw-paper"><canvas class="drw-base"></canvas><canvas class="drw-layer"></canvas></div></div>
     <div class="drw-tools">
       <div class="drw-row" role="group" aria-label="도구">${[["pen","펜"],["hl","형광펜"],["er","지우개"],["mv","옮기기"]].map(([k,t])=>`<button type="button" class="pill" data-tool="${k}" aria-pressed="${k==="pen"}">${t}</button>`).join("")}
         <span class="drw-sp"></span><button type="button" class="pill" data-undo aria-label="실행 취소">↶</button><button type="button" class="pill" data-redo aria-label="다시 실행">↷</button><button type="button" class="pill" data-zoom aria-label="확대">확대</button></div>
-      <div class="drw-row" role="group" aria-label="색">${COLORS.map(c=>`<button type="button" class="drw-c" data-c="${c}" style="background:${c}" aria-label="색 ${c}" aria-pressed="${c===color}"></button>`).join("")}
+      <div class="drw-row" role="group" aria-label="색">${COLORS.map(c=>`<button type="button" class="drw-c" data-c="${c}" style="background:${c}" aria-label="색 ${c}" aria-pressed="${c===color}"></button>`).join("")}<label class="drw-c ink-own" title="다른 색 고르기" aria-label="다른 색 고르기"><input type="color" value="#222222" data-c-own></label>
         <label class="drw-size">굵기<input type="range" min="2" max="40" value="${size}" data-size></label></div>
       <div class="drw-row">${base?"":`<button type="button" class="pill" data-bg aria-pressed="${bg==="clear"}">투명 배경</button>`}<button type="button" class="pill danger" data-clear>그린 것 모두 지우기</button></div>
     </div>`;
@@ -4438,7 +4464,8 @@ function openDraw(opt){return new Promise(res=>{
   const up=()=>{if(!cur)return;strokes.push(cur);cur=null;redo=[];redraw()};cl.addEventListener("pointerup",up);cl.addEventListener("pointercancel",up);
   const setTool=t=>{tool=t;ov.querySelectorAll("[data-tool]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.tool===t)));cl.style.touchAction=t==="mv"?"auto":"none";cl.style.cursor=t==="mv"?"grab":"crosshair"};setTool("pen");
   ov.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
-  ov.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{color=b.dataset.c;ov.querySelectorAll("[data-c]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));if(tool==="er"||tool==="mv")setTool("pen")});
+  ov.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{color=b.dataset.c;ov.querySelectorAll("[data-c],.ink-own").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));if(tool==="er"||tool==="mv")setTool("pen")});
+  {const own=ov.querySelector("[data-c-own]");if(own)own.addEventListener("input",()=>{color=own.value;const lab=own.closest(".ink-own");lab.style.setProperty("background",color,"important");ov.querySelectorAll("[data-c]").forEach(x=>x.setAttribute("aria-pressed","false"));lab.setAttribute("aria-pressed","true");if(tool==="er"||tool==="mv")setTool("pen")})}
   ov.querySelector("[data-size]").oninput=e=>{size=+e.target.value};
   ov.querySelector("[data-undo]").onclick=()=>{if(strokes.length){redo.push(strokes.pop());redraw()}};
   ov.querySelector("[data-redo]").onclick=()=>{if(redo.length){strokes.push(redo.pop());redraw()}};
@@ -4645,12 +4672,12 @@ const baseRenderBodyInk=renderBody;renderBody=function(p){const h=baseRenderBody
 function inkMode(ctx){if(ctx._ink){ctx._ink.done();return}
   const host=ctx.blocksEl;const d=ctx.draft;d.ink=d.ink||[];
   const prefs=ctx._inkPrefs||{};let tool=prefs.tool||"pen",color=prefs.color||"#5a5a5c",size=prefs.size||3,cur=null;const hist=ctx._inkHistory||(ctx._inkHistory={undo:[],redo:[]}),undo=hist.undo,redo=hist.redo;
-  const COLORS=["#5a5a5c","#c98f86","#d9b98a","#e2d6a0","#a9b89a","#a0a8bf","#b7a9c4","#fcfcfc"];
+  const COLORS=PEN_COLORS;
   host.classList.add("inking");const draw=()=>{const svg=inkLayout(host,cur?[...d.ink,cur]:d.ink,"ink-ed");svg.classList.toggle("erase",tool==="er");svg.classList.toggle("pan",tool==="mv");return svg};let svg=draw();
   const bar=document.createElement("div");bar.className="ink-bar";bar.setAttribute("role","toolbar");bar.setAttribute("aria-label","그리기 도구");
   bar.innerHTML=`<div class="ink-row">${[["pen","펜"],["hl","형광펜"],["er","지우개"],["mv","스크롤"]].map(([k,t])=>`<button type="button" data-it="${k}" aria-pressed="${k===tool}">${t}</button>`).join("")}
       <span class="ink-sp"></span><button type="button" class="ink-done" data-idone>글쓰기</button></div>
-    <div class="ink-row">${COLORS.map(c=>`<button type="button" class="ink-c" data-ic="${c}" style="background:${c}" aria-label="색" aria-pressed="${c===color}"></button>`).join("")}</div><div class="ink-row">${[[2,"가늘게"],[3,"보통"],[6,"굵게"]].map(([v,t])=>`<button type="button" class="ink-sz" data-is="${v}" aria-pressed="${v===size}" aria-label="${t}" title="${t}"><i style="width:${v+3}px;height:${v+3}px"></i></button>`).join("")}<span class="ink-sp"></span><button type="button" data-iu aria-label="되돌리기"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button><button type="button" data-ir aria-label="다시 하기"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5M20 9H9a5 5 0 0 0 0 10h3"/></svg></button></div>`;
+    <div class="ink-row ink-colors">${COLORS.map(c=>`<button type="button" class="ink-c" data-ic="${c}" style="background:${c}" aria-label="색" aria-pressed="${c===color}"></button>`).join("")}<label class="ink-c ink-own" title="다른 색 고르기" aria-label="다른 색 고르기" style="${COLORS.includes(color)?"":`background:${color}!important`}" aria-pressed="${!COLORS.includes(color)}"><input type="color" value="${/^#[0-9a-f]{6}$/i.test(color)?color:"#5a5a5c"}" data-ic-own></label></div><div class="ink-row">${[[2,"가늘게"],[3,"보통"],[6,"굵게"]].map(([v,t])=>`<button type="button" class="ink-sz" data-is="${v}" aria-pressed="${v===size}" aria-label="${t}" title="${t}"><i style="width:${v+3}px;height:${v+3}px"></i></button>`).join("")}<span class="ink-sp"></span><button type="button" data-iu aria-label="되돌리기"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button><button type="button" data-ir aria-label="다시 하기"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5M20 9H9a5 5 0 0 0 0 10h3"/></svg></button></div>`;
   document.body.appendChild(bar);bar.addEventListener("pointerdown",e=>e.preventDefault());
   const W=()=>host.clientWidth||1;
   const blockAt=y=>{const L=[...host.children].filter(n=>n.dataset&&n.dataset.bid);let pick=L[0];for(const n of L){if(n.getBoundingClientRect().top<=y)pick=n}return pick};
@@ -4668,7 +4695,8 @@ function inkMode(ctx){if(ctx._ink){ctx._ink.done();return}
   host.addEventListener("pointerdown",down);host.addEventListener("pointermove",move);addEventListener("pointerup",up);addEventListener("pointercancel",up);
   const setTool=t=>{tool=t;bar.querySelectorAll("[data-it]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.it===t)));svg=draw()};
   bar.querySelectorAll("[data-it]").forEach(b=>b.onclick=()=>setTool(b.dataset.it));
-  bar.querySelectorAll("[data-ic]").forEach(b=>b.onclick=()=>{color=b.dataset.ic;bar.querySelectorAll("[data-ic]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));if(tool==="er"||tool==="mv")setTool("pen")});
+  bar.querySelectorAll("[data-ic]").forEach(b=>b.onclick=()=>{color=b.dataset.ic;bar.querySelectorAll("[data-ic],.ink-own").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));if(tool==="er"||tool==="mv")setTool("pen")});
+  {const own=bar.querySelector("[data-ic-own]");if(own)own.addEventListener("input",()=>{color=own.value;const lab=own.closest(".ink-own");lab.style.setProperty("background",color,"important");bar.querySelectorAll("[data-ic]").forEach(x=>x.setAttribute("aria-pressed","false"));lab.setAttribute("aria-pressed","true");if(tool==="er"||tool==="mv")setTool("pen")})}
   bar.querySelectorAll("[data-is]").forEach(b=>b.onclick=()=>{size=+b.dataset.is;bar.querySelectorAll("[data-is]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)))});
   const doUndo=()=>{const j=undo.pop();if(j==null)return;redo.push(JSON.stringify(d.ink));d.ink=JSON.parse(j);svg=draw();ctx.queueAuto()};
   const doRedo=()=>{const j=redo.pop();if(j==null)return;undo.push(JSON.stringify(d.ink));d.ink=JSON.parse(j);svg=draw();ctx.queueAuto()};
@@ -6778,6 +6806,64 @@ addEventListener('message',async e=>{const d=e.data;if(!d||d.mgd!=='fetch'||type
     const r=await fetch(WF_RELAY,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({u:u.toString()})});
     const j=await r.json().catch(()=>({}));if(!r.ok||j.error)return reply({ok:false,error:{too_big:'1MB가 넘어서 가져올 수 없어요',type:'글자·JSON·그림만 가져올 수 있어요',bad_url:'가져올 수 없는 주소예요',rate:'잠시 뒤에 다시 해 주세요'}[j.error]||'가져오지 못했어요'});
     reply({ok:true,status:j.status,type:j.type,body:j.body})}catch(_){reply({ok:false,error:'가져오지 못했어요'})}});
+
+/* ═════════ 글자 크기 · 글자 색 (2026-11-02, 주인: "텍스트 크기 조절 없더라? 색상도 제한돼 있고") ═════════
+   - 글쓰기 '글자 꾸미기'에 '가 크기'(작게·보통·크게·아주 크게·제목만큼)와 '색'(또렷한 색·흐린 색·다른 색 고르기·색 없애기).
+     골라 둔 글자에만 입힘. PC는 B·I·U 옆, 휴대폰은 T를 누르면 나오는 줄.
+   - 저장: <span class="fs-l"> / <span class="tc-red"> / 다른 색은 <span style="color:#rrggbb">. 정해 둔 색은 변수라 어두운 화면에서 밝게 바뀜.
+   - sanitize는 원래 모든 속성을 지움 → 이 span만 살림(정해 둔 이름, 색은 #rrggbb만). 남의 글도 같은 규칙으로 걸러짐. */
+const FS_LIST=[["s","작게"],["","보통"],["l","크게"],["xl","아주 크게"],["xxl","제목만큼"]];
+const TC_LIST=[["red","빨강"],["orange","주황"],["yellow","노랑"],["green","초록"],["teal","청록"],["blue","파랑"],["purple","보라"],["pink","분홍"],["brown","갈색"],["gray","회색"],
+  ["rose","장밋빛"],["sand","모래"],["butter","버터"],["sage","세이지"],["fog","안개 파랑"],["lilac","라일락"]];
+const FMT_TOK=/^(fs-(s|l|xl|xxl)|tc-(red|orange|yellow|green|teal|blue|purple|pink|brown|gray|rose|sand|butter|sage|fog|lilac))$/;
+ALLOW.add('SPAN');
+const fmtSan=sanitize;sanitize=function(html){html=String(html||'').replace(/[]/g,'');if(!/<span/i.test(html))return fmtSan(html);
+  const doc=new DOMParser().parseFromString(`<body>${html}</body>`,'text/html');
+  [...doc.body.querySelectorAll('span')].reverse().forEach(sp=>{const toks=[...sp.classList].filter(c=>FMT_TOK.test(c));const col=(sp.style&&sp.style.color)||'';let hex='';
+    const m=col.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);if(m)hex=[m[1],m[2],m[3]].map(x=>(+x).toString(16).padStart(2,'0')).join('');else if(/^#[0-9a-f]{6}$/i.test(col))hex=col.slice(1).toLowerCase();
+    if(hex)toks.push('c'+hex);if(!toks.length){sp.replaceWith(...sp.childNodes);return}sp.insertBefore(doc.createTextNode(''+toks.join(' ')+''),sp.firstChild)});
+  const out=fmtSan(doc.body.innerHTML);
+  const d2=new DOMParser().parseFromString(`<body>${out}</body>`,'text/html');
+  [...d2.body.querySelectorAll('span')].reverse().forEach(sp=>{const t=sp.firstChild;const m=t&&t.nodeType===3&&t.data.match(/^([^]*)/);
+    if(!m){sp.replaceWith(...sp.childNodes);return}t.data=t.data.slice(m[0].length);if(!t.data)t.remove();
+    m[1].split(' ').forEach(k=>{if(/^c[0-9a-f]{6}$/.test(k))sp.style.color='#'+k.slice(1);else if(FMT_TOK.test(k))sp.classList.add(k)});
+    if(!sp.className&&!sp.getAttribute('style'))sp.replaceWith(...sp.childNodes)});
+  return d2.body.innerHTML.replace(/[]/g,'')};
+/* 고른 글자에 입히기 */
+function fmtApply(area,kind,val,rng){const sel=getSelection();const r=rng||(sel.rangeCount&&sel.getRangeAt(0));
+  if(!r||r.collapsed||!area||!area.contains(r.commonAncestorContainer)){toast('먼저 바꿀 글자를 골라 주세요.');return false}
+  /* 고른 글자가 이미 꾸민 칸 하나를 꽉 채우면 그 칸째로 꺼내서 바꿈(안 그러면 겹겹이 싸이고 '색 없애기'가 안 됨) */
+  {let a=r.commonAncestorContainer;a=a.nodeType===1?a:a.parentElement;const t=r.toString();
+    while(a&&a!==area&&area.contains(a)&&a.tagName==='SPAN'&&a.textContent===t){r.selectNode(a);a=a.parentElement}}
+  const frag=r.extractContents();
+  frag.querySelectorAll('span').forEach(sp=>{[...sp.classList].filter(c=>kind==='fs'?/^fs-/.test(c):/^tc-/.test(c)).forEach(c=>sp.classList.remove(c));if(kind==='tc')sp.style.color='';
+    if(!sp.className&&!(sp.getAttribute('style')||'').trim())sp.replaceWith(...sp.childNodes)});
+  let node=frag;if(val){const sp=document.createElement('span');if(kind==='fs')sp.className='fs-'+val;else if(val[0]==='#')sp.style.color=val;else sp.className='tc-'+val;sp.appendChild(frag);node=sp}
+  const first=node.firstChild,last=node.lastChild,isFrag=node===frag;r.insertNode(node);
+  const nr=document.createRange();if(isFrag){if(first&&last){nr.setStartBefore(first);nr.setEndAfter(last)}}else nr.selectNodeContents(node);
+  sel.removeAllRanges();sel.addRange(nr);area.dispatchEvent(new Event('input',{bubbles:true}));return true}
+const FMT_IC={fs:'<span class="fmt-ic" aria-hidden="true"><small>가</small>가</span>',tc:'<span class="fmt-ic" aria-hidden="true">가<i class="fmt-bar"></i></span>'};
+function fmtButtons(ctx){const win=ctx.body.closest('.win');if(!win)return;const bar=win.querySelector('.fmt-row')||win.querySelector('.rte-bar');if(!bar||bar.querySelector('[data-fmt]'))return;
+  const u=bar.querySelector('[data-cmd="underline"]');const mk=(k,t)=>{const b=document.createElement('button');b.type='button';b.dataset.fmt=k;b.title=t;b.setAttribute('aria-label',t);b.innerHTML=FMT_IC[k];b.addEventListener('mousedown',e=>e.preventDefault());return b};
+  const fs=mk('fs','글자 크기'),tc=mk('tc','글자 색');if(u)u.after(fs,tc);else bar.append(fs,tc);
+  const area=()=>{const s=getSelection();const n=s.anchorNode&&(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement);return n&&n.closest('.rte-area')};
+  fs.onclick=()=>{const a=area();const s=getSelection();const rng=s.rangeCount?s.getRangeAt(0).cloneRange():null;const r=fs.getBoundingClientRect();
+    showMenu(FS_LIST.map(([v,t])=>({label:t,run:()=>{s.removeAllRanges();if(rng)s.addRange(rng);fmtApply(a,'fs',v,rng)}})),r.left,isMobile()?r.top-220:r.bottom+4,fs)};
+  tc.onclick=()=>fmtColors(tc,area())}
+function fmtColors(btn,area){document.querySelectorAll('.fmt-pop').forEach(n=>n.remove());const s=getSelection();const rng=s.rangeCount?s.getRangeAt(0).cloneRange():null;
+  const pop=document.createElement('div');pop.className='fmt-pop';pop.setAttribute('role','dialog');pop.setAttribute('aria-label','글자 색');
+  const sw=([k,t])=>`<button type="button" class="fmt-sw tc-bg-${k}" data-tc="${k}" aria-label="${t}" title="${t}"></button>`;
+  pop.innerHTML=`<div class="fmt-pop-h">또렷한 색</div><div class="fmt-sws">${TC_LIST.slice(0,10).map(sw).join('')}</div><div class="fmt-pop-h">흐린 색</div><div class="fmt-sws">${TC_LIST.slice(10).map(sw).join('')}</div>
+    <div class="fmt-pop-f"><label class="pill fmt-own">다른 색 고르기<input type="color" value="#3e63dd"></label><button type="button" class="tbtn" data-tc="">색 없애기</button></div>`;
+  document.body.appendChild(pop);const r=btn.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight;
+  pop.style.left=Math.max(8,Math.min(innerWidth-pw-8,r.left))+'px';pop.style.top=(r.bottom+6+ph>innerHeight?Math.max(8,r.top-ph-6):r.bottom+6)+'px';
+  const apply=v=>{const sel=getSelection();sel.removeAllRanges();if(rng)sel.addRange(rng);if(fmtApply(area,'tc',v,rng))close()};
+  const close=()=>{pop.remove();removeEventListener('pointerdown',out,true)};const out=e=>{if(!pop.contains(e.target)&&e.target!==btn)close()};
+  pop.addEventListener('mousedown',e=>{if(!e.target.closest('input'))e.preventDefault()});
+  pop.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>apply(b.dataset.tc||null));
+  pop.querySelector('input[type=color]').addEventListener('change',e=>apply(e.target.value));
+  setTimeout(()=>addEventListener('pointerdown',out,true),0)}
+const fmtSetup=edSetup;edSetup=function(ctx){fmtSetup(ctx);setTimeout(()=>fmtButtons(ctx),0)};
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */

@@ -13,7 +13,7 @@ with sync_playwright() as p:
   pg.locator('.win.editor .hpub').click();pg.wait_for_timeout(250);pg.locator('.dialog input[value="close"]').check();pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(500)
   pid=pg.locator('article.post[data-pid]').first.get_attribute('data-pid')
   # 덧붙임 + 이전 버전
-  pg.click(f'[data-x-more="{pid}"]');pg.get_by_role('menuitem',name='덧붙이기').click();pg.fill('#adn-t','다시 읽은 생각');pg.click('.dialog [data-o]');pg.wait_for_timeout(300)
+  pg.wait_for_timeout(400);pg.click(f'[data-x-more="{pid}"]');pg.get_by_role('menuitem',name='덧붙이기').click();pg.fill('#adn-t','다시 읽은 생각');pg.click('.dialog [data-o]');pg.wait_for_function("(JSON.parse(localStorage.getItem('mgd2.v1.records')).posts[0].addenda||[]).length===1")
   pg.click(f'[data-act="editPost"][data-post="{pid}"]');pg.wait_for_timeout(400);pg.locator('.win.editor .rte-area').first.click();pg.keyboard.press('Control+End');pg.keyboard.type(' 고침.');pg.locator('.win.editor .hpub').click();pg.wait_for_timeout(250);pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(500)
   pg.evaluate("document.querySelectorAll('.win .x').forEach(b=>b.click())");pg.wait_for_timeout(200)
   S0=pg.evaluate(STATE);r0=json.loads(json.loads(S0)[0]);post0=r0['posts'][0]
