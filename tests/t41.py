@@ -21,8 +21,8 @@ with sync_playwright() as p:
   pg.evaluate("document.querySelectorAll('.win .x,.win .back').forEach(b=>b.click())");pg.wait_for_timeout(300)
   pg.locator('[data-tab2="me"]').tap();pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.tap();pg.wait_for_timeout(300)
   # 프로필은 '프로필 편집' 화면에서(2026-11-02)
-  pg.locator('[data-se="profile"]').first.tap();pg.wait_for_timeout(400);pg.locator('[data-pe-status]').fill('첫 소개');pg.locator('[data-pe-ok]').tap();pg.wait_for_timeout(300)
-  pg.locator('[data-se="profile"]').first.tap();pg.wait_for_timeout(400);pg.locator('[data-pe-keep]').check();pg.locator('[data-pe-status]').fill('두 번째 소개');pg.locator('[data-pe-ok]').tap();pg.wait_for_timeout(300)
+  pg.locator('.fl-box[data-id="profile"]').tap();pg.wait_for_timeout(250);pg.locator('.fl-tb [data-fl="set"]').tap();pg.wait_for_timeout(400);pg.locator('[data-pe-status]').fill('첫 소개');pg.locator('[data-pe-ok]').tap();pg.wait_for_timeout(300)
+  pg.locator('.fl-box[data-id="profile"]').tap();pg.wait_for_timeout(250);pg.locator('.fl-tb [data-fl="set"]').tap();pg.wait_for_timeout(400);pg.locator('[data-pe-keep]').check();pg.locator('[data-pe-status]').fill('두 번째 소개');pg.locator('[data-pe-ok]').tap();pg.wait_for_timeout(300)
   pg.locator('[data-se-save]').tap();pg.wait_for_timeout(300)
   h=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).profile.bioHistory||[]");ok('bio history saved '+str(h),len(h)==1 and h[0]['text']=='첫 소개')
   # 전체 글

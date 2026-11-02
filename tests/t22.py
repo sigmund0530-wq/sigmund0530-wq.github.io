@@ -14,7 +14,7 @@ with sync_playwright() as p:
     else:pg.locator('[data-pn="me"]').click()
     pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(200)
     for w in ['뜯어 가는 전단지','영수증 운세','누르지 마시오 버튼','전광판']:
-      pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('판 안에 놓기')).click();pg.get_by_role('menuitem',name=w).click();pg.wait_for_timeout(200)
+      pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('글 조각 · 기본 위젯')).click();pg.get_by_role('menuitem',name=w).click();pg.wait_for_timeout(200)
     # quote -> note
     q=pg.locator('.rm-quote').first;q.scroll_into_view_if_needed();bb=q.bounding_box()
     if pg.locator('[data-se-close]').count():pg.locator('[data-se-close]').click();pg.wait_for_timeout(150)

@@ -10,7 +10,7 @@ with sync_playwright() as p:
     pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
     room=lambda:(pg.locator('[data-tab2="me"]').click() if mob else pg.locator('.pc-nav [data-pn="me"]').click(),pg.wait_for_timeout(300))
     begin=lambda:(pg.locator('[data-se-begin]:visible').first.click(),pg.wait_for_timeout(300))
-    def add(w):pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('판 안에 놓기')).click();pg.get_by_role('menuitem',name=w).click();pg.wait_for_timeout(300)
+    def add(w):pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('글 조각 · 기본 위젯')).click();pg.get_by_role('menuitem',name=w).click();pg.wait_for_timeout(300)
     apply=lambda:(pg.locator('[data-se-pok]').click(),pg.wait_for_timeout(300))
     room();begin();pg.locator('.se-bar [data-se-save]').click();pg.wait_for_timeout(300)   # 기본 상자 자리 잡고 저장
     L0=pg.evaluate(LAY)
@@ -30,7 +30,7 @@ with sync_playwright() as p:
     me=lambda:(pg.locator('[data-tab2="me"]').click() if mob else pg.locator('.pc-nav [data-pn="me"]').click(),pg.wait_for_timeout(300))
     # 프로필은 이제 '프로필 편집' 화면에서 따로 저장(2026-11-02). 그 화면의 취소 → 소개·이력 그대로, 완료 → 이전 소개가 이력에
     def pe(status,keep=False,ok_=True):
-      begin();pg.locator('[data-se="profile"]').first.click();pg.wait_for_timeout(400)
+      begin();pg.locator('.fl-box[data-id="profile"]').click();pg.wait_for_timeout(250);pg.locator('.fl-tb [data-fl="set"]').click();pg.wait_for_timeout(400)
       if keep:pg.locator('[data-pe-keep]').check()
       pg.locator('[data-pe-status]').fill(status);pg.locator('[data-pe-ok]' if ok_ else '[data-pe-x]').click();pg.wait_for_timeout(300)
       pg.locator('.se-bar [data-se-save]').click();pg.wait_for_timeout(400)

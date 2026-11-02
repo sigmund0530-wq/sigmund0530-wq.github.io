@@ -10,8 +10,8 @@ with sync_playwright() as p:
     pg.goto(U);pg.wait_for_timeout(500);pg.click('[data-au-social="kakao"]');pg.check('[data-au-all]');pg.click('[data-au-next]');pg.fill('#ob-handle','haru');pg.click('[data-au-make]');pg.wait_for_timeout(200);pg.click('[data-aup-skip]');pg.wait_for_timeout(200);pg.click('[data-au-enter]');pg.wait_for_timeout(300)
     pg.locator('[data-pn="me"]').click();pg.wait_for_timeout(300);pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(200)
     n=lambda:pg.locator('.rm-it').count()
-    n0=n();pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('판 안에 놓기')).click();pg.get_by_role('menuitem',name='전광판').click();pg.wait_for_timeout(300);n1=n()
-    pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('판 안에 놓기')).click();pg.get_by_role('menuitem',name='누르지 마시오 버튼').click();pg.wait_for_timeout(300);n2=n()
+    n0=n();pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('글 조각 · 기본 위젯')).click();pg.get_by_role('menuitem',name='전광판').click();pg.wait_for_timeout(300);n1=n()
+    pg.locator('[data-se-add]').click();pg.get_by_role('menuitem',name=re.compile('글 조각 · 기본 위젯')).click();pg.get_by_role('menuitem',name='누르지 마시오 버튼').click();pg.wait_for_timeout(300);n2=n()
     # 글자 칸 안에서는 기본 되돌리기
     inp=pg.locator('[data-se-label]');inp.click();inp.type('가나');pg.keyboard.press(f'{M}+z');pg.wait_for_timeout(300);ok(f'{tag} undo inside input keeps widgets',n()==n2)
     pg.mouse.click(640,780);pg.wait_for_timeout(300)

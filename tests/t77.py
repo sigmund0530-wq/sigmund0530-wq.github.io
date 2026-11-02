@@ -40,7 +40,7 @@ with sync_playwright() as p:
     ok(pr.get('photoAssetId') in a and a[pr['photoAssetId']]['width']==480,tag+' 480 정사각 프사 저장')
     ok(pr.get('photoSrcId') in a and pr.get('photoCrop',{}).get('z',0)>2,tag+' 원본·맞춘 위치도 저장',pr.get('photoCrop'))
     pg.go_back();pg.wait_for_timeout(400)
-    ff=pg.evaluate("[...document.querySelectorAll('.nv .nv-cover h1,.nv .nv-who b,.nv .nv-prof b')].map(n=>n.style.fontFamily).join('|')")
+    ff=pg.evaluate("[...document.querySelectorAll('.nv .nv-cover h1,.nv .fl-title h1,.nv .nv-who b,.nv .nv-prof b')].map(n=>n.style.fontFamily).join('|')")
     ok('Black Han Sans' in ff and ('Jua' in ff or not mob),tag+' 내 공간에 칸마다 다른 글꼴',ff)
     opensettings(pg,mob)
     # 위치 다시 맞추기: 원본에서 이어서
@@ -55,7 +55,7 @@ with sync_playwright() as p:
       pg.locator('[data-tab2="home"],[data-pn="home"],[data-nav="blog"]').first.click() if pg.locator('[data-tab2="home"],[data-pn="home"],[data-nav="blog"]').count() else None;pg.wait_for_timeout(300)
     if pg.locator('[data-se-begin]:visible').count():
       pg.locator('[data-se-begin]:visible').first.click();pg.wait_for_timeout(400)
-      pg.locator('[data-se="profile"]').first.click();pg.wait_for_timeout(400)
+      pg.locator('.fl-box[data-id="profile"]').click();pg.wait_for_timeout(250);pg.locator('.fl-tb [data-fl="set"]').click();pg.wait_for_timeout(400)
       ok(pg.locator('.pe-page').count()==1 and pg.locator('.se-panel').count()==0,tag+' 내 공간 편집의 프로필 → 같은 편집 화면(겹치는 칸 없음)')
       ok(pg.locator('[data-pe-show]').count()==1 and pg.locator('[data-pe-keep]').count()==1 and pg.locator('[data-pe-sq]').count()==1,tag+' 보이기·소개 보관·나만 아는 질문도 여기에')
       pg.locator('[data-pe-show]').uncheck();pg.locator('[data-pe-keep]').check();pg.fill('[data-pe-status]','두 번째 소개');pg.locator('[data-pe-ok]').click();pg.wait_for_timeout(400)
