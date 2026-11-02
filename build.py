@@ -27,6 +27,9 @@ import shutil
 os.makedirs(p("tests", "site", "vendor"), exist_ok=True)
 for f in os.listdir(p("vendor")):
     shutil.copy(p("vendor", f), p("tests", "site", "vendor", f))
+# 글꼴 만들기의 바탕 글꼴(fonts/base, OFL)도 시험용 사이트에
+shutil.rmtree(p("tests", "site", "fonts"), ignore_errors=True)
+shutil.copytree(p("fonts"), p("tests", "site", "fonts"))
 mock = '<script src="mocksb.js"></script><script>window.MGD_SB={url:"https://x.supabase.co",key:"sb_publishable_x"}</script>'
 open(p("tests", "site", "app_sb.html"), "w", encoding="utf-8").write(app.replace("<head>", "<head>" + mock, 1))
 print("만들었어요: index.html, preview.html, tests/site/")
