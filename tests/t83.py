@@ -65,7 +65,7 @@ with sync_playwright() as p:
     ok(fam.startswith('mgdu_') and pg.evaluate("[...document.fonts].some(f=>f.family.startsWith('mgdu_')&&f.status==='loaded')"),tag+' 새로 열어도 이 기기 보관함에서 불러옴',fam)
     # 손글씨 만들기
     pg.evaluate(SELECT,'아래');pg.locator('[data-fmt="ff"]').click();pg.locator('[data-uf-make]').click();pg.wait_for_timeout(500)
-    ok(pg.locator('[data-fm-base]').count()==5 and '빈 종이' in pg.locator('.fm-start').inner_text(),tag+' 만들기: 바탕 넷 + 빈 종이에서 고르기')
+    ok(pg.locator('[data-fm-base]').count()==6 and '빈 종이' in pg.locator('.fm-start').inner_text(),tag+' 만들기: 바탕 넷 + 자소로 설계 + 빈 종이에서 고르기')
     pg.locator('[data-fm-base=""]').click();pg.wait_for_timeout(400)
     ok(pg.locator('.fm-chip').count()>=10 and pg.locator('[data-fm-prog]').inner_text()=='오늘 0/10',tag+' 오늘의 글자 열 자')
     first=pg.locator('.fm-chip.on').inner_text();draw(pg)
