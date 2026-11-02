@@ -13,6 +13,7 @@ const now=()=>new Date().toISOString();
 let entries=[],currentId=null,project=null,screen='compose';
 let editorChar='가',contours=[],originContours=[],glyphContour=0,pointIndex=-1,tool='select',drag=null,glyphToken=0;
 let paintStroke=null,penPoints=[],paintingBusy=false,zoom=100,centerX=500,centerY=520;
+let touchPointers=new Map(),touchPinch=null,touchSuppress=new Set();
 let history=[],redo=[],fontLoading={},verifiedFont=null,verifiedObjectUrl=null,toastTimer=0,saveTimer=0;
 function notify(message,error=false){const t=$('toast');t.textContent=message;t.style.background=error?'#7e3333':'#23392a';t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,4100)}
 function stored(){try{const raw=JSON.parse(localStorage.getItem(STORAGE)||'null');return Array.isArray(raw)?raw.filter(e=>e&&e.id&&e.project&&e.project.version===DEFAULT.version).slice(0,12):[]}catch{return []}}
@@ -35,7 +36,7 @@ function updatePreset(){const selected=project.width===100&&project.tracking===0
 async function loadSourceFont(id){if(fontLoading[id])return fontLoading[id];fontLoading[id]=(async()=>{try{const f=new FontFace('Source-'+id,`url('/api/fonts/${id}')`);await f.load();document.fonts.add(f);if(id===project.font){applyPreview();renderTemplates()}return true}catch(e){notify('기본 글꼴을 불러오지 못했습니다. 다운로드 설정을 확인하세요.',true);delete fontLoading[id];return false}})();return fontLoading[id]}
 function dropAccurate(){if(verifiedObjectUrl){URL.revokeObjectURL(verifiedObjectUrl);verifiedObjectUrl=null}verifiedFont=null;$('final-state').textContent='현재 설정의 화면 미리보기 · 정확한 파일 결과는 생성 후 확인'}
 function applyPreview(){const useExact=!!verifiedFont;const source=useExact?verifiedFont:'Source-'+project.font;const tgts=[$('specimen'),$('final-specimen')];tgts.forEach(node=>{node.style.fontFamily=`"${source}","Apple SD Gothic Neo",sans-serif`;node.style.fontStyle=useExact?'normal':`oblique ${project.slant}deg`;node.style.letterSpacing=useExact?'normal':(project.tracking/1000*30)+'px';node.style.transform=useExact?'none':`scaleX(${project.width/100})`;node.style.transformOrigin='left center';node.style.width=useExact?'100%':`${10000/project.width}%`});}
-function selectScreen(key){screen=key;for(const s of ['compose','glyph','export']){const on=s===key;$(s+'-screen').hidden=!on;const tab=$(s==='compose'?'tab-compose':s==='glyph'?'tab-glyph':'tab-export');tab.classList.toggle('on',on);tab.setAttribute('aria-selected',String(on))}if(key==='glyph'){loadGlyph(editorChar)}if(key==='export')applyPreview();if(key==='compose')updateAll();window.scrollTo({top:0,behavior:'smooth'})}
+function selectScreen(key){if(key!=='glyph'&&document.body.classList.contains('focus-editor'))setFocusEditor(false);touchPointers.clear();touchPinch=null;touchSuppress.clear();screen=key;for(const s of ['compose','glyph','export']){const on=s===key;$(s+'-screen').hidden=!on;const tab=$(s==='compose'?'tab-compose':s==='glyph'?'tab-glyph':'tab-export');tab.classList.toggle('on',on);tab.setAttribute('aria-selected',String(on))}if(key==='glyph'){loadGlyph(editorChar)}if(key==='export')applyPreview();if(key==='compose')updateAll();window.scrollTo({top:0,behavior:'smooth'})}
 function download(blob,name){const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000)}
 async function fontOutput(fmt,previewOnly=false){const buttons=['download-ttf','download-woff2','render-accurate','precise-preview'];buttons.forEach(x=>$(x).disabled=true);const label=$('save-indicator');label.textContent='폰트 생성 중...';try{const response=await fetch('/api/build',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project,format:previewOnly?'woff2':fmt})});if(!response.ok){let message='폰트 생성 오류';try{message=(await response.json()).error||message}catch{}throw Error(message)}const blob=await response.blob();if(previewOnly){if(verifiedObjectUrl)URL.revokeObjectURL(verifiedObjectUrl);verifiedObjectUrl=URL.createObjectURL(blob);const family='MGD-Preview-'+Date.now();const face=new FontFace(family,`url("${verifiedObjectUrl}")`);await face.load();document.fonts.add(face);verifiedFont=family;applyPreview();$('final-state').textContent='실제 WOFF2 생성 결과로 확인 중 · 한글 전체 포함';notify('실제 폰트 파일로 미리보기를 갱신했어요.');}else{const safe=(project.name.trim().replace(/[\\/<>:"|?*]/g,'_')||'나의-글씨');download(blob,`MGD-${safe}.${fmt}`);notify('실제 '+fmt.toUpperCase()+' 글꼴 파일을 받았어요.');}return true}catch(e){notify(e.message||'폰트 파일을 만드는 데 실패했어요.',true);return false}finally{buttons.forEach(x=>$(x).disabled=false);label.textContent='자동 저장됨'}}
 function exportJSON(){save();const data={source:'무가당 글자공방',exportedAt:now(),specimen:$('specimen').value,project};download(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),`MGD-${project.name.replace(/[\\/<>:"|?*]/g,'_')}-작업.json`);notify('편집 가능한 작업 파일을 저장했어요.')}
@@ -68,7 +69,7 @@ function drawGlyph(){
     for(const q of [prev,next])if(q)handles.append(el('path',{d:`M${p[0]} ${p[1]}L${q[0]} ${q[1]}`,class:'handle-line'}));
    }
    const circle=el('circle',{cx:p[0],cy:p[1],r:pointIndex===i?11:8,class:'handle'+(!p[2]?' off':'')+(pointIndex===i?' current':''),'pointer-events':'none'});
-   const hit=el('circle',{cx:p[0],cy:p[1],r:25,fill:'transparent',class:'handle-grab','data-index':i,tabindex:'0',role:'button','aria-label':(i+1)+'번째 점 이동'});
+   const hit=el('circle',{cx:p[0],cy:p[1],r:44,fill:'transparent',class:'handle-grab','data-index':i,tabindex:'0',role:'button','aria-label':(i+1)+'번째 점 이동'});
    hit.addEventListener('pointerdown',ev=>startDrag(ev,glyphContour,i));
    hit.addEventListener('click',()=>{glyphContour=Math.min(glyphContour,contours.length-1);pointIndex=i;drawGlyph()});
    handles.append(circle,hit);
@@ -77,7 +78,21 @@ function drawGlyph(){
  $('glyph-point-count').textContent=contours.length+'개 윤곽 · '+contours.reduce((x,c)=>x+c.length,0)+'개 점';
  $('glyph-status').textContent=project.overrides[editorChar]?'내가 수정한 글자':'원본 글자';
  $('glyph-canvas-label').textContent=editorChar+' · '+(project.overrides[editorChar]?'개별 수정됨':'원본 윤곽');
+ renderOutlineList();
  $('editor-undo').disabled=!history.length;$('editor-redo').disabled=!redo.length;
+}
+function renderOutlineList(){
+ const host=$('outline-list');if(!host)return;
+ host.replaceChildren();
+ contours.forEach((pts,index)=>{
+  const b=document.createElement('button');b.type='button';
+  b.className='outline-row'+(index===glyphContour?' active':'');
+  b.setAttribute('role','option');b.setAttribute('aria-selected',String(index===glyphContour));
+  b.textContent='윤곽 '+(index+1)+' · '+pts.length+'점';
+  b.onclick=()=>{glyphContour=index;pointIndex=-1;glyphTool('select');drawGlyph();};
+  host.append(b);
+ });
+ if(!contours.length){const p=document.createElement('p');p.className='footnote';p.textContent='아직 그린 윤곽이 없어요.';host.append(p)}
 }
 function coordsFromEvent(ev){const svg=$('glyph-canvas');const pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const inv=svg.getScreenCTM()?.inverse();if(!inv)return[0,0];const v=pt.matrixTransform(inv);return [Math.round(v.x*10)/10,Math.round(v.y*10)/10]}
 function persistGlyph(){project.overrides[editorChar]=clone(contours);changed(false);drawGlyph()}
@@ -85,12 +100,73 @@ function startDrag(ev,c,p){ev.stopPropagation();if(tool!=='select')return;ev.pre
 function startContourMove(ev,c){ev.preventDefault();record();drag={kind:'move',pointerId:ev.pointerId,c,start:coordsFromEvent(ev),initial:clone(contours[c])};$('glyph-canvas').setPointerCapture(ev.pointerId)}
 function clamp(v){return Math.max(-560,Math.min(1560,v))}
 function updateZoom(){const v=100/zoom,w=1160*v,h=1240*v;$('glyph-canvas').setAttribute('viewBox',`${centerX-w/2} ${centerY-h/2} ${w} ${h}`);$('zoom-value').textContent=zoom+'%'}
-function changeZoom(delta){zoom=Math.min(300,Math.max(60,Math.round(zoom+delta)));updateZoom()}
+function changeZoom(delta){zoom=Math.min(800,Math.max(60,Math.round(zoom+delta)));updateZoom()}
+// Mobile precision gestures: never commit an unfinished stroke during pinch.
+function clientPoint(x,y){const svg=$('glyph-canvas'),p=svg.createSVGPoint();p.x=x;p.y=y;
+ const matrix=svg.getScreenCTM();if(!matrix)return[0,0];
+ const v=p.matrixTransform(matrix.inverse());return[v.x,v.y];}
+function touchDistance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function touchCenter(a,b){return{x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
+function cancelEditForPinch(){
+ if(paintStroke){paintStroke=null;updatePaintPreview();}
+ if(drag){
+  const previous=history.pop();
+  if(previous){project=JSON.parse(previous);entry().project=project;
+   contours=clone(project.overrides[editorChar]||originContours);glyphContour=0;pointIndex=-1;}
+  drag=null;drawGlyph();
+ }
+}
+function beginPinch(){
+ cancelEditForPinch();
+ const [a,b]=[...touchPointers.values()],mid=touchCenter(a,b);
+ touchPinch={distance:Math.max(10,touchDistance(a,b)),zoom,center:[centerX,centerY],anchor:clientPoint(mid.x,mid.y)};
+}
+function movePinch(){
+ if(!touchPinch||touchPointers.size<2)return;
+ const [a,b]=[...touchPointers.values()],mid=touchCenter(a,b);
+ zoom=Math.round(Math.min(800,Math.max(60,touchPinch.zoom*touchDistance(a,b)/touchPinch.distance)));
+ centerX=touchPinch.center[0];centerY=touchPinch.center[1];updateZoom();
+ const current=clientPoint(mid.x,mid.y);
+ centerX+=touchPinch.anchor[0]-current[0];centerY+=touchPinch.anchor[1]-current[1];updateZoom();
+}
+function touchInterceptDown(ev){
+ if(ev.pointerType!=='touch')return;
+ touchSuppress.delete(ev.pointerId);
+ touchPointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+ if(touchPointers.size>=2){if(!touchPinch)beginPinch();ev.preventDefault();ev.stopImmediatePropagation();}
+}
+function touchInterceptMove(ev){
+ if(ev.pointerType!=='touch')return;
+ if(touchPointers.has(ev.pointerId))touchPointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+ if(touchPinch){movePinch();ev.preventDefault();ev.stopImmediatePropagation();}
+ else if(touchSuppress.has(ev.pointerId)){ev.preventDefault();ev.stopImmediatePropagation();}
+}
+function touchInterceptEnd(ev){
+ if(ev.pointerType!=='touch')return;
+ touchPointers.delete(ev.pointerId);
+ if(touchPinch){
+  for(const id of touchPointers.keys())touchSuppress.add(id);
+  if(touchPointers.size<2)touchPinch=null;
+  ev.preventDefault();ev.stopImmediatePropagation();return;
+ }
+ if(touchSuppress.delete(ev.pointerId)){ev.preventDefault();ev.stopImmediatePropagation();}
+}
+function setMobileInspector(open){
+ document.body.classList.toggle('mobile-inspector-open',open);
+ $('mobile-inspector').setAttribute('aria-expanded',String(open));
+}
+function setFocusEditor(on){
+ document.body.classList.toggle('focus-editor',on);
+ $('editor-focus').setAttribute('aria-pressed',String(on));
+ $('editor-focus').textContent=on?'전체 화면 닫기':'집중 편집';
+ if(!on)setMobileInspector(false);
+ requestAnimationFrame(updateZoom);
+}
 function glyphTool(name){
  if(tool==='polygon'&&name!=='polygon')cancelPainting();
  tool=name;
  const canv=$('glyph-canvas');canv.classList.remove('brush-mode','eraser-mode','move-mode','pan-mode','pen-mode');
- canv.classList.add(({brush:'brush-mode',eraser:'eraser-mode',move:'move-mode',pan:'pan-mode',polygon:'pen-mode',rectangle:'pen-mode',ellipse:'pen-mode'})[name]||'');
+ const modeClass=({brush:'brush-mode',eraser:'eraser-mode',move:'move-mode',pan:'pan-mode',polygon:'pen-mode',rectangle:'pen-mode',ellipse:'pen-mode'})[name];if(modeClass)canv.classList.add(modeClass);
  document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===name));
  const guide={select:'점과 곡선을 직접 끌어 글자를 바꾸세요. 점은 선택 후 직선/곡선 전환도 가능해요.',move:'옮길 윤곽의 경계를 잡고 끌어 보세요. 오른쪽에서 복제·회전·크기 조절도 가능해요.',brush:'손가락·마우스로 직접 획을 그려요. 그린 획은 실제 폰트 윤곽에 합쳐져요.',eraser:'글자의 지우고 싶은 부분을 직접 문지르세요. 투명한 공간으로 잘려 나가요.',polygon:'점을 차례대로 찍어 형태를 만들어요. Enter 또는 첫 점을 다시 누르면 닫히고, Esc로 취소돼요.',rectangle:'드래그해서 사각형을 그리세요.',ellipse:'드래그해서 타원을 그리세요.',pan:'끌어서 도화지를 이동하세요. 확대/축소는 위의 +/− 버튼을 사용하세요.'};
  $('editor-hint').textContent=guide[name]||'';drawGlyph();
@@ -224,13 +300,19 @@ $('font-name').addEventListener('input',ev=>{project.name=ev.target.value;$('top
 $('save-backup').onclick=exportJSON;$('backup-from-export').onclick=exportJSON;$('load-backup').onchange=ev=>importJSON(ev.target);
 $('glyph-input').oninput=ev=>{const chars=[...ev.target.value];const ch=chars.length?chars.at(-1):'';if(ch)loadGlyph(ch)};
 document.querySelectorAll('[data-tool]').forEach(btn=>btn.onclick=()=>glyphTool(btn.dataset.tool));
-$('glyph-canvas').addEventListener('pointerdown',canvasDown);$('glyph-canvas').addEventListener('pointermove',svgMove);
+const cv=$('glyph-canvas');
+ cv.addEventListener('pointerdown',touchInterceptDown,true);cv.addEventListener('pointermove',touchInterceptMove,true);
+ cv.addEventListener('pointerup',touchInterceptEnd,true);cv.addEventListener('pointercancel',touchInterceptEnd,true);
+ $('glyph-canvas').addEventListener('pointerdown',canvasDown);$('glyph-canvas').addEventListener('pointermove',svgMove);
  $('glyph-canvas').addEventListener('pointerup',svgUp);
  $('glyph-canvas').addEventListener('pointercancel',ev=>{if(paintStroke?.pointerId===ev.pointerId){cancelPainting();return}svgUp(ev)});
  $('glyph-canvas').addEventListener('dblclick',ev=>{if(tool==='polygon'&&penPoints.length>=3)finishPen()});
  $('stroke-size').oninput=ev=>$('stroke-value').textContent=ev.target.value;
  $('zoom-out').onclick=()=>changeZoom(-25);$('zoom-in').onclick=()=>changeZoom(25);$('zoom-fit').onclick=()=>{zoom=100;centerX=500;centerY=520;updateZoom()};updateZoom();
-$('editor-undo').onclick=undo;$('editor-redo').onclick=redoAction;$('glyph-reset').onclick=resetGlyph;
+$('editor-focus').onclick=()=>setFocusEditor(!document.body.classList.contains('focus-editor'));
+ $('mobile-inspector').onclick=()=>setMobileInspector(!document.body.classList.contains('mobile-inspector-open'));
+ $('close-mobile-inspector').onclick=()=>setMobileInspector(false);
+ $('editor-undo').onclick=undo;$('editor-redo').onclick=redoAction;$('glyph-reset').onclick=resetGlyph;
 $('blank-glyph').onclick=blankGlyph;
  $('cancel-pen').onclick=()=>{cancelPainting();notify('펜 입력을 취소했어요.')};
  for(const [id,action] of [['contour-duplicate','duplicate'],['contour-flip-h','flip-h'],['contour-flip-v','flip-v'],['contour-rotate-left','rotate-left'],['contour-rotate-right','rotate-right'],['contour-grow','grow'],['contour-shrink','shrink']])$(id).onclick=()=>transformContour(action);
@@ -238,7 +320,7 @@ $('blank-glyph').onclick=blankGlyph;
 $('glyph-canvas').addEventListener('keydown',ev=>{
   if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='z'){ev.preventDefault();ev.shiftKey?redoAction():undo()}
   else if(ev.key==='Enter'&&tool==='polygon'){ev.preventDefault();finishPen()}
-  else if(ev.key==='Escape'){cancelPainting();glyphTool('select')}
+  else if(ev.key==='Escape'){if(document.body.classList.contains('mobile-inspector-open'))setMobileInspector(false);else if(document.body.classList.contains('focus-editor'))setFocusEditor(false);else{cancelPainting();glyphTool('select')}}
   else if(ev.key==='Backspace'&&pointIndex>=0){ev.preventDefault();glyphAction('delete-point')}
   else if(!ev.ctrlKey&&!ev.metaKey){const key={b:'brush',e:'eraser',p:'polygon',v:'select',m:'move',h:'pan'}[ev.key.toLowerCase()];if(key){ev.preventDefault();glyphTool(key)}}
  });
