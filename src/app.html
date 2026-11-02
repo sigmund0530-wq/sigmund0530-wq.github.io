@@ -1546,6 +1546,10 @@ body.sp-blog-edit .se-bar [data-se-add]{display:inline-flex!important}
 .nt-inbox-row{margin:0 0 10px}
 .nt-bl{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
 @media (max-width:699px){.nt-page{padding:16px 16px 90px!important}.nt-back{margin-left:-8px;width:100%;text-align:left}}
+/* 위젯 인터넷: 남의 위젯이 직접 연결할 때 처음 한 번 묻기 */
+.wf-netask{position:absolute;inset:0;z-index:5;display:grid;align-content:center;gap:12px;padding:16px;background:color-mix(in srgb,var(--chrome) 94%,transparent);font-size:13px;color:var(--ink);line-height:1.6;text-align:center}
+.wf-netask p{margin:0}.wf-netask div{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.wf-stage{position:relative}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -5193,7 +5197,7 @@ const WF_CATS=[["play","놀이"],["tool","도구"],["sound","소리"],["art","�
 const WF_HOW=[["self","직접"],["with","AI와 함께"],["ai","AI로 만듦"]];
 const WF_SIZE=[["s","작게"],["w","넓게"],["l","크게"]];
 const WF_MAX_CODE=1024*1024,WF_MAX_MEDIA=3*1024*1024;
-const WF_PROMPT="무가당 위젯을 만들어 줘. HTML 파일 하나에 CSS와 자바스크립트를 모두 넣고, 외부 파일이나 인터넷 연결은 쓰지 마. 받은 칸 크기에 맞춰 늘었다 줄었다 하게 만들어 줘. 정사각형 칸과 가로로 긴 칸에서 모두 보기 좋게 해 줘.";
+const WF_PROMPT="무가당 위젯을 만들어 줘. HTML 파일 하나에 CSS와 자바스크립트를 모두 넣고, 외부 파일(라이브러리·글꼴·그림 주소)은 쓰지 마. 인터넷에서 정보를 가져와야 하면 fetch 대신 await mugadang.fetch(주소)를 써 줘. 무가당이 대신 받아 와서 {status, type, body}를 돌려줘(body는 글자나 JSON 글자, 그림이면 data: 주소). 받은 칸 크기에 맞춰 늘었다 줄었다 하게 만들어 줘. 정사각형 칸과 가로로 긴 칸에서 모두 보기 좋게 해 줘.";
 const WF_CSP="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' data: blob:; style-src 'unsafe-inline' data:; img-src data: blob:; media-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'";
 const wfLabel=(L,k)=>(L.find(x=>x[0]===k)||L[0])[1];
 const wfList=()=>Array.isArray(records.widgets)?records.widgets:(records.widgets=[]);
@@ -5226,12 +5230,12 @@ function wfThumb(w){const th=w.thumbId&&assets[w.thumbId];if(th&&th.dataUrl)retu
   if(w.kind==="image"&&assets[w.assetId])return `<img class="wf-thumb" src="${assets[w.assetId].dataUrl}" alt="">`;
   const bg=w.bg||wfColor(w.title);const dark=/^#1|^#0/.test(bg);
   return `<span class="wf-auto" style="background:${esc(bg)};color:${dark?"#fff":"#1d2230"}"><b>${esc(w.title)}</b><small>${esc(wfLabel(WF_CATS,w.cat))}${w.kind==="audio"?" · 눌러서 듣기":""}</small></span>`}
-const wfMeta=w=>{const parts=[w.example?"무가당 예시":esc((records.profile&&records.profile.displayName)||"나")];if(!w.example)parts.push(esc(localDay(w.createdAt||now()).replace(/-/g,".")));parts.push(esc(wfLabel(WF_HOW,w.how)));if(!w.example&&w.vis&&w.vis!=="public")parts.push(w.vis==="private"?"나만":"이웃만");
+const wfMeta=w=>{const parts=[w.example?"무가당 예시":esc((records.profile&&records.profile.displayName)||"나")];if(!w.example)parts.push(esc(localDay(w.createdAt||now()).replace(/-/g,".")));parts.push(esc(wfLabel(WF_HOW,w.how)));if(!w.example&&w.vis&&w.vis!=="public")parts.push(w.vis==="private"?"나만":"이웃만");if(Array.isArray(w.net)&&w.net.length)parts.push("인터넷 연결");
   return `<div class="wf-meta"><b class="wf-t">${esc(w.title)}</b><span class="wf-by">${parts.join(" · ")}</span>${w.desc?`<p class="wf-d">${esc(w.desc)}</p>`:""}</div>`};
 /* 재생: 한 번에 하나만 살아 움직임 */
 let wfActive=null;
 function wfActivate(card){if(wfActive===card)return;wfDeactivate();const w=wfFind(card.dataset.wf);if(!w)return;const box=card.querySelector(".wf-frame");if(!box)return;wfActive=card;
-  if(w.kind==="html"){const f=wfFrame(w.code,w.title);box.appendChild(f);requestAnimationFrame(()=>box.classList.add("live"))}
+  if(w.kind==="html"){if(!wfNetOk(w)){wfNetAsk(box,w,()=>{wfActive=null;wfActivate(card)});wfActive=card;return}const f=wfFrame(w.code,w.title,w.net);box.appendChild(f);requestAnimationFrame(()=>box.classList.add("live"))}
   else if(w.kind==="video"&&assets[w.assetId]){const v=document.createElement("video");v.className="wf-live";v.src=assets[w.assetId].dataUrl;v.muted=true;v.loop=true;v.playsInline=true;box.appendChild(v);v.play().catch(()=>{});box.classList.add("live")}}
 function wfDeactivate(){if(!wfActive)return;const box=wfActive.querySelector(".wf-frame");if(box){box.classList.remove("live");box.querySelectorAll(".wf-live").forEach(n=>n.remove())}wfActive=null}
 function wfFind(id){return WF_EX.find(x=>x.id===id)||wfList().find(x=>x.id===id)}
@@ -5247,9 +5251,9 @@ function wfBind(root){const coarse=isMobile()||matchMedia("(hover:none)").matche
 /* 크게 보기: 제대로 써 보기 */
 function wfOpen(id){const w=wfFind(id);if(!w)return;wfDeactivate();
   openWin("widget:"+id,{title:w.title,wide:true,render(body,foot){const mine=!!wfList().find(x=>x.id===id);
-    body.innerHTML=`<div class="wf-big wf-s-${esc(w.size||"s")}"><div class="wf-stage"></div>${wfMeta(Object.assign({mine},w))}<p class="wf-note">이 위젯은 무가당과 떨어진 상자 안에서 움직여요. 인터넷에 연결하거나 내 계정 정보를 볼 수 없어요.</p>${mine?`<div class="wf-acts"><button type="button" class="btn" data-wf-edit>고치기</button><button type="button" class="btn wf-del" data-wf-del>지우기</button></div>`:""}</div>`;
+    body.innerHTML=`<div class="wf-big wf-s-${esc(w.size||"s")}"><div class="wf-stage"></div>${wfMeta(Object.assign({mine},w))}<p class="wf-note">이 위젯은 무가당과 떨어진 상자 안에서 움직여요. 내 계정 정보는 볼 수 없고, 인터넷은 무가당을 거쳐 가져오기만 해요${(w.net||[]).length?` · ${esc(w.net.join(', '))}와 직접 연결해요`:''}.</p>${mine?`<div class="wf-acts"><button type="button" class="btn" data-wf-edit>고치기</button><button type="button" class="btn wf-del" data-wf-del>지우기</button></div>`:""}</div>`;
     const st=body.querySelector(".wf-stage");
-    if(w.kind==="html")st.appendChild(wfFrame(w.code,w.title));
+    if(w.kind==="html"){if(wfNetOk(w))st.appendChild(wfFrame(w.code,w.title,w.net));else wfNetAsk(st,w,()=>{st.innerHTML='';st.appendChild(wfFrame(w.code,w.title,w.net))})}
     else if(assets[w.assetId]){const u=assets[w.assetId].dataUrl;st.innerHTML=w.kind==="image"?`<img src="${u}" alt="${esc(w.title)}">`:w.kind==="video"?`<video src="${u}" controls playsinline loop></video>`:`<audio src="${u}" controls></audio>`}
     const ed=body.querySelector("[data-wf-edit]");if(ed)ed.onclick=()=>wfUpload(wfList().find(x=>x.id===id));
     const del=body.querySelector("[data-wf-del]");if(del)del.onclick=async()=>{if(!await confirmBox("위젯 지우기",`‘${w.title}’을 지울까요? 되돌릴 수 없어요.`,"지우기",true))return;
@@ -5269,6 +5273,7 @@ async function wfUpload(edit){const e=edit||{};let kind=e.kind||"html",code=e.co
       <div class="wf-row"><label class="wf-lab">쓰임새<select id="wf-cat">${opt(WF_CATS,e.cat||"play")}</select></label><label class="wf-lab">만든 방법<select id="wf-how">${opt(WF_HOW,e.how||"with")}</select></label></div>
       <div class="wf-row"><label class="wf-lab">칸 크기<select id="wf-size">${opt(WF_SIZE,e.size||"s")}</select></label><label class="wf-lab">보는 사람<select id="wf-vis">${opt([["public","전체"],["followers","이웃만"],["private","나만"]],e.vis||"public")}</select></label></div>
       <label class="wf-lab"><span>썸네일 그림 <small class="opt">· 선택</small></span><input type="file" id="wf-thumb" accept="image/*"></label><p class="wf-hint">없으면 제목과 색으로 자동 카드를 만들어요.</p>
+      <label class="wf-lab"><span>인터넷 직접 연결 <small class="opt">· 선택</small></span><input type="text" id="wf-net" maxlength="300" placeholder="예: api.mygame.com" value="${esc((e.net||[]).join(', '))}" autocapitalize="off" spellcheck="false"></label><p class="wf-hint">인터넷에서 정보를 가져오는 건 적지 않아도 돼요(무가당이 대신 받아 줘요). 자기 서버와 직접 주고받아야 할 때만 주소를 적어요. https만, 5개까지. 보는 사람에게 처음 실행할 때 물어봐요.</p>
      </div>
      <div class="wf-up-r"><b class="wf-pv-h">미리보기</b><div class="wf-pv"><div class="wf-pv-m"><small>휴대폰</small><div class="wf-pv-box" data-pv="m"></div></div><div class="wf-pv-p"><small>PC</small><div class="wf-pv-box" data-pv="p"></div></div></div>
       <div class="wf-help"><b>AI에게 이렇게 부탁하세요</b><p>${esc(WF_PROMPT)}</p><button type="button" class="btn" data-wf-copy>문구 복사</button></div></div>
@@ -5278,11 +5283,11 @@ async function wfUpload(edit){const e=edit||{};let kind=e.kind||"html",code=e.co
   const setTab=t=>{tab=t;m.querySelectorAll("[data-wt]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.wt===t)));m.querySelectorAll("[data-wp]").forEach(p=>p.hidden=p.dataset.wp!==t);if(t==="paste"){kind="html";code=m.querySelector("#wf-code").value}pv()};
   const size=()=>m.querySelector("#wf-size").value;
   const pv=()=>{m.querySelectorAll("[data-pv]").forEach(b=>{b.className="wf-pv-box wf-s-"+size();b.innerHTML="";
-    if(kind==="html"&&code.trim())b.appendChild(wfFrame(code,"미리보기"));
+    if(kind==="html"&&code.trim())b.appendChild(wfFrame(code,"미리보기",wfNetParse(m.querySelector("#wf-net").value)));
     else if(mediaId&&assets[mediaId]){const u=assets[mediaId].dataUrl;b.innerHTML=kind==="image"?`<img src="${u}" alt="">`:kind==="video"?`<video src="${u}" muted loop autoplay playsinline></video>`:`<span class="wf-auto"><b>소리</b><small>피드에서 눌러서 들어요</small></span>`}
     else b.innerHTML=`<span class="wf-pv-empty">파일이나 코드를 넣으면 여기서 움직여요</span>`})};
   m.querySelectorAll("[data-wt]").forEach(b=>b.onclick=()=>setTab(b.dataset.wt));setTab(tab);
-  m.querySelector("#wf-size").onchange=pv;let pvT;m.querySelector("#wf-code").addEventListener("input",ev=>{if(ev.isComposing)return;clearTimeout(pvT);pvT=setTimeout(()=>{code=ev.target.value;kind="html";pv()},400)});
+  m.querySelector("#wf-size").onchange=pv;m.querySelector("#wf-net").onchange=pv;let pvT;m.querySelector("#wf-code").addEventListener("input",ev=>{if(ev.isComposing)return;clearTimeout(pvT);pvT=setTimeout(()=>{code=ev.target.value;kind="html";pv()},400)});
   m.querySelector("[data-wf-copy]").onclick=async()=>{try{await navigator.clipboard.writeText(WF_PROMPT);toast("복사했어요. AI에게 붙여 넣으세요.")}catch(x){toast("복사하지 못했어요. 문구를 길게 눌러 복사해 주세요.")}};
   m.querySelector("#wf-file").onchange=async ev=>{const f=ev.target.files[0];if(!f)return;err("");const ty=f.type||"",nm=f.name||"";
     if(/html?$/i.test(nm)||ty==="text/html"){if(f.size>WF_MAX_CODE){err("HTML 파일은 1MB까지 올릴 수 있어요.");return}code=await f.text();kind="html";mediaId=null}
@@ -5298,7 +5303,8 @@ async function wfUpload(edit){const e=edit||{};let kind=e.kind||"html",code=e.co
     if(kind!=="html"&&!(mediaId&&assets[mediaId]))return err("위젯 파일을 골라 주세요.");
     if(kind==="html"&&new Blob([code]).size>WF_MAX_CODE)return err("코드는 1MB까지 올릴 수 있어요.");
     if(!title)return err("제목을 적어 주세요.");
-    m._done({kind,code:kind==="html"?code:"",assetId:kind==="html"?null:mediaId,thumbId,title,desc:m.querySelector("#wf-desc").value.trim(),cat:m.querySelector("#wf-cat").value,how:m.querySelector("#wf-how").value,size:size(),vis:m.querySelector("#wf-vis").value})};
+    const netRaw=m.querySelector("#wf-net").value,net=wfNetParse(netRaw);if(netRaw.trim()&&!net.length)return err("인터넷 주소를 확인해 주세요. 예: api.mygame.com");
+    m._done({kind,net:kind==="html"&&net.length?net:undefined,code:kind==="html"?code:"",assetId:kind==="html"?null:mediaId,thumbId,title,desc:m.querySelector("#wf-desc").value.trim(),cat:m.querySelector("#wf-cat").value,how:m.querySelector("#wf-how").value,size:size(),vis:m.querySelector("#wf-vis").value})};
   const v=await pm;
   if(!v){/* 취소: 새로 넣은 파일은 치움 */[mediaId,thumbId].forEach(id=>{if(id&&id!==e.assetId&&id!==e.thumbId)delete assets[id]});return}
   const before=clone(wfList());
@@ -6730,6 +6736,48 @@ const ntBaseSettings=renderSettings;renderSettings=function(cv){ntBaseSettings(c
 const peerBasePull=sbPull;sbPull=async function(){const r=await peerBasePull.apply(this,arguments);if(r==='ok'||r==='fresh'){try{await peerFollowsLoad()}catch(e){}ntLoad(true);PF.at=0}return r};
 setInterval(()=>{if(document.visibilityState==='visible')ntLoad()},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ntLoad()});
+
+/* ═════════ 위젯 인터넷 (2026-11-02, 주인 결정: 1번 무가당 중계 기본 + 2번 적은 주소만 직접 연결) ═════════
+   주인: "인터넷 왜 막아? 친구들끼리 게임도 나중에 만들 수 있을 텐데" → 직접 연결을 다 막는 대신 두 길을 엶.
+   1) 무가당 중계: 위젯 안에 mugadang.fetch(주소)가 있음. 위젯이 부탁하면(postMessage) 무가당이 서버(mugadang-ai Worker의 /relay)로
+      대신 받아 옴 → 상대 사이트는 누가 보는지 모름, 쿠키·로그인 정보 없음. 가져오기(GET)만, 1MB, 글자·JSON·그림만, 위젯 하나에 1분 30번.
+      로그인한 사람만(미리보기에선 '가입하면 돼요' 오류).
+   2) 직접 연결: 올릴 때 적은 주소(https, 5개까지)만 CSP connect-src·img-src·media-src에 열어 줌(wss 포함).
+      남의 위젯이면 처음 실행 전에 '○○와 직접 연결해요 · 허락' (records.settings.netOk[위젯 id] = 주소 묶음), 카드에 '인터넷 연결'.
+   위젯은 여전히 sandbox="allow-scripts"(allow-same-origin 없음)라 무가당 로그인·저장소·쿠키는 못 봄. */
+const WF_RELAY=AI_URL+'/relay';
+const WF_HOST_RE=/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+function wfNetParse(v){return [...new Set(String(v||'').toLowerCase().split(/[\s,]+/).map(x=>x.replace(/^(https?|wss?):\/\//,'').replace(/[\/?#].*$/,'').trim()).filter(Boolean))]
+  .filter(h=>WF_HOST_RE.test(h)&&!/(^|\.)(localhost|local|internal)$/.test(h)&&!/mugadang|supabase\.co$|sigmund0530/.test(h)).slice(0,5)}
+const wfNetSig=w=>(w.net||[]).slice().sort().join(',');
+function wfNetOk(w){if(!w||!Array.isArray(w.net)||!w.net.length)return true;if(w.example||wfList().some(x=>x.id===w.id))return true;const ok=(records.settings&&records.settings.netOk)||{};return ok[w.id]===wfNetSig(w)}
+function wfNetAsk(box,w,go){const el=document.createElement('div');el.className='wf-netask';el.innerHTML=`<p><b>${esc(w.title)}</b> 위젯은 <b>${esc(w.net.join(', '))}</b>와 직접 연결해요. 연결하면 그 사이트가 이 위젯을 쓰는 걸 알 수 있어요. 무가당 계정 정보는 넘어가지 않아요.</p><div><button type="button" class="pill" data-net-no>안 함</button><button type="button" class="btn primary" data-net-yes>허락하고 실행</button></div>`;
+  el.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('[data-net-yes]')){const st=records.settings||(records.settings={});st.netOk=Object.assign({},st.netOk,{[w.id]:wfNetSig(w)});persist();el.remove();go()}else if(e.target.closest('[data-net-no]'))el.remove()},true);
+  box.querySelectorAll('.wf-netask').forEach(n=>n.remove());box.appendChild(el)}
+/* 위젯 안에 들어가는 작은 다리: mugadang.fetch → 무가당에 부탁 → 답을 받아 돌려줌 */
+const WF_BRIDGE=`<script>(function(){var n=0,w={};addEventListener('message',function(e){var d=e.data;if(e.source!==parent||!d||d.mgd!=='fetch:r'||!w[d.id])return;var p=w[d.id];delete w[d.id];if(d.ok)p[0]({status:d.status,type:d.type,body:d.body});else p[1](new Error(d.error||'가져오지 못했어요'))});
+window.mugadang=Object.freeze({fetch:function(u){return new Promise(function(ok,no){var id=++n;w[id]=[ok,no];parent.postMessage({mgd:'fetch',id:id,url:String(u)},'*');setTimeout(function(){if(w[id]){delete w[id];no(new Error('시간이 너무 걸려요'))}},15000)})}})})()<\/script>`;
+const wfCsp=net=>{const h=(net||[]).filter(x=>WF_HOST_RE.test(x));if(!h.length)return WF_CSP;const hs=h.map(x=>'https://'+x).join(' '),ws=h.map(x=>'wss://'+x).join(' ');
+  return WF_CSP.replace("img-src data: blob:",`img-src data: blob: ${hs}`).replace("media-src data: blob:",`media-src data: blob: ${hs}`).replace("connect-src 'none'",`connect-src ${hs} ${ws}`)};
+wfDoc=function(code,net){const meta=`<meta http-equiv="Content-Security-Policy" content="${wfCsp(net)}"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;overflow:hidden}</style>${WF_BRIDGE}`;
+  let c=String(code||"");if(/<head[^>]*>/i.test(c))return c.replace(/<head[^>]*>/i,m=>m+meta);
+  if(/<!doctype[^>]*>/i.test(c))return c.replace(/<!doctype[^>]*>/i,m=>m+"<head>"+meta+"</head>");
+  return "<!doctype html><html><head>"+meta+"</head><body>"+c+"</body></html>"};
+wfFrame=function(code,title,net){const f=document.createElement("iframe");f.className="wf-live";f.setAttribute("sandbox","allow-scripts");f.setAttribute("referrerpolicy","no-referrer");
+  f.setAttribute("allow","");f.setAttribute("loading","eager");f.title=(title||"위젯")+" (만든 사람의 위젯)";f.srcdoc=wfDoc(code,net);return f};
+/* 무가당 쪽: 위젯 상자(.wf-live)에서 온 부탁만 받음. 상자마다 1분 30번 */
+const wfRelayLog=new WeakMap();
+addEventListener('message',async e=>{const d=e.data;if(!d||d.mgd!=='fetch'||typeof d.url!=='string')return;
+  const fr=[...document.querySelectorAll('iframe.wf-live')].find(f=>f.contentWindow===e.source);if(!fr)return;
+  const reply=o=>{try{e.source.postMessage(Object.assign({mgd:'fetch:r',id:d.id},o),'*')}catch(_){}};
+  const t=Date.now(),L=(wfRelayLog.get(fr)||[]).filter(x=>t-x<60000);if(L.length>=30)return reply({ok:false,error:'잠시 뒤에 다시 해 주세요(1분에 30번까지)'});L.push(t);wfRelayLog.set(fr,L);
+  let u;try{u=new URL(d.url)}catch(_){return reply({ok:false,error:'주소가 올바르지 않아요'})}
+  if(!/^https?:$/.test(u.protocol)||u.username||u.password)return reply({ok:false,error:'http·https 주소만 가져올 수 있어요'});
+  if(!SB.on||!SB.user)return reply({ok:false,error:'인터넷 가져오기는 가입한 사람에게만 돼요'});
+  try{const tok=await zzTok();if(!tok)return reply({ok:false,error:'다시 로그인해 주세요'});
+    const r=await fetch(WF_RELAY,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({u:u.toString()})});
+    const j=await r.json().catch(()=>({}));if(!r.ok||j.error)return reply({ok:false,error:{too_big:'1MB가 넘어서 가져올 수 없어요',type:'글자·JSON·그림만 가져올 수 있어요',bad_url:'가져올 수 없는 주소예요',rate:'잠시 뒤에 다시 해 주세요'}[j.error]||'가져오지 못했어요'});
+    reply({ok:true,status:j.status,type:j.type,body:j.body})}catch(_){reply({ok:false,error:'가져오지 못했어요'})}});
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */

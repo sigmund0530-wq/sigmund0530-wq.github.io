@@ -2,6 +2,7 @@
 // 글을 받아 책·물건·장소·음식·음악·영화·드라마를 찾아 돌려줘요.
 // Cloudflare는 Workers AI로 처리한 내용을 학습에 쓰지 않고, 처리 후 보관하지 않아요(공식 문서).
 // 설정: 이 Worker의 Settings → Bindings → Workers AI, 변수 이름 AI
+// 위젯 인터넷 중계(2026-11-02): POST /relay — 아래 relay() 설명
 // 짤 검색(2026-11-02): POST /zzal/search {q, src:"gif"|"kr", page} → {items:[{id,thumb,full,w,h,title}]}
 //   POST /zzal/img {u} → 그림 바이트(무가당 서버가 대신 받아 줘서, 짤 회사는 누가 찾았는지 몰라요)
 //   비밀 값(Settings → Variables and Secrets, 주인이 직접 넣음): KLIPY_KEY, NAVER_ID·NAVER_SECRET(네이버 클라우드 API HUB 키). 없으면 {items:[], need:"key"}
@@ -91,6 +92,30 @@ async function zzalImg(body, h){
   return new Response(buf, { headers: { ...h, "Content-Type": type, "Cache-Control": "private, max-age=86400" } });
 }
 
+// 위젯 인터넷 중계(2026-11-02): POST /relay {u} → {status, type, body}
+//   위젯이 무가당에 부탁하면 이 서버가 대신 가져옴(쿠키·로그인 정보 없이). 가져오기(GET)만, 1MB, 글자·JSON·그림(data: 주소로)만.
+//   로그인한 사람만, 사람(토큰)마다 1분에 60번.
+const relayLog = new Map();
+const PRIVATE_HOST = /^(localhost|0\.|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[|::1)|\.(local|internal|localhost)$/i;
+function b64(buf){ let s = ""; const a = new Uint8Array(buf); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); }
+async function relay(body, auth, h){
+  const t = Date.now(), L = (relayLog.get(auth) || []).filter(x => t - x < 60000);
+  if (L.length >= 60) return Response.json({ error: "rate" }, { status: 429, headers: h });
+  L.push(t); if (relayLog.size > 2000) relayLog.clear(); relayLog.set(auth, L);
+  let u; try { u = new URL(String(body && body.u || "")); } catch { return Response.json({ error: "bad_url" }, { status: 400, headers: h }); }
+  if (!/^https?:$/.test(u.protocol) || u.username || u.password || PRIVATE_HOST.test(u.hostname) || /workers\.dev$|supabase\.co$/i.test(u.hostname))
+    return Response.json({ error: "bad_url" }, { status: 400, headers: h });
+  let r; try { r = await fetch(u.toString(), { headers: { "User-Agent": "MugadangRelay/1 (+https://sigmund0530-wq.github.io)", Accept: "*/*" }, redirect: "follow" }); }
+  catch { return Response.json({ error: "fetch" }, { status: 502, headers: h }); }
+  const type = (r.headers.get("Content-Type") || "").split(";")[0].trim().toLowerCase();
+  const isImg = /^image\/(png|jpeg|gif|webp|svg\+xml|avif)$/.test(type), isText = /^text\/|^application\/(json|xml|rss\+xml|atom\+xml|[\w.+-]+\+json)$/.test(type);
+  if (!isImg && !isText) return Response.json({ error: "type" }, { status: 415, headers: h });
+  if (+(r.headers.get("Content-Length") || 0) > 1048576) return Response.json({ error: "too_big" }, { status: 413, headers: h });
+  const buf = await r.arrayBuffer(); if (buf.byteLength > 1048576) return Response.json({ error: "too_big" }, { status: 413, headers: h });
+  const out = isImg ? `data:${type};base64,${b64(buf)}` : new TextDecoder().decode(buf);
+  return Response.json({ status: r.status, type, body: out }, { headers: { ...h, "Cache-Control": "no-store" } });
+}
+
 export default {
   async fetch(req, env) {
     const h = cors(req.headers.get("Origin") || "");
@@ -101,6 +126,7 @@ export default {
     const path = new URL(req.url).pathname;
     if (path === "/zzal/search") return Response.json(await zzalSearch(body, env), { headers: h });
     if (path === "/zzal/img") return zzalImg(body, h);
+    if (path === "/relay") return relay(body, req.headers.get("Authorization") || "", h);
     const text = String(body && body.text || "").slice(0, 4000);
     if (!text.trim()) return Response.json({ items: [] }, { headers: h });
     const r = await env.AI.run(MODEL, { messages: [{ role: "user", content: PROMPT + text + " /no_think" }], max_tokens: 400, temperature: 0 });
