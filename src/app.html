@@ -1435,7 +1435,7 @@ body.sp-blog-edit .se-bar [data-se-add]{display:inline-flex!important}
 :root{--guide:#c9788f}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--guide:#e39ab0}}
 :root[data-theme="dark"]{--guide:#e39ab0}
-.fl-canvas{position:relative;margin:0 auto;max-width:100%;isolation:isolate;z-index:0}
+.fl-canvas{position:relative;margin:0 auto;max-width:100%;isolation:isolate;z-index:0;container-type:inline-size;width:100%}
 .fl-canvas.fl-phone{margin:24px auto;outline:1px dashed var(--line);outline-offset:0;border-radius:28px;overflow:hidden;background:inherit}
 .fl-box{position:absolute;box-sizing:border-box;min-width:0;transform-origin:50% 50%}
 .fl-box.fixed{overflow:hidden}
@@ -6205,8 +6205,9 @@ const flBaseHome=renderHome;renderHome=function(cv){
   let title=null;if(h1){title=document.createElement('div');title.className='fl-title';title.append(h1)}
   if(prof){prof.remove();prof.classList.remove('on-cover')}if(btns){btns.remove();btns.classList.remove('on-cover')}
   let menu=null;if(side){side.querySelectorAll('.nv-intro').forEach(n=>n.remove());if(side.children.length){menu=document.createElement('div');menu.className='fl-menu';while(side.firstChild)menu.appendChild(side.firstChild)}}
-  const phone=D==='m'&&!isMobile();const cw=phone?390:Math.max(280,inner.clientWidth||W);const s=cw/W;
-  const cvs=document.createElement('div');cvs.className='fl-canvas'+(ed?' fl-edit':'')+(phone?' fl-phone':'');cvs.dataset.dev=D;cvs.dataset.s=String(s);cvs.style.width=cw+'px';
+  /* 빠르게(2026-11-02, 주인: 최적화는?): 판 너비를 미리 재지 않고 자리·크기를 판 너비 비율(cqw)로 적음 → 화면을 한 번만 계산 */
+  const phone=D==='m'&&!isMobile();const u=v=>`calc(${(v/W*100).toFixed(3)}cqw)`;
+  const cvs=document.createElement('div');cvs.className='fl-canvas'+(ed?' fl-edit':'')+(phone?' fl-phone':'');cvs.dataset.dev=D;if(phone)cvs.style.width='390px';
   const vis=new Set(roomItemsVisible().map(x=>x.id));
   fl[D].items.forEach(it=>{const d=fl.defs[it.id];if(!d)return;const k=d.k;let n=null;
     if(k==='cover')n=cover;else if(k==='title')n=title;
@@ -6218,7 +6219,7 @@ const flBaseHome=renderHome;renderHome=function(cv){
     if(!n){if(!ed)return;n=document.createElement('p');n.className='hb-miss';n.textContent=k==='look'?'지난 오늘 · 1년 전 오늘 쓴 글이 있을 때 나와요':k==='menu'?'메뉴':'비어 있어요'}
     const auto=flAuto(Object.assign({id:it.id},d));
     const box=document.createElement('div');box.className=`fl-box fl-${k} ${auto?'auto':'fixed'}`;box.dataset.id=it.id;
-    box.style.cssText=`left:${it.x*s}px;top:${it.y*s}px;width:${it.w*s}px;${auto?'':`height:${it.h*s}px;`}z-index:${100+(it.z||0)};${it.r?`transform:rotate(${it.r}deg);`:''}`;
+    box.style.cssText=`left:${u(it.x)};top:${u(it.y)};width:${u(it.w)};${auto?'':`height:${u(it.h)};`}z-index:${100+(it.z||0)};${it.r?`transform:rotate(${it.r}deg);`:''}`;
     if(n.parentNode)n.parentNode.removeChild(n);box.append(n);cvs.append(box)});
   const body=inner.querySelector('.nv-body');if(body)body.remove();
   inner.querySelectorAll(':scope>.nv-cover').forEach(n=>n.remove());
@@ -6229,14 +6230,16 @@ const flBaseHome=renderHome;renderHome=function(cv){
   if(ed)flEditUI(cvs);
   return r};
 /* 길이가 바뀌는 조각: 실제 높이를 재고, 길어진 만큼 바로 아래 조각을 밀어 내림 */
-function flLayout(cvs){const D=cvs.dataset.dev,s=+cvs.dataset.s,fl=flRoot(),ed=cvs.classList.contains('fl-edit');
+function flLayout(cvs){const D=cvs.dataset.dev,W=FLW[D],fl=flRoot(),ed=cvs.classList.contains('fl-edit');
+  /* 읽기를 먼저 몰아서(화면 계산 한 번), 쓰기는 그다음 */
+  const s=(cvs.clientWidth||W)/W;cvs.dataset.s=String(s);const u=v=>`calc(${(v/W*100).toFixed(3)}cqw)`;
   const by={};cvs.querySelectorAll(':scope>.fl-box').forEach(b=>by[b.dataset.id]=b);
   const its=fl[D].items.filter(i=>by[i.id]).slice().sort((a,b)=>a.y-b.y||a.x-b.x);const dy={},act={};let ch=false;
   its.forEach(i=>{dy[i.id]=0;act[i.id]=by[i.id].classList.contains('auto')?Math.max(10,Math.round(by[i.id].offsetHeight/s)):i.h});
   const ovX=(a,b)=>a.x<b.x+b.w-1&&b.x<a.x+a.w-1;
   if(!ed)fl[D].items.filter(i=>!by[i.id]).forEach(sk=>its.forEach(b=>{if(b.y>=sk.y+sk.h-2&&ovX(sk,b))dy[b.id]-=Math.min(sk.h+20,b.y-sk.y)}));
   its.forEach(a=>{const d=act[a.id]-a.h;if(d<=0)return;its.forEach(b=>{if(b===a||b.y<a.y+a.h-2||!ovX(a,b))return;dy[b.id]=Math.max(dy[b.id],dy[a.id]+d)})});
-  let H=0;its.forEach(i=>{const Y=Math.max(0,i.y+dy[i.id]);by[i.id].style.top=Y*s+'px';H=Math.max(H,Y+act[i.id]);
+  let H=0;its.forEach(i=>{const Y=Math.max(0,i.y+dy[i.id]);by[i.id].style.top=u(Y);by[i.id].dataset.y=Y;H=Math.max(H,Y+act[i.id]);
     if(ed&&(dy[i.id]||act[i.id]!==i.h)){i.y=Y;i.h=act[i.id];ch=true}});
   cvs.style.height=Math.ceil(H*s+(ed?240:24))+'px';
   /* 프로필이 커버 위에 겹치면 흰 글씨 */
@@ -6267,11 +6270,14 @@ function flEditUI(cvs){const D=cvs.dataset.dev,s=+cvs.dataset.s,fl=flRoot();
   if(matchMedia('(pointer:coarse)').matches)tb.insertAdjacentHTML('beforeend',B('multi',ui.flMulti?'여럿 고르기 끄기':'여럿 고르기',` aria-pressed="${!!ui.flMulti}"`));
   cvs.append(tb);
   /* 막대 자리: 고른 것 위(넘치면 아래) */
-  const bb=flBBox(D,sel,cvs);const top=bb.y*s-48,cw=cvs.clientWidth;tb.style.top=(top<4?(bb.y+bb.h)*s+12:top)+'px';
-  const w=tb.offsetWidth,th=tb.offsetHeight;tb.style.left=Math.max(4,Math.min(cw-w-4,(bb.x+bb.w/2)*s-w/2))+'px';const t2=bb.y*s-th-(cvs.querySelector('.fl-box.sel .fl-rot')?46:10);tb.style.top=(t2<4?(bb.y+bb.h)*s+12:t2)+'px'}
+  tb.style.visibility='hidden';requestAnimationFrame(()=>{if(!tb.isConnected)return;const bb=flBBox(D,sel,cvs),cw=cvs.clientWidth;
+  const w=tb.offsetWidth,th=tb.offsetHeight;tb.style.visibility='';tb.style.left=Math.max(4,Math.min(cw-w-4,(bb.x+bb.w/2)*s-w/2))+'px';const t2=bb.y*s-th-(cvs.querySelector('.fl-box.sel .fl-rot')?46:10);tb.style.top=(t2<4?(bb.y+bb.h)*s+12:t2)+'px'})}
+/* 고르기만 바뀌면 화면 전체를 다시 그리지 않고 표시만 바꿈 */
+function flRefresh(cvs){if(!cvs||!cvs.isConnected){render();return}cvs.querySelectorAll('.fl-h,.fl-tb,.fl-guides,.fl-hint,.fl-size').forEach(n=>n.remove());cvs.querySelectorAll('.fl-box.sel,.fl-box.fl-lift').forEach(b=>b.classList.remove('sel','fl-lift'));
+  const u=document.querySelector('[data-se-undo]');if(u)u.disabled=!seUndo.length;flEditUI(cvs)}
 /* 고른 것들의 네모(지금 화면에 보이는 높이 기준) */
 function flRect(D,id,cvs){const i=flIt(D,id);const b=cvs&&flBox(cvs,id);if(!i)return null;const s=cvs?+cvs.dataset.s:1;
-  return {id,x:i.x,y:b?parseFloat(b.style.top)/s:i.y,w:i.w,h:b&&b.classList.contains('auto')?b.offsetHeight/s:i.h}}
+  return {id,x:i.x,y:b&&b.dataset.y!=null?+b.dataset.y:i.y,w:i.w,h:b&&b.classList.contains('auto')?b.offsetHeight/s:i.h}}
 function flBBox(D,ids,cvs){const R=ids.map(id=>flRect(D,id,cvs)).filter(Boolean);const x=Math.min(...R.map(r=>r.x)),y=Math.min(...R.map(r=>r.y));return {x,y,w:Math.max(...R.map(r=>r.x+r.w))-x,h:Math.max(...R.map(r=>r.y+r.h))-y}}
 
 /* 자석: 붙을 선 찾기. rect의 움직이는 변(xs/ys 목록)을 다른 조각·판의 변·가운데에 맞춤 */
@@ -6299,6 +6305,7 @@ function flGapSnap(rect,others,ax,T){const P=ax==='x'?['x','w','y','h']:['y','h'
 let flDrag=null;
 document.addEventListener('touchmove',e=>{if(flDrag&&flDrag.live)e.preventDefault()},{passive:false,capture:true});
 document.addEventListener('pointerdown',e=>{const cvs=e.target.closest&&e.target.closest('.fl-canvas.fl-edit');if(!cvs||e.button>0)return;if(e.target.closest('.fl-tb'))return;
+  {const ae=document.activeElement;if(ae&&ae!==document.body&&(ae.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))ae.blur()}
   const D=cvs.dataset.dev,s=+cvs.dataset.s,W=FLW[D];const box=e.target.closest('.fl-box'),hd=e.target.closest('.fl-h');const touch=e.pointerType!=='mouse';
   const cr=cvs.getBoundingClientRect();const pt=ev=>({x:(ev.clientX-cr.left)/s,y:(ev.clientY-cr.top)/s});const p0=pt(e);
   if(!box){/* 빈 곳: 마우스는 네모로 여럿 고르기, 손가락은 눌렀다 떼면 고르기 풀기 */
@@ -6308,8 +6315,8 @@ document.addEventListener('pointerdown',e=>{const cvs=e.target.closest&&e.target
       Object.assign(mq.style,{left:x*s+'px',top:y*s+'px',width:w*s+'px',height:h*s+'px'});st.r={x,y,w,h};
       cvs.querySelectorAll(':scope>.fl-box').forEach(b=>{const r=flRect(D,b.dataset.id,cvs);b.classList.toggle('sel',!!r&&r.x<x+w&&x<r.x+r.w&&r.y<y+h&&y<r.y+r.h)})};
     const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',cn);flDrag=null;if(mq)mq.remove();
-      if(st.r){ui.flSel=[...cvs.querySelectorAll(':scope>.fl-box.sel')].map(b=>b.dataset.id);render();return}
-      if(!st.moved&&(ui.flSel||[]).length){ui.flSel=[];render()}};
+      if(st.r){ui.flSel=[...cvs.querySelectorAll(':scope>.fl-box.sel')].map(b=>b.dataset.id);flRefresh(cvs);return}
+      if(!st.moved&&(ui.flSel||[]).length){ui.flSel=[];flRefresh(cvs)}};
     const cn=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',cn);flDrag=null;if(mq)mq.remove()};
     addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',cn);return}
   const id=box.dataset.id;const multi=e.shiftKey||e.metaKey||e.ctrlKey||(touch&&ui.flMulti);let sel=(ui.flSel||[]).slice();const was=sel.includes(id);
@@ -6319,7 +6326,7 @@ document.addEventListener('pointerdown',e=>{const cvs=e.target.closest&&e.target
     flDrag=st;let t=setTimeout(()=>{t=null;begin();st.live=true;box.classList.add('fl-lift');if(navigator.vibrate)try{navigator.vibrate(8)}catch(_){}},350);
     const mv0=ev=>{if(st.live)return;const p=pt(ev);if(Math.abs(p.x-p0.x)+Math.abs(p.y-p0.y)>8/s){clearTimeout(t);t=null;fin()}};
     const fin=()=>{removeEventListener('pointermove',mv0);removeEventListener('pointerup',up0);removeEventListener('pointercancel',fin);if(!st.live)flDrag=null};
-    const up0=()=>{fin();if(t){clearTimeout(t);begin();render()}};
+    const up0=()=>{fin();if(t){clearTimeout(t);begin();flRefresh(cvs)}};
     addEventListener('pointermove',mv0);addEventListener('pointerup',up0);addEventListener('pointercancel',fin);
     st.start=()=>{};flWatch(st,cvs,D,s,W,pt,p0,id);return}
   e.preventDefault();begin();st.live=true;flDrag=st;flWatch(st,cvs,D,s,W,pt,p0,id)},true);
@@ -6339,7 +6346,7 @@ function flWatch(st,cvs,D,s,W,pt,p0,id){const L=flItems(D);
         if(!sy){const g=flGapSnap(R,O,'y',T);if(g){sy=g.d;R.y+=sy;gaps.push(...g.gaps());sy=0}}
         R.x+=sx;R.y+=sy}
       R.y=Math.max(0,R.y);const ddx=R.x-bb.x,ddy=R.y-bb.y;
-      base.its.forEach(({it,o,r})=>{it.x=Math.round(o.x+ddx);it.y=Math.round(r.y+ddy);const b=flBox(cvs,it.id);b.style.left=it.x*s+'px';b.style.top=it.y*s+'px'});
+      base.its.forEach(({it,o,r})=>{it.x=Math.round(o.x+ddx);it.y=Math.round(r.y+ddy);const b=flBox(cvs,it.id);b.style.left=it.x*s+'px';b.style.top=it.y*s+'px';b.dataset.y=it.y});
       if(snap)flGuides(cvs,R,O,W,s,gaps)}
     else if(st.mode==='rot'){const {it,r}=base.its[0];const c={x:r.x+r.w/2,y:r.y+r.h/2};let a=Math.atan2(p.y-c.y,p.x-c.x)*180/Math.PI+90;if(a>180)a-=360;
       const n15=Math.round(a/15)*15;if(ev.shiftKey||(snap&&Math.abs(a-n15)<=5))a=n15;a=Math.round(a);if(Math.abs(a)<1)a=0;it.r=a;
@@ -6353,16 +6360,16 @@ function flWatch(st,cvs,D,s,W,pt,p0,id){const L=flItems(D);
         if(!auto&&dir.includes('s')){h+=flSnapAxis([y+h],cy,T)}if(!auto&&dir.includes('n')){const d=flSnapAxis([y],cy,T);y+=d;h-=d}}
       const mw=40;if(w<mw){if(dir.includes('w'))x-=mw-w;w=mw}if(h<30){if(dir.includes('n'))y-=30-h;h=30}
       it.x=Math.round(x);it.y=Math.round(Math.max(0,y));it.w=Math.round(w);if(!auto)it.h=Math.round(h);
-      const b=flBox(cvs,it.id);Object.assign(b.style,{left:it.x*s+'px',top:it.y*s+'px',width:it.w*s+'px'});if(!auto)b.style.height=it.h*s+'px';
+      const b=flBox(cvs,it.id);Object.assign(b.style,{left:it.x*s+'px',top:it.y*s+'px',width:it.w*s+'px'});b.dataset.y=it.y;if(!auto)b.style.height=it.h*s+'px';
       if(snap&&!o.r)flGuides(cvs,{x:it.x,y:it.y,w:it.w,h:auto?b.offsetHeight/s:it.h},O,W,s,[]);
       const l=lab(auto?`${it.w}`:`${it.w} × ${it.h}`);l.style.left=(it.x+it.w/2)*s+'px';l.style.top=(it.y+(auto?b.offsetHeight/s:it.h))*s+10+'px'}};
   const end=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',end);removeEventListener('pointercancel',end);const was=flDrag===st;if(was)flDrag=null;
     cvs.classList.remove('fl-dragging');const l=cvs.querySelector('.fl-size');if(l)l.remove();const g=cvs.querySelector('.fl-guides');if(g)g.innerHTML='';
-    if(!st.live)return;if(st.moved){seUndo.push(st.snap);if(seUndo.length>60)seUndo.shift();commit();return}
+    if(!st.live)return;if(st.moved){seUndo.push(st.snap);if(seUndo.length>60)seUndo.shift();persist();flLayout(cvs);flRefresh(cvs);return}
     /* 그냥 누름: 여럿 고른 상태에서 하나를 누르면 그것만 */
     if(ev&&ev.type==='pointerup'&&st.mode==='move'&&!(ev.shiftKey||ev.metaKey||ev.ctrlKey||ui.flMulti)&&(ui.flSel||[]).length>1&&ui.flSel.includes(id))ui.flSel=[id];
     else if(ev&&ev.type==='pointerup'&&st.mode==='move'&&(ev.shiftKey||ev.metaKey||ev.ctrlKey||(ev.pointerType!=='mouse'&&ui.flMulti))&&st.wasSel)ui.flSel=ui.flSel.filter(x=>x!==id);
-    render()};
+    flRefresh(cvs)};
   addEventListener('pointermove',mv);addEventListener('pointerup',end);addEventListener('pointercancel',end)}
 /* 막대 단추 */
 function flCanvas(){return document.querySelector('.fl-canvas.fl-edit')}
@@ -6384,7 +6391,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.c
   if(a==='front'||a==='back'){const zs=flItems(D).map(i=>i.z||0);seChange(()=>{ids.forEach(x=>{flIt(D,x).z=a==='front'?Math.max(...zs)+1:Math.min(...zs)-1})});return}
   if(a==='unrot'){seChange(()=>{flIt(D,id).r=0});return}
   if(a==='del')return flRemove(ids);
-  if(a==='multi'){ui.flMulti=!ui.flMulti;render();return}
+  if(a==='multi'){ui.flMulti=!ui.flMulti;flRefresh(cvs);return}
   if(a==='set'){if(d.k==='cover'){ui.seSel='cover';ui.roomSel=null;render();return}if(d.k==='profile'||d.k==='title'){editProfile();return}
     if(d.k==='shelf'){ui.roomSel=id;ui.seSel=null;render();return}
     if(d.k==='quote'){const v=await askText('문장 고치기',d.text||'',{multiline:true,ok:'고치기'});if(v!=null&&v.trim())seChange(()=>{d.text=v.trim().slice(0,400)});return}
@@ -6395,7 +6402,7 @@ document.addEventListener('keydown',e=>{if(!ui.spaceEdit||!(ui.flSel||[]).length
   const mv={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
   if(mv){e.preventDefault();const k=e.shiftKey?10:1;seChange(()=>{ui.flSel.forEach(id=>{const it=flIt(D,id);if(it){it.x+=mv[0]*k;it.y=Math.max(0,it.y+mv[1]*k)}})});return}
   if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();flRemove(ui.flSel.slice());return}
-  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();ui.flSel=[];render()}},true);
+  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();ui.flSel=[];flRefresh(cvs)}},true);
 /* 편집 시작·끝: 고른 것 초기화 */
 const flBegin=seBegin;seBegin=function(){ui.flSel=[];ui.flMulti=false;return flBegin()};openDecorate=seBegin;
 const flEnd=seEnd;seEnd=function(){ui.flSel=[];ui.flMulti=false;ui.flDev='pc';return flEnd()};
