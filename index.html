@@ -1651,6 +1651,38 @@ html.fm-open,html.fm-open body{overflow:hidden}
 .fm-tools [data-fm-snap][aria-pressed="false"],.fm-tools [data-fm-guide][aria-pressed="false"],.fm-tools [data-fm-own][aria-pressed="false"]{opacity:.55}.fm-tools [aria-pressed="true"]{color:var(--ink);font-weight:600}.fm-next{margin-left:6px}
 .fm-try-in{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--chrome);padding:10px 12px;font:inherit;font-size:14px;color:var(--ink)}
 .fm-try-out{font-size:30px;line-height:1.35;margin:12px 0 4px;word-break:keep-all;min-height:1.4em}
+
+/* 줌은 편집 화면만 바꾸고 배치 좌표에는 영향을 주지 않음 */
+.se-bar .mgd-edit-zoom{display:inline-flex;align-items:center;gap:2px;background:var(--porc-in,var(--chrome-2));border-radius:999px;padding:2px 4px;flex:none}
+.se-bar .mgd-edit-zoom button{background:transparent;border:0;border-radius:999px;font:inherit;font-size:12px;color:var(--ink);padding:6px;cursor:pointer;white-space:nowrap}
+.se-bar .mgd-edit-zoom button:hover{background:var(--porc-hi,var(--chrome))}
+.se-bar .mgd-edit-zoom output{min-width:36px;font-size:12px;text-align:center;font-variant-numeric:tabular-nums}
+.fl-canvas.fl-edit{will-change:transform}
+.pblock.pw-drag .prow-edit{transform-origin:center top;will-change:transform}
+.pblock.pw-drag .pw-h{pointer-events:none}
+.mgd-photo-tools{display:flex;justify-content:flex-end;gap:8px;margin:8px 0 0}
+.pblock:not(.pw-sel) .mgd-photo-tools{display:none}
+.mgd-photo-tools button{border:0;border-radius:999px;padding:8px 12px;font:inherit;font-size:12px;cursor:pointer;background:var(--porc-in,var(--chrome-2));color:var(--ink)}
+.mgd-photo-tools button:last-child{color:var(--danger)}
+.mgd-fx-overlay{position:fixed;inset:0;z-index:110000;background:rgba(10,10,10,.46);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}
+.mgd-fx-sheet{background:var(--chrome);color:var(--ink);width:min(620px,100%);max-height:calc(100dvh - 36px);overflow:auto;border-radius:18px;padding:16px;box-sizing:border-box;box-shadow:0 14px 48px rgba(0,0,0,.18)}
+.mgd-fx-sheet header,.mgd-fx-sheet footer{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mgd-fx-sheet button{border:0;border-radius:999px;padding:9px 12px;font:inherit;font-size:12px;cursor:pointer;background:var(--porc-in,var(--chrome-2));color:var(--ink)}
+.mgd-fx-sheet header button{background:none;font-size:17px}
+.mgd-fx-sheet footer{flex-wrap:wrap;margin-top:14px}
+.mgd-fx-sheet footer span{flex:1}
+.mgd-fx-sheet [data-fx-save]{background:var(--porc-main-bot,var(--ink-2));color:var(--primary-ink,#fff)}
+.mgd-fx-sheet [aria-pressed=true]{outline:1px solid var(--ink-2)}
+.mgd-fx-preview{display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--chrome-2);border-radius:10px;height:min(35vh,285px);margin:10px 0}
+.mgd-fx-preview img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.mgd-fx-presets{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px}
+.mgd-fx-presets button{white-space:nowrap;flex:0 0 auto}
+.mgd-fx-sliders{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+.mgd-fx-row{display:grid;grid-template-columns:65px 1fr 32px;align-items:center;gap:8px;min-width:0;font-size:12px;color:var(--ink-2)}
+.mgd-fx-row input{width:100%;min-width:0;accent-color:var(--ink)}
+.mgd-fx-row output{text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:600px){.mgd-fx-overlay{padding:0;align-items:flex-end}.mgd-fx-sheet{width:100%;max-height:92dvh;border-radius:18px 18px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}.mgd-fx-preview{height:26vh}.mgd-fx-sliders{grid-template-columns:1fr}.se-bar .mgd-edit-zoom button{font-size:11px;padding:5px}}
+
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -2586,7 +2618,7 @@ function normBlocks(bs,ink=[]){
 }
 /* 저장용 모양: 빈 문단은 버림 */
 const finalBlocks=(bs,ink=[])=>bs.filter(b=>b.type==="photos"?b.items.length:b.type==="audio"?!!b.assetId:!isBlankHtml(b.html)||ink.some(s=>s.b===b.id))
-  .map(b=>b.type==="photos"?{id:b.id,type:"photos",items:b.items.map(x=>({assetId:x.assetId,caption:(x.caption||"").trim()})),...(b.w>=20&&b.w<100?{w:Math.round(b.w)}:{})}:b.type==="audio"?{id:b.id,type:"audio",assetId:b.assetId,caption:(b.caption||"").trim()}:{id:b.id,type:"text",html:b.html});
+  .map(b=>b.type==="photos"?{id:b.id,type:"photos",items:b.items.map(x=>({assetId:x.assetId,caption:(x.caption||"").trim(),...(mgdFX(x.fx)?{fx:mgdFX(x.fx)}:{})})),...(b.w>=20&&b.w<100?{w:Math.round(b.w)}:{})}:b.type==="audio"?{id:b.id,type:"audio",assetId:b.assetId,caption:(b.caption||"").trim()}:{id:b.id,type:"text",html:b.html});
 /* 예전 임시저장(본문 하나 + 사진 목록) → 블록 */
 function draftToBlocks(d){if(d.blocks)return d.blocks;const bs=[{id:uid("b"),type:"text",html:d.bodyHtml||""}];
   if(d.photos&&d.photos.length)bs.push({id:uid("b"),type:"photos",items:d.photos});return bs}
@@ -2675,7 +2707,7 @@ function openEditor(opts){
           if(b.type==="text")return `<div class="rte-area" data-bid="${b.id}" contenteditable="true" role="textbox" aria-multiline="true" aria-label="문단" data-ph="${b===firstText?"오늘 있었던 일, 떠오른 생각…":"이어서 쓰기…"}">${b.html}</div>`;
                     /* 사진: 글에 실릴 모습 그대로 크게. 버튼은 숨기고, 사진을 누르면 메뉴 */
           return `<div class="pblock" data-bid="${b.id}" style="--pw:${b.w>=20&&b.w<100?b.w:100}%"><div class="prow-edit n${Math.min(b.items.length,3)}">${b.items.map((ph,i)=>`<figure class="ph-item${ph.assetId===cover?" is-cover":""}" data-i="${i}">
-              <button type="button" class="ph-img" data-phm aria-label="사진 ${i+1} 편집"><img src="${assets[ph.assetId]?.dataUrl||""}" alt="">${ph.assetId===cover&&total>1?`<span class="cover-badge">대표</span>`:""}</button>
+              <button type="button" class="ph-img" data-phm aria-label="사진 ${i+1} 편집"><img src="${assets[ph.assetId]?.dataUrl||""}" alt="" style="${mgdFXStyle(ph.fx)}">${ph.assetId===cover&&total>1?`<span class="cover-badge">대표</span>`:""}</button>
               ${ph.caption?`<figcaption>${esc(ph.caption)}</figcaption>`:""}</figure>`).join("")}<span class="pw-h" role="slider" tabindex="0" aria-label="사진 크기" aria-valuemin="20" aria-valuemax="100" aria-valuenow="${b.w>=20&&b.w<100?b.w:100}" title="끌어서 크기 바꾸기"></span></div><input type="file" accept="image/*" multiple hidden class="ph-add-in"></div>`}).join("");
         blocksEl.querySelectorAll(".pblock").forEach(pb=>{
           const b=draft.blocks.find(x=>x.id===pb.dataset.bid);
@@ -2918,7 +2950,7 @@ function renderBody(p){
     const items=b.items.filter(x=>assets[x.assetId]);const rows=[];
     for(let i=0;i<items.length;i+=ROW_MAX)rows.push(items.slice(i,i+ROW_MAX));
     return rows.map((r,ri)=>`<div class="prow"${ri?"":` data-bid="${b.id}"`}>${r.map(x=>{const a=assets[x.assetId];const ar=(a.width||1)/(a.height||1);
-      return `<figure class="pfig" style="flex:${ar.toFixed(3)} 1 0"><img src="${a.dataUrl}" alt="${esc(x.caption||p.title||"글 사진")}" style="aspect-ratio:${a.width}/${a.height}">${x.caption?`<figcaption>${esc(x.caption)}</figcaption>`:""}</figure>`}).join("")}</div>`).join("");
+      return `<figure class="pfig" style="flex:${ar.toFixed(3)} 1 0"><img src="${a.dataUrl}" alt="${esc(x.caption||p.title||"글 사진")}" style="aspect-ratio:${a.width}/${a.height};${mgdFXStyle(x.fx)}">${x.caption?`<figcaption>${esc(x.caption)}</figcaption>`:""}</figure>`}).join("")}</div>`).join("");
   }).join("");
 }
 function clearAuto(slot){try{localStorage.removeItem(AUTOSAVE+slot)}catch(e){}}
@@ -5985,12 +6017,13 @@ function pwSet(ctx,bid,w){const b=ctx.draft.blocks.find(x=>x.id===bid);if(!b)ret
   if(w>=100)delete b.w;else b.w=w;const pb=ctx.body.querySelector(`.pblock[data-bid="${CSS.escape(bid)}"]`);
   if(pb){pb.style.setProperty('--pw',w+'%');const h=pb.querySelector('.pw-h');if(h)h.setAttribute('aria-valuenow',w)}ctx.queueAuto();return w}
 document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.pblock .pw-h');if(!h)return;const ctx=pfwCtxOf(h);if(!ctx)return;
-  e.preventDefault();e.stopPropagation();const pb=h.closest('.pblock'),bid=pb.dataset.bid,box=pb.getBoundingClientRect(),cs=getComputedStyle(pb);
-  const inner=box.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),mid=box.left+parseFloat(cs.paddingLeft)+inner/2;
-  const tip=document.createElement('span');tip.className='pw-tip';pb.appendChild(tip);pb.classList.add('pw-drag');
-  const mv=ev=>{const w=pwSet(ctx,bid,Math.abs(ev.clientX-mid)*2/inner*100);tip.textContent=w+'%'};
-  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);tip.remove();pb.classList.remove('pw-drag')};
-  addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up)},true);
+ e.preventDefault();e.stopPropagation();const pb=h.closest('.pblock'),bid=pb.dataset.bid,b=ctx.draft.blocks.find(x=>x.id===bid);if(!b)return;
+ const row=pb.querySelector('.prow-edit'),box=pb.getBoundingClientRect(),cs=getComputedStyle(pb),inner=Math.max(80,box.width-parseFloat(cs.paddingLeft||0)-parseFloat(cs.paddingRight||0));
+ const startW=b.w||100,startX=e.clientX,left=h.classList.contains('pw-tl')||h.classList.contains('pw-bl');let target=startW;
+ const tip=document.createElement('span');tip.className='pw-tip';pb.append(tip);pb.classList.add('pw-drag');
+ const move=ev=>{const dx=(ev.clientX-startX)*(left?-1:1);target=Math.max(20,Math.min(100,Math.round((startW+dx*200/inner)/5)*5));row.style.transform='scale('+(target/startW)+')';tip.textContent=target+'%'};
+ const done=ev=>{removeEventListener('pointermove',move);removeEventListener('pointerup',done);removeEventListener('pointercancel',done);row.style.transform='';tip.remove();pb.classList.remove('pw-drag');if(ev.type==='pointerup'&&target!==startW)pwSet(ctx,bid,target)};
+ addEventListener('pointermove',move);addEventListener('pointerup',done);addEventListener('pointercancel',done)},true);
 document.addEventListener('keydown',e=>{const h=e.target.closest&&e.target.closest('.pblock .pw-h');if(!h||!/^Arrow(Left|Right|Up|Down)$/.test(e.key))return;const ctx=pfwCtxOf(h);if(!ctx)return;
   e.preventDefault();const bid=h.closest('.pblock').dataset.bid,b=ctx.draft.blocks.find(x=>x.id===bid);pwSet(ctx,bid,(b&&b.w||100)+(/Right|Up/.test(e.key)?5:-5))});
 let pwLast=null;
@@ -6033,7 +6066,7 @@ function psMenu(btn){if(!btn)return;psMenuOK=true;try{btn.click()}finally{psMenu
 document.addEventListener('click',e=>{const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn||psMenuOK)return;
   const ctx=pfwCtxOf(btn);if(ctx&&ctx._pfpPin)return; /* 사진 속 위치 찍는 중엔 그대로 */
   e.preventDefault();e.stopImmediatePropagation();if(Date.now()<psSkipClick)return;
-  const pb=btn.closest('.pblock');if(pb.classList.contains('pw-sel'))psUnsel();else psSel(pb)},true);
+  const pb=btn.closest('.pblock');const i=+btn.closest(".ph-item").dataset.i;if(pb.classList.contains("pw-sel")&&pb.dataset.photoIndex===String(i))psUnsel();else{psSel(pb);mgdSelectPhoto(pb,ctx,i)}},true);
 document.addEventListener('contextmenu',e=>{const btn=e.target.closest&&e.target.closest('.pblock .ph-item [data-phm]');if(!btn)return;e.preventDefault();psSel(btn.closest('.pblock'));psMenu(btn)});
 /* 꾹 누른 뒤(2026-11-02, 주인 결정): 그대로 떼면 메뉴, 끌면 사진을 원하는 자리로 옮김(손가락·펜). PC는 원래 있던 끌어 놓기(edPhotoDrag)를 씀.
    놓는 자리 규칙은 PC 끌어 놓기와 같음: 다른 사진 옆이면 그 줄 안에서 앞·뒤, 글 위면 놓은 줄 끝에서 글을 나누고 새 사진 줄. 화면 위·아래 끝에 가면 저절로 굴러감. */
@@ -6471,7 +6504,7 @@ document.addEventListener('touchmove',e=>{if(flDrag&&flDrag.live)e.preventDefaul
 document.addEventListener('pointerdown',e=>{const cvs=e.target.closest&&e.target.closest('.fl-canvas.fl-edit');if(!cvs||e.button>0)return;if(e.target.closest('.fl-tb'))return;
   {const ae=document.activeElement;if(ae&&ae!==document.body&&(ae.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))ae.blur()}
   const D=cvs.dataset.dev,s=+cvs.dataset.s,W=FLW[D];const box=e.target.closest('.fl-box'),hd=e.target.closest('.fl-h');const touch=e.pointerType!=='mouse';
-  const cr=cvs.getBoundingClientRect();const pt=ev=>({x:(ev.clientX-cr.left)/s,y:(ev.clientY-cr.top)/s});const p0=pt(e);
+  const cr=cvs.getBoundingClientRect(),visS=s*(Number(cvs.dataset.editZoom)||1);const pt=ev=>({x:(ev.clientX-cr.left)/visS,y:(ev.clientY-cr.top)/visS});const p0=pt(e);
   if(!box){/* 빈 곳: 마우스는 네모로 여럿 고르기, 손가락은 눌렀다 떼면 고르기 풀기 */
     const st={live:!touch,moved:false};flDrag=st;let mq=null;
     const mv=ev=>{const p=pt(ev);if(Math.abs(p.x-p0.x)+Math.abs(p.y-p0.y)>4/s)st.moved=true;if(touch||!st.moved)return;
@@ -7488,6 +7521,90 @@ document.addEventListener('click',async e=>{const t=e.target;if(!t.closest)retur
   if(t.closest('[data-uf-del]')){const ok=await confirmDlg(`‘${f.name}’ 글꼴을 지울까요?`,'이미 발행한 글은 그대로 보여요. 글쓰기에서는 기본 글꼴로 바뀌어요.','지우기');if(ok){ufRemove(f);toast('글꼴을 지웠어요.');ufRoomRe()}}});
 
 
+/* 무가당 공간 배율 및 글쓰기 사진 도구 2026-11-03 */
+function mgdFX(f){
+ if(!f||typeof f!=="object"||Array.isArray(f))return null;
+ const spec={b:[100,30,200],c:[100,30,200],s:[100,0,220],warm:[0,0,100],gray:[0,0,100],hue:[0,-180,180],blur:[0,0,3],flip:[0,0,1]};
+ let result={},active=false;
+ for(const [k,[def,min,max]]of Object.entries(spec)){let v=Number(f[k]);v=Number.isFinite(v)?Math.max(min,Math.min(max,Math.round(v*10)/10)):def;result[k]=v;if(v!==def)active=true}
+ return active?result:null;
+}
+function mgdFXStyle(f){
+ const v=mgdFX(f);if(!v)return "";
+ return `filter:brightness(${v.b/100}) contrast(${v.c/100}) saturate(${v.s/100}) sepia(${v.warm/100}) grayscale(${v.gray/100}) hue-rotate(${v.hue}deg) blur(${v.blur}px);${v.flip?"transform:scaleX(-1);":""}`;
+}
+function mgdPhotoDelete(ctx,id,i){
+ if(!ctx)return;const block=ctx.draft.blocks.find(b=>b.id===id);if(!block||block.type!=="photos"||!block.items[i])return;
+ ctx.syncText();block.items.splice(i,1);ctx.drawBlocks();ctx.queueAuto();toast("선택한 사진을 뺐어요.");
+}
+function mgdPhotoFilter(ctx,id,i){
+ const item=ctx?.draft.blocks.find(b=>b.id===id)?.items[i];if(!item||!assets[item.assetId])return;
+ document.querySelectorAll(".mgd-fx-overlay").forEach(n=>n.remove());
+ const d={b:100,c:100,s:100,warm:0,gray:0,hue:0,blur:0,flip:0};
+ let v=Object.assign({},d,mgdFX(item.fx)||{});
+ const presets=[["원본",{}],["선명",{c:120,s:130}],["부드럽게",{b:105,c:92,s:90}],["따뜻하게",{warm:35,s:103}],["빈티지",{warm:45,c:90,s:80}],["흑백",{gray:100,c:110}],["차분하게",{s:70,c:94}],["색조",{hue:20}]];
+ const sliders=[["b","밝기",30,200],["c","대비",30,200],["s","채도",0,220],["warm","따뜻함",0,100],["gray","흑백",0,100],["hue","색조",-180,180],["blur","부드러움",0,3]];
+ const el=document.createElement("div");el.className="mgd-fx-overlay";
+ el.innerHTML='<section class="mgd-fx-sheet" role="dialog" aria-modal="true" aria-label="사진 보정"><header><strong>사진 보정 · 필터</strong><button type="button" data-fx-close aria-label="닫기">✕</button></header><div class="mgd-fx-preview"><img alt="보정 미리보기"></div><nav class="mgd-fx-presets" aria-label="필터"></nav><div class="mgd-fx-sliders"></div><footer><button type="button" data-fx-flip>좌우 반전</button><button type="button" data-fx-reset>원본으로</button><span></span><button type="button" data-fx-cancel>취소</button><button type="button" data-fx-save>적용</button></footer></section>';
+ const preview=el.querySelector("img");preview.src=assets[item.assetId].dataUrl;
+ const ps=el.querySelector(".mgd-fx-presets"),sl=el.querySelector(".mgd-fx-sliders");
+ const redraw=()=>{preview.style.cssText=mgdFXStyle(v);sl.querySelectorAll("input").forEach(n=>n.value=String(v[n.dataset.field]));sl.querySelectorAll("output").forEach(n=>n.textContent=String(v[n.dataset.field]));el.querySelector("[data-fx-flip]").setAttribute("aria-pressed",String(!!v.flip))};
+ presets.forEach(([label,p])=>{const b=document.createElement("button");b.type="button";b.textContent=label;b.onclick=()=>{v=Object.assign({},d,p);redraw()};ps.append(b)});
+ sliders.forEach(([k,label,min,max])=>{const row=document.createElement("label");row.className="mgd-fx-row";
+  row.innerHTML="<span></span><input type='range'><output></output>";
+  row.querySelector("span").textContent=label;
+  const r=row.querySelector("input");r.min=min;r.max=max;r.step=k==="blur"?"0.1":"1";r.dataset.field=k;row.querySelector("output").dataset.field=k;
+  r.oninput=()=>{v[k]=Number(r.value);redraw()};sl.append(row)});
+ const close=()=>{document.removeEventListener("keydown",key,true);el.remove()};
+ const key=e=>{if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();close()}};
+ el.querySelector("[data-fx-close]").onclick=close;el.querySelector("[data-fx-cancel]").onclick=close;
+ el.querySelector("[data-fx-reset]").onclick=()=>{v=Object.assign({},d);redraw()};
+ el.querySelector("[data-fx-flip]").onclick=()=>{v.flip=v.flip?0:1;redraw()};
+ el.querySelector("[data-fx-save]").onclick=()=>{
+  const ph=ctx.draft.blocks.find(b=>b.id===id)?.items[i];if(!ph){close();return}
+  const fx=mgdFX(v);if(fx)ph.fx=fx;else delete ph.fx;
+  const img=ctx.blocksEl.querySelector('.pblock[data-bid="'+CSS.escape(id)+'"] .ph-item[data-i="'+i+'"] img');
+  if(img)img.style.cssText=mgdFXStyle(fx);
+  ctx.queueAuto();close();toast("사진 보정을 적용했어요.");
+ };
+ el.onclick=e=>{if(e.target===el)close()};
+ document.body.append(el);redraw();document.addEventListener("keydown",key,true);el.querySelector("[data-fx-save]").focus();
+}
+function mgdSelectPhoto(pb,ctx,i){
+ pb.querySelectorAll(".mgd-photo-tools").forEach(n=>n.remove());if(!ctx)return;
+ pb.dataset.photoIndex=String(i);const bar=document.createElement("div");bar.className="mgd-photo-tools";
+ const edit=document.createElement("button");edit.type="button";edit.textContent="보정 · 필터";edit.onclick=e=>{e.stopPropagation();mgdPhotoFilter(ctx,pb.dataset.bid,i)};
+ const del=document.createElement("button");del.type="button";del.textContent="사진 삭제";del.onclick=e=>{e.stopPropagation();mgdPhotoDelete(ctx,pb.dataset.bid,i)};
+ bar.append(edit,del);pb.append(bar);
+}
+function mgdInstall(){
+ document.addEventListener("keydown",e=>{
+  if((e.key!=="Backspace"&&e.key!=="Delete")||e.repeat||e.ctrlKey||e.metaKey||e.altKey||document.querySelector(".mgd-fx-overlay"))return;
+  const a=document.activeElement;if(a&&(a.isContentEditable||a.closest?.("[contenteditable],input,textarea,select")))return;
+  const pb=document.querySelector(".win.editor .pblock.pw-sel");if(!pb)return;
+  const ctx=pfwCtxOf(pb);if(ctx){e.preventDefault();e.stopImmediatePropagation();mgdPhotoDelete(ctx,pb.dataset.bid,Number(pb.dataset.photoIndex||0))}
+ },true);
+ let zoom=null;
+ const paint=()=>{
+  if(!ui.spaceEdit||ui.space==="room")return;const cvs=document.querySelector(".fl-canvas.fl-edit");if(!cvs)return;
+  if(zoom==null){const desk=document.querySelector("#desk");const visible=Math.max(250,(desk?.clientHeight||innerHeight)-90);zoom=Math.max(.35,Math.min(1,visible/Math.max(260,cvs.offsetHeight-240)))}
+  cvs.dataset.editZoom=String(zoom);cvs.style.transformOrigin="center top";cvs.style.transform="scale("+zoom+")";cvs.style.marginBottom=Math.round(cvs.offsetHeight*(zoom-1))+"px";
+  document.querySelectorAll("[data-edit-zoom-label]").forEach(n=>n.textContent=Math.round(zoom*100)+"%");
+ };
+ const oldBar=seBar;
+ seBar=function(cv){oldBar(cv);if(!ui.spaceEdit||ui.space==="room")return;
+  const b=document.querySelector(".se-bar");if(!b||b.querySelector(".mgd-edit-zoom"))return;
+  const w=document.createElement("span");w.className="mgd-edit-zoom";w.setAttribute("role","group");w.setAttribute("aria-label","내 공간 편집 배율");
+  w.innerHTML='<button type="button" data-edit-zoom="out" aria-label="축소">−</button><output data-edit-zoom-label>전체</output><button type="button" data-edit-zoom="in" aria-label="확대">＋</button><button type="button" data-edit-zoom="fit">전체 맞춤</button><button type="button" data-edit-zoom="one">100%</button>';
+  (b.querySelector(".fl-seg")||b.querySelector("[data-hb-tpl]")||b.querySelector("[data-se-mood]"))?.after(w);
+  w.onclick=e=>{const cmd=e.target.closest("[data-edit-zoom]")?.dataset.editZoom;if(!cmd)return;
+   if(cmd==="fit")zoom=null;else if(cmd==="one")zoom=1;else zoom=Math.max(.35,Math.min(1.25,Math.round(((zoom??1)+(cmd==="in"?.1:-.1))*100)/100));requestAnimationFrame(paint)};
+ };
+ const oldHome=renderHome;renderHome=function(cv){const r=oldHome(cv);if(ui.spaceEdit)requestAnimationFrame(paint);return r};
+ const oldEnd=seEnd;seEnd=function(){zoom=null;return oldEnd()};
+ document.addEventListener("click",e=>{if(e.target.closest?.("[data-fl-dev]"))zoom=null},true);
+}
+mgdInstall();
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
 addEventListener("storage",ev=>{if(!ev.key||!ev.key.startsWith("mgd2.v1."))return;if(ev.key.startsWith("mgd2.v1.autosave."))return;
