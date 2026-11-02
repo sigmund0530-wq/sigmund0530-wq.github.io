@@ -9,13 +9,13 @@ with sync_playwright() as p:
     room=lambda:(pg.locator('[data-tab2="room"]').click() if mob else pg.locator('.pc-nav [data-pn="room"]').click(),pg.wait_for_timeout(400))
     me=lambda:(pg.locator('[data-tab2="me"]').click() if mob else pg.locator('.pc-nav [data-pn="me"]').click(),pg.wait_for_timeout(400))
     room()
-    ok(f'{name} 내 방 = 위젯 보관함',pg.locator('.myroom').count()==1 and pg.locator('.myroom h3').all_text_contents()==['내가 만든 위젯','담아 온 위젯'])
+    ok(f'{name} 내 방 = 위젯 보관함',pg.locator('.myroom').count()==1 and pg.locator('.myroom h3').all_text_contents()==['내 글꼴','내가 만든 위젯','담아 온 위젯'])
     ok(f'{name} 자유 배치 판은 내 방에 없음',pg.locator('.myroom section.room,.myroom .rm-it').count()==0)
     # 위젯 만들기(코드 붙여 넣기)
     pg.locator('.myroom [data-wf-add]').click();pg.wait_for_timeout(300)
     pg.locator('[data-wt="paste"]').click();pg.fill('#wf-code',HTML);pg.fill('#wf-title','인사 위젯') if pg.locator('#wf-title').count() else None
     pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(600)
-    ok(f'{name} 만든 위젯이 내 방에',pg.locator('.myroom .mr-sec').first.locator('.wf-card').count()==1)
+    ok(f'{name} 만든 위젯이 내 방에',pg.locator('.myroom .mr-sec:not(.mr-fonts)').first.locator('.wf-card').count()==1)
     # 피드 예시를 내 방에 담기
     pg.locator('[data-mr-feed]').click();pg.wait_for_timeout(500)
     ok(f'{name} 담아 온 게 없으면 위젯 둘러보기 → 위젯 피드',pg.locator('.wfeed:not(.myroom) .wf-card').count()>0)

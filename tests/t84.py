@@ -27,7 +27,7 @@ with sync_playwright() as p:
     pg.locator('[data-tab2="write"]').click() if mob else pg.locator('[data-act="newPostFeed"]:visible').first.click()
     pg.wait_for_timeout(500);pg.locator('input[id^="f-title-"]').last.fill('자소 글');pg.locator('.blocks .rte-area').last.click();pg.keyboard.type('가나다 고구마 과자')
     if mob:pg.locator('.t-btn').tap();pg.wait_for_timeout(200)
-    pg.evaluate(SELECT,'가나다 고구마');pg.locator('[data-fmt="ff"]').click();pg.locator('[data-uf-make]').click();pg.wait_for_timeout(1500)
+    pg.evaluate(SELECT,'가나다 고구마');pg.locator('[data-fmt="ff"]').click();pg.locator('[data-uf-room]').click();pg.wait_for_timeout(700);pg.locator('.mr-fonts [data-uf-make]').click();pg.wait_for_timeout(1500)
     ok(pg.locator('[data-fm-base="@jamo"]').count()==1,tag+' 시작 화면에 자소로 설계')
     pg.locator('[data-fm-base="@jamo"]').click();pg.wait_for_timeout(800)
     ok(pg.locator('[data-fm-tab]').count()==4 and pg.locator('[data-fm-p="jw"]').count()==1 and pg.locator('[data-fm-cap]').count()==3,tag+' 탭 넷(전체 모양·자소·배치·글자 고치기), 획 두께·획 끝')
@@ -52,7 +52,7 @@ with sync_playwright() as p:
     L=pg.evaluate(FONT+".lay.v0.L");ok(L and L[0]>=120,tag+' 배치: 초성 상자 옮김',L)
     pg.locator('[data-lyf="h1"]').click();pg.wait_for_timeout(500);ok('곡' in pg.locator('[data-ly-sample]').inner_text(),tag+' 꼴 바꾸기(곡)')
     # 글자 고치기: 점 도구로 윤곽 점 끌기
-    pg.locator('[data-fm-tab="glyph"]').click();pg.wait_for_timeout(500);pg.locator('[data-fm-chips] [data-c="가"]').click();pg.locator('[data-fm-tool="point"]').click();pg.wait_for_timeout(1200)
+    pg.locator('[data-fm-tab="glyph"]').click();pg.wait_for_timeout(500);pg.locator('.fm-add input').fill('가');pg.locator('.fm-add button').click();pg.wait_for_timeout(300);pg.locator('[data-fm-chips] [data-c="가"]').click();pg.locator('[data-fm-tool="point"]').click();pg.wait_for_timeout(1200)
     cv=pg.locator('.fm-cv');cv.scroll_into_view_if_needed();pg.wait_for_timeout(300);bb=cv.bounding_box()
     hit=pg.evaluate("""()=>{const c=document.querySelector('.fm-cv'),x=c.getContext('2d'),W=c.width,H=c.height,d=x.getImageData(0,0,W,H).data,r=c.getBoundingClientRect(),s=W/r.width;
       for(let y=0;y<H;y++)for(let X=Math.floor(W*0.55);X<W;X++){const i=(y*W+X)*4;if(d[i+3]>200&&d[i]<140)return [X/s,y/s]}return null}""")
@@ -61,7 +61,9 @@ with sync_playwright() as p:
       pg.mouse.move(bb['x']+hit[0]+1,bb['y']+hit[1]+4);pg.mouse.down();pg.mouse.move(bb['x']+hit[0]+30,bb['y']+hit[1]-25,steps=5);pg.mouse.up();pg.wait_for_timeout(800)
     ed=pg.evaluate(FONT+".edit")or{};ok('가' in ed and len(ed['가']['c'])>8,tag+' 점 고치기 저장(그 글자만)',list(ed))
     pg.locator('[data-fm-done]').click();pg.wait_for_timeout(2000)
-    f=pg.evaluate(FONT);ok(f'<span class="uf-{f["id"]}">가나다 고구마</span>' in html(pg),tag+' 완료하면 골라 둔 글자에 입힘',html(pg))
+    f=pg.evaluate(FONT);ok(f['name'] in pg.locator('.mr-fonts').inner_text() and '자소로 설계' in pg.locator('.mr-fonts').inner_text(),tag+' 내 방 내 글꼴에 보임')
+    pg.locator('#ed-park').click();pg.wait_for_timeout(500);pg.evaluate(SELECT,'가나다 고구마');pg.locator('[data-fmt="ff"]').click();pg.wait_for_timeout(400);pg.locator(f'.fmt-fonts [data-uf="{f["id"]}"]').click();pg.wait_for_timeout(900)
+    ok(f'<span class="uf-{f["id"]}">가나다 고구마</span>' in html(pg),tag+' 글쓰기로 돌아와 골라 입힘',html(pg))
     pg.locator('.hpub').last.click();pg.wait_for_timeout(200);pg.locator('input[name="pv"][value="public"]').check();pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(3000)
     post=pg.evaluate(REC+".posts.find(p=>p.title==='자소 글')");fs=(post.get('fonts') or {}).get(f['id'])
     ok(fs,tag+' 발행하면 쓴 글자만 잘라 저장')
