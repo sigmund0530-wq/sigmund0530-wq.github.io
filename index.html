@@ -1566,6 +1566,13 @@ body.sp-blog-edit .se-bar [data-se-add]{display:inline-flex!important}
 .fmt-bar{position:absolute;left:-2px;right:-2px;bottom:-4px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--tc-red),var(--tc-yellow),var(--tc-green),var(--tc-blue),var(--tc-purple))}
 .fmt-pop{position:fixed;z-index:100001;width:min(300px,calc(100vw - 16px));padding:12px;border-radius:14px;background:linear-gradient(var(--porc-hi,var(--chrome)),var(--porc,var(--chrome)));box-shadow:0 1px 0 var(--porc-glint,transparent) inset,0 10px 30px var(--porc-shade,rgba(0,0,0,.12));display:grid;gap:8px}
 .fmt-pop-h{font-size:12px;color:var(--ink-2)}
+.fmt-fonts{width:min(280px,calc(100vw - 16px))}
+.fmt-fl{display:grid;max-height:min(340px,50vh);overflow-y:auto;margin:0 -6px;overscroll-behavior:contain}
+.fmt-f{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:8px 8px;border:0;background:none;border-radius:10px;text-align:left;color:var(--ink);cursor:pointer}
+.fmt-f b{font-weight:400;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.fmt-f small{font-size:11.5px;color:var(--ink-2);flex:none}
+.fmt-f:hover{background:var(--porc-in,var(--chrome-2))}.fmt-f.on{background:var(--porc-in,var(--chrome-2))}
+.fmt-ff{font-size:12.5px;letter-spacing:-.02em}
 .fmt-sws{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.fmt-sws:nth-of-type(2){grid-template-columns:repeat(10,1fr)}
 .fmt-sw{aspect-ratio:1;width:100%;min-width:22px;border:0;border-radius:50%;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
 .fmt-sw:hover{transform:scale(1.12)}
@@ -6815,7 +6822,12 @@ addEventListener('message',async e=>{const d=e.data;if(!d||d.mgd!=='fetch'||type
 const FS_LIST=[["s","작게"],["","보통"],["l","크게"],["xl","아주 크게"],["xxl","제목만큼"]];
 const TC_LIST=[["red","빨강"],["orange","주황"],["yellow","노랑"],["green","초록"],["teal","청록"],["blue","파랑"],["purple","보라"],["pink","분홍"],["brown","갈색"],["gray","회색"],
   ["rose","장밋빛"],["sand","모래"],["butter","버터"],["sage","세이지"],["fog","안개 파랑"],["lilac","라일락"]];
-const FMT_TOK=/^(fs-(s|l|xl|xxl)|tc-(red|orange|yellow|green|teal|blue|purple|pink|brown|gray|rose|sand|butter|sage|fog|lilac))$/;
+/* 글꼴(2026-11-02, 주인: "폰트 넣는 기능 넣어"): 고른 글자에 <span class="ff-myeongjo">. 글꼴은 MOOD_FONTS 21개(분위기·프로필 글꼴과 같은 목록).
+   글꼴 파일은 그 글꼴이 들어간 글을 그릴 때만 받아 옴(sanitize에서 ensureFont). */
+const FF_KEYS=Object.keys(MOOD_FONTS).filter(k=>k&&/^[a-z]+$/.test(k));
+const FMT_TOK=new RegExp('^(fs-(s|l|xl|xxl)|tc-(red|orange|yellow|green|teal|blue|purple|pink|brown|gray|rose|sand|butter|sage|fog|lilac)|ff-('+FF_KEYS.join('|')+'))$');
+{const st=document.createElement('style');st.id='ff-css';st.textContent=FF_KEYS.map(k=>`.ff-${k}{font-family:'${MOOD_FONTS[k][1]}',var(--f-body)}`).join('');document.head.appendChild(st)}
+const ffLoad=html=>{String(html).replace(/\bff-([a-z]+)/g,(m,k)=>{if(FF_KEYS.includes(k))ensureFont(k);return m})};
 ALLOW.add('SPAN');
 const fmtSan=sanitize;sanitize=function(html){html=String(html||'').replace(/[]/g,'');if(!/<span/i.test(html))return fmtSan(html);
   const doc=new DOMParser().parseFromString(`<body>${html}</body>`,'text/html');
@@ -6828,7 +6840,7 @@ const fmtSan=sanitize;sanitize=function(html){html=String(html||'').replace(/[�
     if(!m){sp.replaceWith(...sp.childNodes);return}t.data=t.data.slice(m[0].length);if(!t.data)t.remove();
     m[1].split(' ').forEach(k=>{if(/^c[0-9a-f]{6}$/.test(k))sp.style.color='#'+k.slice(1);else if(FMT_TOK.test(k))sp.classList.add(k)});
     if(!sp.className&&!sp.getAttribute('style'))sp.replaceWith(...sp.childNodes)});
-  return d2.body.innerHTML.replace(/[]/g,'')};
+  const res=d2.body.innerHTML.replace(/[]/g,'');if(res.indexOf('ff-')>=0)ffLoad(res);return res};
 /* 고른 글자에 입히기 */
 function fmtApply(area,kind,val,rng){const sel=getSelection();const r=rng||(sel.rangeCount&&sel.getRangeAt(0));
   if(!r||r.collapsed||!area||!area.contains(r.commonAncestorContainer)){toast('먼저 바꿀 글자를 골라 주세요.');return false}
@@ -6836,20 +6848,33 @@ function fmtApply(area,kind,val,rng){const sel=getSelection();const r=rng||(sel.
   {let a=r.commonAncestorContainer;a=a.nodeType===1?a:a.parentElement;const t=r.toString();
     while(a&&a!==area&&area.contains(a)&&a.tagName==='SPAN'&&a.textContent===t){r.selectNode(a);a=a.parentElement}}
   const frag=r.extractContents();
-  frag.querySelectorAll('span').forEach(sp=>{[...sp.classList].filter(c=>kind==='fs'?/^fs-/.test(c):/^tc-/.test(c)).forEach(c=>sp.classList.remove(c));if(kind==='tc')sp.style.color='';
+  frag.querySelectorAll('span').forEach(sp=>{[...sp.classList].filter(c=>new RegExp('^'+kind+'-').test(c)).forEach(c=>sp.classList.remove(c));if(kind==='tc')sp.style.color='';
     if(!sp.className&&!(sp.getAttribute('style')||'').trim())sp.replaceWith(...sp.childNodes)});
-  let node=frag;if(val){const sp=document.createElement('span');if(kind==='fs')sp.className='fs-'+val;else if(val[0]==='#')sp.style.color=val;else sp.className='tc-'+val;sp.appendChild(frag);node=sp}
+  let node=frag;if(val){const sp=document.createElement('span');if(kind==='fs'||kind==='ff'){sp.className=kind+'-'+val;if(kind==='ff')ensureFont(val)}else if(val[0]==='#')sp.style.color=val;else sp.className='tc-'+val;sp.appendChild(frag);node=sp}
   const first=node.firstChild,last=node.lastChild,isFrag=node===frag;r.insertNode(node);
   const nr=document.createRange();if(isFrag){if(first&&last){nr.setStartBefore(first);nr.setEndAfter(last)}}else nr.selectNodeContents(node);
   sel.removeAllRanges();sel.addRange(nr);area.dispatchEvent(new Event('input',{bubbles:true}));return true}
-const FMT_IC={fs:'<span class="fmt-ic" aria-hidden="true"><small>가</small>가</span>',tc:'<span class="fmt-ic" aria-hidden="true">가<i class="fmt-bar"></i></span>'};
+const FMT_IC={ff:'<span class="fmt-ic fmt-ff" aria-hidden="true">글꼴</span>',fs:'<span class="fmt-ic" aria-hidden="true"><small>가</small>가</span>',tc:'<span class="fmt-ic" aria-hidden="true">가<i class="fmt-bar"></i></span>'};
 function fmtButtons(ctx){const win=ctx.body.closest('.win');if(!win)return;const bar=win.querySelector('.fmt-row')||win.querySelector('.rte-bar');if(!bar||bar.querySelector('[data-fmt]'))return;
   const u=bar.querySelector('[data-cmd="underline"]');const mk=(k,t)=>{const b=document.createElement('button');b.type='button';b.dataset.fmt=k;b.title=t;b.setAttribute('aria-label',t);b.innerHTML=FMT_IC[k];b.addEventListener('mousedown',e=>e.preventDefault());return b};
-  const fs=mk('fs','글자 크기'),tc=mk('tc','글자 색');if(u)u.after(fs,tc);else bar.append(fs,tc);
+  const ff=mk('ff','글꼴'),fs=mk('fs','글자 크기'),tc=mk('tc','글자 색');if(u)u.after(ff,fs,tc);else bar.append(ff,fs,tc);
   const area=()=>{const s=getSelection();const n=s.anchorNode&&(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement);return n&&n.closest('.rte-area')};
   fs.onclick=()=>{const a=area();const s=getSelection();const rng=s.rangeCount?s.getRangeAt(0).cloneRange():null;const r=fs.getBoundingClientRect();
     showMenu(FS_LIST.map(([v,t])=>({label:t,run:()=>{s.removeAllRanges();if(rng)s.addRange(rng);fmtApply(a,'fs',v,rng)}})),r.left,isMobile()?r.top-220:r.bottom+4,fs)};
-  tc.onclick=()=>fmtColors(tc,area())}
+  tc.onclick=()=>fmtColors(tc,area());ff.onclick=()=>fmtFonts(ff,area())}
+/* 글꼴 고르기: 고른 글자(없으면 '가나다 글꼴')를 그 글꼴 모양으로 보여 줌 */
+function fmtFonts(btn,area){document.querySelectorAll('.fmt-pop').forEach(n=>n.remove());const s=getSelection();const rng=s.rangeCount?s.getRangeAt(0).cloneRange():null;
+  const sample=esc(((rng&&rng.toString())||'').replace(/\s+/g,' ').trim().slice(0,12)||'가나다 글꼴');
+  let cur='';{let n=rng&&rng.startContainer;n=n&&(n.nodeType===1?n:n.parentElement);const sp=n&&n.closest('[class*="ff-"]');if(sp&&area&&area.contains(sp))cur=([...sp.classList].find(c=>/^ff-/.test(c))||'').slice(3)}
+  const pop=document.createElement('div');pop.className='fmt-pop fmt-fonts';pop.setAttribute('role','dialog');pop.setAttribute('aria-label','글꼴');
+  pop.innerHTML=`<div class="fmt-pop-h">글꼴</div><div class="fmt-fl">${['',...FF_KEYS].map(k=>{if(k)ensureFont(k);const [t,fam]=MOOD_FONTS[k];
+    return `<button type="button" class="fmt-f${k===cur?' on':''}" data-ff="${k}" aria-pressed="${k===cur}"><b style="${fam?`font-family:'${fam}',var(--f-body)`:''}">${sample}</b><small>${t}</small></button>`}).join('')}</div>`;
+  document.body.appendChild(pop);const r=btn.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight;
+  pop.style.left=Math.max(8,Math.min(innerWidth-pw-8,r.left))+'px';pop.style.top=(r.bottom+6+ph>innerHeight?Math.max(8,r.top-ph-6):r.bottom+6)+'px';
+  const close=()=>{pop.remove();removeEventListener('pointerdown',out,true)};const out=e=>{if(!pop.contains(e.target)&&e.target!==btn)close()};
+  pop.addEventListener('mousedown',e=>e.preventDefault());
+  pop.querySelectorAll('[data-ff]').forEach(b=>b.onclick=()=>{const sel=getSelection();sel.removeAllRanges();if(rng)sel.addRange(rng);if(fmtApply(area,'ff',b.dataset.ff||null,rng))close()});
+  setTimeout(()=>addEventListener('pointerdown',out,true),0)}
 function fmtColors(btn,area){document.querySelectorAll('.fmt-pop').forEach(n=>n.remove());const s=getSelection();const rng=s.rangeCount?s.getRangeAt(0).cloneRange():null;
   const pop=document.createElement('div');pop.className='fmt-pop';pop.setAttribute('role','dialog');pop.setAttribute('aria-label','글자 색');
   const sw=([k,t])=>`<button type="button" class="fmt-sw tc-bg-${k}" data-tc="${k}" aria-label="${t}" title="${t}"></button>`;

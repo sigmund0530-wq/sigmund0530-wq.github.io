@@ -31,12 +31,21 @@ with sync_playwright() as p:
     pg.evaluate(SELECT,'파랬다');pg.locator('[data-fmt="tc"]').click();pg.locator('.fmt-pop [data-tc=""]').click();pg.wait_for_timeout(200)
     ok('tc-blue' not in html(pg),tag+' 색 없애기')
     pg.evaluate(SELECT,'파랬다');pg.locator('[data-fmt="tc"]').click();pg.locator('.fmt-pop [data-tc="red"]').click();pg.wait_for_timeout(200)
+    # 글꼴
+    pg.evaluate(SELECT,'좋았다');pg.locator('[data-fmt="ff"]').click();pg.wait_for_timeout(200)
+    ok(pg.locator('.fmt-fonts [data-ff]').count()==21 and '좋았다' in pg.locator('.fmt-fonts [data-ff="pen"] b').inner_text(),tag+' 글꼴 21개 + 기본, 고른 글자로 보여 줌')
+    pg.locator('.fmt-fonts [data-ff="pen"]').click();pg.wait_for_timeout(200)
+    ok('<span class="ff-pen">좋았다</span>' in html(pg),tag+' 펜 글씨 입힘')
+    pg.evaluate(SELECT,'좋았다');pg.locator('[data-fmt="ff"]').click();ok(pg.locator('.fmt-fonts [data-ff="pen"].on').count()==1,tag+' 지금 글꼴 표시')
+    pg.locator('.fmt-fonts [data-ff="myeongjo"]').click();pg.wait_for_timeout(200)
+    ok('<span class="ff-myeongjo">좋았다</span>' in html(pg),tag+' 다른 글꼴로 바꾸면 겹치지 않음',html(pg)[-120:])
     # 발행 → 읽는 화면
     pg.locator('.hpub').click();pg.wait_for_timeout(200);pg.locator('input[name="pv"][value="public"]').check();pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(800)
     post=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).posts.find(p=>p.title==='색 글')");h=json.dumps(post['bodyJson'],ensure_ascii=False)
-    ok('fs-xl' in h and 'tc-red' in h and 'rgb(18, 171, 52)' in h,tag+' 저장에 남음',h[:200])
+    ok('ff-myeongjo' in h and 'fs-xl' in h and 'tc-red' in h and 'rgb(18, 171, 52)' in h,tag+' 저장에 남음',h[:200])
     art=pg.locator('article.post').last
     ok(art.locator('span.fs-xl').count()==1 and art.locator('span.tc-red').count()==1,tag+' 읽는 화면에 크기·색')
+    ok('Nanum Myeongjo' in pg.evaluate("getComputedStyle(document.querySelector('article.post span.ff-myeongjo')).fontFamily") and pg.locator('link#mf-myeongjo').count()==1,tag+' 읽는 화면에서 글꼴 받아 와 입힘')
     big=pg.evaluate("parseFloat(getComputedStyle(document.querySelector('article.post span.fs-xl')).fontSize)/parseFloat(getComputedStyle(document.querySelector('article.post .txt')).fontSize)")
     ok(1.5<big<1.7,tag+' 실제로 1.6배',big)
     ok(not errs,tag+' ERR',errs);pg.context.close()
@@ -44,10 +53,10 @@ with sync_playwright() as p:
   pg=setup(b,False)
   # sanitize는 내부 함수라 글쓰기 저장으로 확인
   pg.locator('[data-act="newPostFeed"]:visible').first.click();pg.wait_for_timeout(400);pg.locator('input[id^="f-title-"]').fill('거르기')
-  pg.evaluate("""()=>{const a=document.querySelector('.blocks .rte-area');a.innerHTML='<span class="fs-l evil" onclick="x()" style="color:#123456;background:url(https://e.x)">가</span><span style="position:fixed">나</span><span class="tc-nope">다</span>';a.dispatchEvent(new Event('input',{bubbles:true}))}""")
+  pg.evaluate("""()=>{const a=document.querySelector('.blocks .rte-area');a.innerHTML='<span class="fs-l evil" onclick="x()" style="color:#123456;background:url(https://e.x)">가</span><span style="position:fixed">나</span><span class="tc-nope">다</span><span class="ff-pen ff-nope">라</span><span style="font-family:Evil">마</span>';a.dispatchEvent(new Event('input',{bubbles:true}))}""")
   pg.locator('.hpub').click();pg.wait_for_timeout(200);pg.locator('.dialog [data-o]').click();pg.wait_for_timeout(800)
   h=pg.evaluate("JSON.parse(localStorage.getItem('mgd2.v1.records')).posts.find(p=>p.title==='거르기').bodyJson.blocks.map(b=>b.html||'').join('')")
-  ok('fs-l' in h and 'rgb(18, 52, 86)' in h and 'evil' not in h and 'onclick' not in h and 'url(' not in h and 'fixed' not in h and 'tc-nope' not in h and '가' in h and '나' in h and '다' in h,'정해 둔 크기·색만 남고 나머지는 지움',h)
+  ok('fs-l' in h and 'rgb(18, 52, 86)' in h and 'evil' not in h and 'onclick' not in h and 'url(' not in h and 'fixed' not in h and 'tc-nope' not in h and 'ff-pen' in h and 'ff-nope' not in h and 'Evil' not in h and '가' in h and '나' in h and '다' in h,'정해 둔 크기·색만 남고 나머지는 지움',h)
   # 펜 색
   pg.locator('[data-act="newPostFeed"]:visible').first.click();pg.wait_for_timeout(400);pg.locator('.blocks .rte-area').first.click();pg.keyboard.type('그림')
   pg.locator('.win.editor [data-x-draw]').last.click();pg.wait_for_timeout(300)
