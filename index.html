@@ -1652,36 +1652,68 @@ html.fm-open,html.fm-open body{overflow:hidden}
 .fm-try-in{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--chrome);padding:10px 12px;font:inherit;font-size:14px;color:var(--ink)}
 .fm-try-out{font-size:30px;line-height:1.35;margin:12px 0 4px;word-break:keep-all;min-height:1.4em}
 
-/* 줌은 편집 화면만 바꾸고 배치 좌표에는 영향을 주지 않음 */
-.se-bar .mgd-edit-zoom{display:inline-flex;align-items:center;gap:2px;background:var(--porc-in,var(--chrome-2));border-radius:999px;padding:2px 4px;flex:none}
-.se-bar .mgd-edit-zoom button{background:transparent;border:0;border-radius:999px;font:inherit;font-size:12px;color:var(--ink);padding:6px;cursor:pointer;white-space:nowrap}
-.se-bar .mgd-edit-zoom button:hover{background:var(--porc-hi,var(--chrome))}
-.se-bar .mgd-edit-zoom output{min-width:36px;font-size:12px;text-align:center;font-variant-numeric:tabular-nums}
+/* ═════════ 내 공간 배율·사진 편집: 도자기 디자인 언어 (2026-11-03) ═════════
+   PC는 사진 옆의 조용한 도구판, 모바일은 하단 도구판.
+   기본은 밝기·대비·채도만, 그 외는 고급 조절. 어두운 모달·카드 나열 없음. */
+.se-bar .mgd-edit-zoom{position:relative;display:inline-flex;align-items:center;flex:none}
+.se-bar .mgd-edit-zoom>button{border:0;background:var(--porc-in,var(--chrome-2));border-radius:999px;height:30px;min-width:56px;padding:0 10px;color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer}
+.mgd-zpop{position:absolute;top:calc(100% + 8px);left:0;z-index:99999;min-width:208px;display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:10px;background:var(--chrome);border:0;border-radius:14px;box-shadow:0 1px 0 var(--porc-glint) inset,0 9px 25px var(--porc-shade)}
+.mgd-zpop[hidden]{display:none}
+.mgd-zpop button{border:0;border-radius:999px;background:none;color:var(--ink-2);font:inherit;font-size:12px;padding:7px 9px;cursor:pointer}
+.mgd-zpop button:hover{background:var(--porc-in);color:var(--ink)}
+.mgd-zpop strong{font-size:12px;font-weight:500;min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
 .fl-canvas.fl-edit{will-change:transform}
 .pblock.pw-drag .prow-edit{transform-origin:center top;will-change:transform}
 .pblock.pw-drag .pw-h{pointer-events:none}
-.mgd-photo-tools{display:flex;justify-content:flex-end;gap:8px;margin:8px 0 0}
+.pblock.pw-sel .prow-edit{outline:1px solid var(--ink-2);outline-offset:3px}
+.mgd-photo-tools{display:flex;justify-content:flex-end;align-items:center;gap:14px;margin:8px 0 0}
 .pblock:not(.pw-sel) .mgd-photo-tools{display:none}
-.mgd-photo-tools button{border:0;border-radius:999px;padding:8px 12px;font:inherit;font-size:12px;cursor:pointer;background:var(--porc-in,var(--chrome-2));color:var(--ink)}
+.mgd-photo-tools button{border:0;border-radius:0;padding:5px 0;background:none;color:var(--ink-2);font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.mgd-photo-tools button:hover{color:var(--ink)}
 .mgd-photo-tools button:last-child{color:var(--danger)}
-.mgd-fx-overlay{position:fixed;inset:0;z-index:110000;background:rgba(10,10,10,.46);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}
-.mgd-fx-sheet{background:var(--chrome);color:var(--ink);width:min(620px,100%);max-height:calc(100dvh - 36px);overflow:auto;border-radius:18px;padding:16px;box-sizing:border-box;box-shadow:0 14px 48px rgba(0,0,0,.18)}
-.mgd-fx-sheet header,.mgd-fx-sheet footer{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.mgd-fx-sheet button{border:0;border-radius:999px;padding:9px 12px;font:inherit;font-size:12px;cursor:pointer;background:var(--porc-in,var(--chrome-2));color:var(--ink)}
-.mgd-fx-sheet header button{background:none;font-size:17px}
-.mgd-fx-sheet footer{flex-wrap:wrap;margin-top:14px}
+/* 뒷화면을 어둡게 덮지 않는다. 사진을 보면서 조절하고, 바깥을 누르면 취소 */
+.mgd-fx-overlay{position:fixed;inset:0;z-index:110000;background:transparent;pointer-events:none}
+.mgd-fx-sheet{position:absolute;pointer-events:auto;background:var(--chrome);color:var(--ink);width:min(338px,calc(100vw - 24px));max-height:min(78dvh,600px);overflow:auto;overscroll-behavior:contain;border:0;border-radius:15px;padding:14px 16px 16px;box-sizing:border-box;box-shadow:0 1px 0 var(--porc-glint) inset,0 12px 34px var(--porc-shade);scrollbar-width:thin}
+.mgd-fx-sheet header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 0 9px;border-bottom:1px solid var(--line)}
+.mgd-fx-sheet header strong{font-weight:500;font-size:14px}
+.mgd-fx-sheet button{border:0;background:none;color:var(--ink-2);font:inherit;font-size:12.5px;cursor:pointer}
+.mgd-fx-sheet button:hover{color:var(--ink)}
+.mgd-fx-sheet header button{font-size:18px;padding:0 4px;line-height:1.5}
+.mgd-fx-hint{color:var(--ink-2);font-size:11.5px;line-height:1.6;margin:9px 0 10px}
+.mgd-fx-lab{font-size:12px;font-weight:500;color:var(--ink-2);margin:10px 0 8px}
+.mgd-fx-presets{display:flex;gap:4px;overflow-x:auto;padding:3px 1px 7px;scrollbar-width:none}
+.mgd-fx-presets::-webkit-scrollbar{display:none}
+.mgd-fx-presets button{white-space:nowrap;flex:none;padding:7px 10px;border-radius:999px;background:none}
+.mgd-fx-presets button[aria-pressed="true"]{background:var(--porc-in,var(--chrome-2));box-shadow:inset 0 1px 2px var(--porc-shade);color:var(--ink)}
+.mgd-fx-sliders{display:grid;gap:4px}
+.mgd-fx-advanced[hidden]{display:none}
+.mgd-fx-row{display:grid;grid-template-columns:65px minmax(0,1fr) 37px;align-items:center;gap:9px;min-height:36px;color:var(--ink-2);font-size:12px}
+.mgd-fx-row input{width:100%;min-width:0;accent-color:var(--ink-2);cursor:pointer}
+.mgd-fx-row output{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.mgd-fx-more{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);margin-top:8px;padding-top:9px}
+.mgd-fx-more button{padding:5px 0}
+.mgd-fx-more [data-fx-advanced]::after{content:" ▾"}
+.mgd-fx-more [data-fx-advanced][aria-expanded="true"]::after{content:" ▴"}
+.mgd-fx-more [data-fx-flip][aria-pressed="true"]{color:var(--ink);font-weight:500}
+.mgd-fx-sheet footer{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:11px;margin-top:10px}
 .mgd-fx-sheet footer span{flex:1}
-.mgd-fx-sheet [data-fx-save]{background:var(--porc-main-bot,var(--ink-2));color:var(--primary-ink,#fff)}
-.mgd-fx-sheet [aria-pressed=true]{outline:1px solid var(--ink-2)}
-.mgd-fx-preview{display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--chrome-2);border-radius:10px;height:min(35vh,285px);margin:10px 0}
-.mgd-fx-preview img{display:block;max-width:100%;max-height:100%;object-fit:contain}
-.mgd-fx-presets{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px}
-.mgd-fx-presets button{white-space:nowrap;flex:0 0 auto}
-.mgd-fx-sliders{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
-.mgd-fx-row{display:grid;grid-template-columns:65px 1fr 32px;align-items:center;gap:8px;min-width:0;font-size:12px;color:var(--ink-2)}
-.mgd-fx-row input{width:100%;min-width:0;accent-color:var(--ink)}
-.mgd-fx-row output{text-align:right;font-variant-numeric:tabular-nums}
-@media(max-width:600px){.mgd-fx-overlay{padding:0;align-items:flex-end}.mgd-fx-sheet{width:100%;max-height:92dvh;border-radius:18px 18px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}.mgd-fx-preview{height:26vh}.mgd-fx-sliders{grid-template-columns:1fr}.se-bar .mgd-edit-zoom button{font-size:11px;padding:5px}}
+.mgd-fx-sheet footer button{padding:7px 6px}
+.mgd-fx-sheet footer [data-fx-save]{border-radius:999px;padding:8px 16px;background:linear-gradient(var(--porc-main-top),var(--porc-main-bot));color:var(--primary-ink);box-shadow:0 1px 0 var(--porc-glint) inset,0 2px 8px var(--porc-shade)}
+.mgd-fx-sheet footer [data-fx-save]:active{background:var(--porc-in);color:var(--ink)}
+@media(max-width:680px),(pointer:coarse) and (max-width:900px){
+ .mgd-fx-sheet{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%;max-height:min(58dvh,520px);border-radius:18px 18px 0 0;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 28px var(--porc-shade)}
+ .mgd-fx-sliders{gap:0}
+ .mgd-fx-row{min-height:39px;grid-template-columns:64px minmax(0,1fr) 39px}
+ .mgd-fx-sheet header{padding-bottom:8px}
+ .mgd-fx-hint{display:none}
+ .mgd-fx-lab{margin:5px 0 4px}
+ .mgd-fx-presets{padding:1px 1px 3px}
+ .mgd-fx-row{min-height:33px}
+ .mgd-fx-sheet footer{margin-top:5px;padding-top:7px}
+ .mgd-fx-more{margin-top:5px}
+ .mgd-photo-tools{gap:18px}
+}
+@media (prefers-reduced-motion:reduce){.mgd-fx-sheet,.mgd-photo-tools button{transition:none}}
 
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
@@ -7538,37 +7570,103 @@ function mgdPhotoDelete(ctx,id,i){
  ctx.syncText();block.items.splice(i,1);ctx.drawBlocks();ctx.queueAuto();toast("선택한 사진을 뺐어요.");
 }
 function mgdPhotoFilter(ctx,id,i){
+ /* 사진 원본 및 GIF 프레임은 손대지 않는다. 슬라이더는 편집 중의 이미지 CSS만 변경한다.
+    취소/바깥 클릭/Escape = 원래 상태, 적용 = 보정값만 글 블록에 저장. */
  const item=ctx?.draft.blocks.find(b=>b.id===id)?.items[i];if(!item||!assets[item.assetId])return;
- document.querySelectorAll(".mgd-fx-overlay").forEach(n=>n.remove());
+ document.querySelectorAll(".mgd-fx-overlay").forEach(n=>n._mgdClose?n._mgdClose():n.remove());
+ const target=ctx.blocksEl.querySelector('.pblock[data-bid="'+CSS.escape(id)+'"] .ph-item[data-i="'+i+'"] img');
+ if(!target)return;
+ const originalCSS=target.style.cssText;
  const d={b:100,c:100,s:100,warm:0,gray:0,hue:0,blur:0,flip:0};
- let v=Object.assign({},d,mgdFX(item.fx)||{});
+ let v=Object.assign({},d,mgdFX(item.fx)||{}),activePreset=null;
  const presets=[["원본",{}],["선명",{c:120,s:130}],["부드럽게",{b:105,c:92,s:90}],["따뜻하게",{warm:35,s:103}],["빈티지",{warm:45,c:90,s:80}],["흑백",{gray:100,c:110}],["차분하게",{s:70,c:94}],["색조",{hue:20}]];
  const sliders=[["b","밝기",30,200],["c","대비",30,200],["s","채도",0,220],["warm","따뜻함",0,100],["gray","흑백",0,100],["hue","색조",-180,180],["blur","부드러움",0,3]];
  const el=document.createElement("div");el.className="mgd-fx-overlay";
- el.innerHTML='<section class="mgd-fx-sheet" role="dialog" aria-modal="true" aria-label="사진 보정"><header><strong>사진 보정 · 필터</strong><button type="button" data-fx-close aria-label="닫기">✕</button></header><div class="mgd-fx-preview"><img alt="보정 미리보기"></div><nav class="mgd-fx-presets" aria-label="필터"></nav><div class="mgd-fx-sliders"></div><footer><button type="button" data-fx-flip>좌우 반전</button><button type="button" data-fx-reset>원본으로</button><span></span><button type="button" data-fx-cancel>취소</button><button type="button" data-fx-save>적용</button></footer></section>';
- const preview=el.querySelector("img");preview.src=assets[item.assetId].dataUrl;
- const ps=el.querySelector(".mgd-fx-presets"),sl=el.querySelector(".mgd-fx-sliders");
- const redraw=()=>{preview.style.cssText=mgdFXStyle(v);sl.querySelectorAll("input").forEach(n=>n.value=String(v[n.dataset.field]));sl.querySelectorAll("output").forEach(n=>n.textContent=String(v[n.dataset.field]));el.querySelector("[data-fx-flip]").setAttribute("aria-pressed",String(!!v.flip))};
- presets.forEach(([label,p])=>{const b=document.createElement("button");b.type="button";b.textContent=label;b.onclick=()=>{v=Object.assign({},d,p);redraw()};ps.append(b)});
- sliders.forEach(([k,label,min,max])=>{const row=document.createElement("label");row.className="mgd-fx-row";
-  row.innerHTML="<span></span><input type='range'><output></output>";
-  row.querySelector("span").textContent=label;
-  const r=row.querySelector("input");r.min=min;r.max=max;r.step=k==="blur"?"0.1":"1";r.dataset.field=k;row.querySelector("output").dataset.field=k;
-  r.oninput=()=>{v[k]=Number(r.value);redraw()};sl.append(row)});
- const close=()=>{document.removeEventListener("keydown",key,true);el.remove()};
- const key=e=>{if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();close()}};
- el.querySelector("[data-fx-close]").onclick=close;el.querySelector("[data-fx-cancel]").onclick=close;
- el.querySelector("[data-fx-reset]").onclick=()=>{v=Object.assign({},d);redraw()};
- el.querySelector("[data-fx-flip]").onclick=()=>{v.flip=v.flip?0:1;redraw()};
- el.querySelector("[data-fx-save]").onclick=()=>{
-  const ph=ctx.draft.blocks.find(b=>b.id===id)?.items[i];if(!ph){close();return}
-  const fx=mgdFX(v);if(fx)ph.fx=fx;else delete ph.fx;
-  const img=ctx.blocksEl.querySelector('.pblock[data-bid="'+CSS.escape(id)+'"] .ph-item[data-i="'+i+'"] img');
-  if(img)img.style.cssText=mgdFXStyle(fx);
-  ctx.queueAuto();close();toast("사진 보정을 적용했어요.");
+ el.innerHTML='<section class="mgd-fx-sheet" role="dialog" aria-label="사진 보정" aria-modal="false"><header><strong>사진 다듬기</strong><button type="button" data-fx-close aria-label="사진 보정 닫기">×</button></header><p class="mgd-fx-hint">사진을 보면서 원하는 느낌으로 조절해요.</p><div class="mgd-fx-lab">필터</div><nav class="mgd-fx-presets" aria-label="필터"></nav><div class="mgd-fx-lab">기본 조절</div><div class="mgd-fx-sliders" data-fx-basic></div><div class="mgd-fx-more"><button type="button" data-fx-advanced aria-expanded="false">고급 조절</button><button type="button" data-fx-flip aria-pressed="false">좌우 반전</button></div><div class="mgd-fx-sliders mgd-fx-advanced" data-fx-extra hidden></div><footer><button type="button" data-fx-reset>원본으로</button><span></span><button type="button" data-fx-cancel>취소</button><button type="button" data-fx-save>적용</button></footer></section>';
+ const sheet=el.querySelector(".mgd-fx-sheet"),ps=el.querySelector(".mgd-fx-presets");
+ const get=sel=>el.querySelector(sel);
+ let done=false,raf=0;
+ const place=()=>{
+   if(done||!sheet.isConnected)return;
+   const r=target.getBoundingClientRect(),w=sheet.offsetWidth,h=sheet.offsetHeight;
+   const mobile=innerWidth<=680||matchMedia("(pointer:coarse) and (max-width:900px)").matches;
+   if(mobile){sheet.style.left=sheet.style.right=sheet.style.top="";return}
+   const onRight=r.right+14+w<=innerWidth-12;
+   const left=onRight?r.right+14:(r.left-w-14>=10?r.left-w-14:Math.max(10,innerWidth-w-14));
+   sheet.style.left=Math.round(left)+"px";
+   sheet.style.top=Math.round(Math.max(64,Math.min(innerHeight-h-12,r.top)))+"px";
  };
- el.onclick=e=>{if(e.target===el)close()};
- document.body.append(el);redraw();document.addEventListener("keydown",key,true);el.querySelector("[data-fx-save]").focus();
+ const update=()=>{
+   target.style.cssText=mgdFXStyle(v);
+   el.querySelectorAll("input[data-field]").forEach(n=>n.value=String(v[n.dataset.field]));
+   el.querySelectorAll("output[data-field]").forEach(n=>n.textContent=String(v[n.dataset.field]));
+   ps.querySelectorAll("button").forEach(n=>{
+     const a=presets[+n.dataset.preset];
+     const on=Object.keys(d).every(k=>v[k]===(a[1][k]??d[k]));
+     n.setAttribute("aria-pressed",String(on));
+   });
+   get("[data-fx-flip]").setAttribute("aria-pressed",String(!!v.flip));
+   cancelAnimationFrame(raf);raf=requestAnimationFrame(place);
+ };
+ presets.forEach(([label,set],n)=>{
+   const b=document.createElement("button");b.type="button";b.textContent=label;b.dataset.preset=String(n);
+   b.onclick=()=>{v=Object.assign({},d,set);activePreset=n;update()};ps.append(b);
+ });
+ sliders.forEach(([k,label,min,max],n)=>{
+   const row=document.createElement("label");row.className="mgd-fx-row";
+   row.innerHTML='<span></span><input type="range"><output></output>';
+   row.querySelector("span").textContent=label;
+   const range=row.querySelector("input");range.min=min;range.max=max;range.step=k==="blur"?"0.1":"1";range.dataset.field=k;row.querySelector("output").dataset.field=k;
+   range.oninput=()=>{v[k]=Number(range.value);activePreset=null;update()};
+   get(n<3?"[data-fx-basic]":"[data-fx-extra]").append(row);
+ });
+ const close=(commit=false)=>{
+   if(done)return;done=true;cancelAnimationFrame(raf);
+   if(!commit&&target.isConnected)target.style.cssText=originalCSS;
+   document.removeEventListener("pointerdown",outside,true);
+   document.removeEventListener("keydown",keyboard,true);
+   removeEventListener("resize",place);removeEventListener("scroll",place,true);
+   el.remove();
+ };
+ const outside=e=>{if(!sheet.contains(e.target)&&!e.target.closest?.(".mgd-photo-tools"))close()};
+ const keyboard=e=>{if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();close()}};
+ el._mgdClose=close;
+ get("[data-fx-close]").onclick=()=>close();
+ get("[data-fx-cancel]").onclick=()=>close();
+ get("[data-fx-reset]").onclick=()=>{v=Object.assign({},d);activePreset=0;update()};
+ get("[data-fx-flip]").onclick=()=>{v.flip=v.flip?0:1;activePreset=null;update()};
+ get("[data-fx-advanced]").onclick=()=>{
+   const b=get("[data-fx-advanced]"),extra=get("[data-fx-extra]");
+   const expanded=b.getAttribute("aria-expanded")==="true";
+   extra.hidden=expanded;b.setAttribute("aria-expanded",String(!expanded));cancelAnimationFrame(raf);raf=requestAnimationFrame(place);
+ };
+ get("[data-fx-save]").onclick=()=>{
+   const ph=ctx.draft.blocks.find(b=>b.id===id)?.items[i];if(!ph){close();return}
+   const fx=mgdFX(v);if(fx)ph.fx=fx;else delete ph.fx;
+   ctx.queueAuto();close(true);toast("사진 보정을 적용했어요.");
+ };
+ document.body.append(el);update();place();
+ /* 휴대폰: 아래에서 열린 도구판 뒤에 사진이 가려지지 않도록 사진의 보이는 위치만 조정 */
+ if(innerWidth<=680||matchMedia("(pointer:coarse) and (max-width:900px)").matches){
+   requestAnimationFrame(()=>{
+     if(done||!target.isConnected)return;
+     const photo=target.getBoundingClientRect(),pane=sheet.getBoundingClientRect();
+     if(photo.top<185||photo.bottom<=pane.top-14)return;
+     const delta=Math.max(0,photo.top-185);
+     let scroll=target.parentElement;
+     while(scroll&&scroll!==document.body){
+       const st=getComputedStyle(scroll);
+       if(/auto|scroll/.test(st.overflowY)&&scroll.scrollHeight>scroll.clientHeight+2)break;
+       scroll=scroll.parentElement;
+     }
+     if(scroll&&scroll!==document.body)scroll.scrollBy({top:delta,behavior:"smooth"});
+     else window.scrollBy({top:delta,behavior:"smooth"});
+   });
+ }
+ document.addEventListener("pointerdown",outside,true);
+ document.addEventListener("keydown",keyboard,true);
+ addEventListener("resize",place);addEventListener("scroll",place,true);
+ get("[data-fx-save]").focus({preventScroll:true});
 }
 function mgdSelectPhoto(pb,ctx,i){
  pb.querySelectorAll(".mgd-photo-tools").forEach(n=>n.remove());if(!ctx)return;
@@ -7589,16 +7687,25 @@ function mgdInstall(){
   if(!ui.spaceEdit||ui.space==="room")return;const cvs=document.querySelector(".fl-canvas.fl-edit");if(!cvs)return;
   if(zoom==null){const desk=document.querySelector("#desk");const visible=Math.max(250,(desk?.clientHeight||innerHeight)-90);zoom=Math.max(.35,Math.min(1,visible/Math.max(260,cvs.offsetHeight-240)))}
   cvs.dataset.editZoom=String(zoom);cvs.style.transformOrigin="center top";cvs.style.transform="scale("+zoom+")";cvs.style.marginBottom=Math.round(cvs.offsetHeight*(zoom-1))+"px";
-  document.querySelectorAll("[data-edit-zoom-label]").forEach(n=>n.textContent=Math.round(zoom*100)+"%");
+  document.querySelectorAll("[data-edit-zoom-label]").forEach(n=>n.textContent=Math.round(zoom*100)+"%");document.querySelectorAll("[data-z-open]").forEach(n=>n.textContent=Math.round(zoom*100)+"%");
  };
  const oldBar=seBar;
- seBar=function(cv){oldBar(cv);if(!ui.spaceEdit||ui.space==="room")return;
-  const b=document.querySelector(".se-bar");if(!b||b.querySelector(".mgd-edit-zoom"))return;
-  const w=document.createElement("span");w.className="mgd-edit-zoom";w.setAttribute("role","group");w.setAttribute("aria-label","내 공간 편집 배율");
-  w.innerHTML='<button type="button" data-edit-zoom="out" aria-label="축소">−</button><output data-edit-zoom-label>전체</output><button type="button" data-edit-zoom="in" aria-label="확대">＋</button><button type="button" data-edit-zoom="fit">전체 맞춤</button><button type="button" data-edit-zoom="one">100%</button>';
-  (b.querySelector(".fl-seg")||b.querySelector("[data-hb-tpl]")||b.querySelector("[data-se-mood]"))?.after(w);
-  w.onclick=e=>{const cmd=e.target.closest("[data-edit-zoom]")?.dataset.editZoom;if(!cmd)return;
-   if(cmd==="fit")zoom=null;else if(cmd==="one")zoom=1;else zoom=Math.max(.35,Math.min(1.25,Math.round(((zoom??1)+(cmd==="in"?.1:-.1))*100)/100));requestAnimationFrame(paint)};
+ seBar=function(cv){
+   oldBar(cv);if(!ui.spaceEdit||ui.space==="room")return;
+   const b=document.querySelector(".se-bar");if(!b||b.querySelector(".mgd-edit-zoom"))return;
+   const w=document.createElement("span");w.className="mgd-edit-zoom";w.setAttribute("role","group");w.setAttribute("aria-label","내 공간 편집 배율");
+   w.innerHTML='<button type="button" data-z-open aria-label="편집 배율 설정" aria-expanded="false">전체 맞춤</button><div class="mgd-zpop" hidden><button type="button" data-edit-zoom="out" aria-label="축소">−</button><strong data-edit-zoom-label>100%</strong><button type="button" data-edit-zoom="in" aria-label="확대">＋</button><button type="button" data-edit-zoom="fit">전체 맞춤</button><button type="button" data-edit-zoom="one">100%</button></div>';
+   (b.querySelector(".fl-seg")||b.querySelector("[data-hb-tpl]")||b.querySelector("[data-se-mood]"))?.after(w);
+   const trigger=w.querySelector("[data-z-open]"),pop=w.querySelector(".mgd-zpop");
+   trigger.onclick=()=>{pop.hidden=!pop.hidden;trigger.setAttribute("aria-expanded",String(!pop.hidden))};
+   pop.onclick=e=>{
+     const cmd=e.target.closest("[data-edit-zoom]")?.dataset.editZoom;if(!cmd)return;
+     if(cmd==="fit")zoom=null;else if(cmd==="one")zoom=1;
+     else zoom=Math.max(.35,Math.min(1.25,Math.round(((zoom??1)+(cmd==="in"?.1:-.1))*100)/100));
+     pop.hidden=true;trigger.setAttribute("aria-expanded","false");requestAnimationFrame(paint);
+   };
+   const close=e=>{if(!w.isConnected){document.removeEventListener("pointerdown",close,true);return}if(!w.contains(e.target)){pop.hidden=true;trigger.setAttribute("aria-expanded","false")}};
+   document.addEventListener("pointerdown",close,true);
  };
  const oldHome=renderHome;renderHome=function(cv){const r=oldHome(cv);if(ui.spaceEdit)requestAnimationFrame(paint);return r};
  const oldEnd=seEnd;seEnd=function(){zoom=null;return oldEnd()};
