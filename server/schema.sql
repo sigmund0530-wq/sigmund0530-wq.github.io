@@ -391,3 +391,7 @@ revoke execute on function public.note_ok(uuid) from public, anon;
 revoke execute on function public.hide_note(uuid) from public, anon;
 grant execute on function public.note_ok(uuid) to authenticated;
 grant execute on function public.hide_note(uuid) to authenticated;
+
+-- ── 2026-11-02 · 내 글꼴 (migrations/2026-11-02_fonts.sql 과 같음) ──
+alter table public.media drop constraint if exists media_kind_check;
+alter table public.media add constraint media_kind_check check (kind in ('image','audio','font'));

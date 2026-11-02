@@ -22,6 +22,11 @@ open(p("preview.html"), "w", encoding="utf-8").write(out)
 # 3) 시험용: 서버 없는 앱 + 가짜 서버 붙인 앱
 os.makedirs(p("tests", "site"), exist_ok=True)
 open(p("tests", "site", "app.html"), "w", encoding="utf-8").write(app)
+# 시험용 vendor (supabase·opentype 등): 저장소의 vendor/ 를 그대로 복사
+import shutil
+os.makedirs(p("tests", "site", "vendor"), exist_ok=True)
+for f in os.listdir(p("vendor")):
+    shutil.copy(p("vendor", f), p("tests", "site", "vendor", f))
 mock = '<script src="mocksb.js"></script><script>window.MGD_SB={url:"https://x.supabase.co",key:"sb_publishable_x"}</script>'
 open(p("tests", "site", "app_sb.html"), "w", encoding="utf-8").write(app.replace("<head>", "<head>" + mock, 1))
 print("만들었어요: index.html, preview.html, tests/site/")

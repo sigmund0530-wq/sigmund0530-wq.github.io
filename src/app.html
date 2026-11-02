@@ -1581,6 +1581,41 @@ body.sp-blog-edit .se-bar [data-se-add]{display:inline-flex!important}
 .ink-own{position:relative;overflow:hidden}.ink-own:not([style*="background"]){background:conic-gradient(#e5484d,#f5c518,#30a46c,#3e63dd,#8e4ec6,#e5484d)!important}
 .ink-own input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
 .ink-colors{flex-wrap:wrap}
+/* 내 글꼴 · 손글씨 글꼴 만들기 (2026-11-02) */
+.uf-pop-h{display:flex;align-items:center;justify-content:space-between}.uf-pop-h .tbtn{font-size:12px}
+.uf-pop-mine{display:grid;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:6px}
+.uf-pop-acts{display:flex;gap:6px;flex-wrap:wrap;padding:6px 8px 2px}.uf-pop-acts .pill{height:30px;font-size:12.5px;padding:0 12px}
+.uf-fld{display:grid;gap:6px;margin:6px 0 10px}.uf-fld span{font-size:12.5px;color:var(--ink-2)}
+.uf-fld input{border:1px solid var(--line);border-radius:10px;background:var(--chrome);padding:10px 12px;font:inherit;color:var(--ink)}
+.uf-ok{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:14px;line-height:1.45;cursor:pointer}.uf-ok input{margin-top:3px}.uf-ok small{display:block;color:var(--ink-2);font-size:12px}
+.uf-sm{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin:6px 0}
+.uf-acts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}
+.uf-list{list-style:none;margin:8px 0 0;padding:0}.uf-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line)}
+.uf-li-t{display:grid;gap:2px;min-width:0}.uf-li-t b{font-weight:400;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.uf-li-t small{font-size:12px;color:var(--ink-2)}
+.uf-li-a{display:flex;gap:2px;flex-wrap:wrap}.uf-li-a .tbtn{font-size:13px}.uf-empty{color:var(--ink-2);font-size:14px;margin:16px 0}
+html.fm-open,html.fm-open body{overflow:hidden}
+.fm{position:fixed;inset:0;z-index:100002;background:var(--chrome);color:var(--ink);display:flex;flex-direction:column}
+.fm-h{display:flex;align-items:center;gap:10px;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid var(--line)}
+.fm-name{flex:1;min-width:0;text-align:center;border:0;background:none;font:inherit;font-size:16px;font-weight:600;color:var(--ink);padding:6px}
+.fm-name:focus{outline:none;background:var(--porc-in,var(--chrome-2));border-radius:10px}
+.fm-body{flex:1;overflow-y:auto;display:grid;gap:22px;align-content:start;justify-items:center;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+.fm-body>section{width:min(100%,440px)}
+.fm-lab{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}.fm-lab b{font-size:14px}.fm-lab small{font-size:12px;color:var(--ink-2)}
+.fm-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fm-chip{width:40px;height:40px;border-radius:12px;border:0;background:var(--porc,var(--chrome));box-shadow:0 1px 0 var(--porc-glint,transparent) inset,0 2px 8px var(--porc-shade,rgba(0,0,0,.08));font:inherit;font-size:18px;color:var(--ink-2);cursor:pointer;position:relative}
+.fm-chip.done{color:var(--ink)}.fm-chip.done::after{content:"";position:absolute;right:5px;top:5px;width:5px;height:5px;border-radius:50%;background:var(--ink-2)}
+.fm-chip.on{background:var(--porc-in,var(--chrome-2));box-shadow:none;color:var(--ink);font-weight:600}
+.fm-add{display:flex;gap:8px;margin-top:10px}.fm-add input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;background:var(--chrome);padding:9px 12px;font:inherit;font-size:14px;color:var(--ink)}
+.fm-board{position:relative;width:min(100%,360px);aspect-ratio:1;margin:0 auto;border-radius:18px;background:var(--porc,var(--chrome));box-shadow:0 1px 0 var(--porc-glint,transparent) inset,0 6px 24px var(--porc-shade,rgba(0,0,0,.08));overflow:hidden;
+  background-image:linear-gradient(var(--line),var(--line)),linear-gradient(var(--line),var(--line));background-size:100% 1px,1px 100%;background-position:0 50%,50% 0;background-repeat:no-repeat}
+.fm-ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(68vw,250px);line-height:1;color:var(--ink);opacity:.07;pointer-events:none;user-select:none}
+.fm-cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.fm-tools{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:12px}.fm-tools .tbtn{font-size:13px}
+.fm-ws{display:inline-flex;gap:2px;margin-right:6px}.fm-w{width:34px;height:34px;border:0;background:none;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink);cursor:pointer}
+.fm-w i{display:block;border-radius:50%;background:currentColor}.fm-w.on{background:var(--porc-in,var(--chrome-2))}
+.fm-tools [aria-pressed="false"]{opacity:.55}.fm-next{margin-left:6px}
+.fm-try-in{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--chrome);padding:10px 12px;font:inherit;font-size:14px;color:var(--ink)}
+.fm-try-out{font-size:30px;line-height:1.35;margin:12px 0 4px;word-break:keep-all;min-height:1.4em}
 /* 로고 걷어냄 */#homeLogo,.au-logo,.m-logo{display:none!important}
 </style>
 <style>
@@ -4820,7 +4855,7 @@ async function sbPush(){if(!SB.on||!SB.ready||!SB.user)return;if(SB.pushing){SB.
     for(const [id,a] of Object.entries(assets)){if(a.remote||!a.dataUrl||!/^data:/.test(a.dataUrl))continue;
       const blob=await (await fetch(a.dataUrl)).blob();const mime=a.mime||blob.type||"application/octet-stream";const path=`${uid}/${id}.${sbExt(mime)}`;
       let r=await SB.c.storage.from("media").upload(path,blob,{upsert:false,contentType:mime});if(r.error&&!/exists|Duplicate|409/i.test(String(r.error.message||r.error.statusCode||"")))throw r.error;
-      r=await SB.c.from("media").upsert({id,owner:uid,path,kind:/^audio\//.test(mime)?"audio":"image",mime,width:a.width||null,height:a.height||null,bytes:blob.size});if(r.error)throw r.error;
+      r=await SB.c.from("media").upsert({id,owner:uid,path,kind:/^audio\//.test(mime)?"audio":/^font\//.test(mime)?"font":"image",mime,width:a.width||null,height:a.height||null,bytes:blob.size});if(r.error)throw r.error;
       const su=await SB.c.storage.from("media").createSignedUrl(path,60*60*24*7);a.remote=path;if(su&&su.data&&su.data.signedUrl)a.dataUrl=su.data.signedUrl;changed=true}
     /* 2) 글·카테고리·프로필·개인 문서·내 방 (바뀐 것만) */
     const rows=sbRows(uid),last=SB.last||{posts:{},cats:{},media:{}};
@@ -6825,7 +6860,7 @@ const TC_LIST=[["red","빨강"],["orange","주황"],["yellow","노랑"],["green"
 /* 글꼴(2026-11-02, 주인: "폰트 넣는 기능 넣어"): 고른 글자에 <span class="ff-myeongjo">. 글꼴은 MOOD_FONTS 21개(분위기·프로필 글꼴과 같은 목록).
    글꼴 파일은 그 글꼴이 들어간 글을 그릴 때만 받아 옴(sanitize에서 ensureFont). */
 const FF_KEYS=Object.keys(MOOD_FONTS).filter(k=>k&&/^[a-z]+$/.test(k));
-const FMT_TOK=new RegExp('^(fs-(s|l|xl|xxl)|tc-(red|orange|yellow|green|teal|blue|purple|pink|brown|gray|rose|sand|butter|sage|fog|lilac)|ff-('+FF_KEYS.join('|')+'))$');
+const FMT_TOK=new RegExp('^(fs-(s|l|xl|xxl)|tc-(red|orange|yellow|green|teal|blue|purple|pink|brown|gray|rose|sand|butter|sage|fog|lilac)|ff-('+FF_KEYS.join('|')+')|uf-[a-z0-9]{4,24})$');
 {const st=document.createElement('style');st.id='ff-css';st.textContent=FF_KEYS.map(k=>`.ff-${k}{font-family:'${MOOD_FONTS[k][1]}',var(--f-body)}`).join('');document.head.appendChild(st)}
 const ffLoad=html=>{String(html).replace(/\bff-([a-z]+)/g,(m,k)=>{if(FF_KEYS.includes(k))ensureFont(k);return m})};
 ALLOW.add('SPAN');
@@ -6848,9 +6883,9 @@ function fmtApply(area,kind,val,rng){const sel=getSelection();const r=rng||(sel.
   {let a=r.commonAncestorContainer;a=a.nodeType===1?a:a.parentElement;const t=r.toString();
     while(a&&a!==area&&area.contains(a)&&a.tagName==='SPAN'&&a.textContent===t){r.selectNode(a);a=a.parentElement}}
   const frag=r.extractContents();
-  frag.querySelectorAll('span').forEach(sp=>{[...sp.classList].filter(c=>new RegExp('^'+kind+'-').test(c)).forEach(c=>sp.classList.remove(c));if(kind==='tc')sp.style.color='';
+  frag.querySelectorAll('span').forEach(sp=>{[...sp.classList].filter(c=>(kind==='ff'||kind==='uf')?/^(ff|uf)-/.test(c):new RegExp('^'+kind+'-').test(c)).forEach(c=>sp.classList.remove(c));if(kind==='tc')sp.style.color='';
     if(!sp.className&&!(sp.getAttribute('style')||'').trim())sp.replaceWith(...sp.childNodes)});
-  let node=frag;if(val){const sp=document.createElement('span');if(kind==='fs'||kind==='ff'){sp.className=kind+'-'+val;if(kind==='ff')ensureFont(val)}else if(val[0]==='#')sp.style.color=val;else sp.className='tc-'+val;sp.appendChild(frag);node=sp}
+  let node=frag;if(val){const sp=document.createElement('span');if(kind==='fs'||kind==='ff'||kind==='uf'){sp.className=kind+'-'+val;if(kind==='ff')ensureFont(val);if(kind==='uf')ufEnsure(val)}else if(val[0]==='#')sp.style.color=val;else sp.className='tc-'+val;sp.appendChild(frag);node=sp}
   const first=node.firstChild,last=node.lastChild,isFrag=node===frag;r.insertNode(node);
   const nr=document.createRange();if(isFrag){if(first&&last){nr.setStartBefore(first);nr.setEndAfter(last)}}else nr.selectNodeContents(node);
   sel.removeAllRanges();sel.addRange(nr);area.dispatchEvent(new Event('input',{bubbles:true}));return true}
@@ -6865,15 +6900,25 @@ function fmtButtons(ctx){const win=ctx.body.closest('.win');if(!win)return;const
 /* 글꼴 고르기: 고른 글자(없으면 '가나다 글꼴')를 그 글꼴 모양으로 보여 줌 */
 function fmtFonts(btn,area){document.querySelectorAll('.fmt-pop').forEach(n=>n.remove());const s=getSelection();const rng=s.rangeCount?s.getRangeAt(0).cloneRange():null;
   const sample=esc(((rng&&rng.toString())||'').replace(/\s+/g,' ').trim().slice(0,12)||'가나다 글꼴');
-  let cur='';{let n=rng&&rng.startContainer;n=n&&(n.nodeType===1?n:n.parentElement);const sp=n&&n.closest('[class*="ff-"]');if(sp&&area&&area.contains(sp))cur=([...sp.classList].find(c=>/^ff-/.test(c))||'').slice(3)}
+  let cur='';{let n=rng&&rng.startContainer;n=n&&(n.nodeType===1?n:n.parentElement);const sp=n&&n.closest('[class*="ff-"],[class*="uf-"]');if(sp&&area&&area.contains(sp)){const c=[...sp.classList].find(c=>/^(ff|uf)-/.test(c))||'';cur=c.startsWith('uf-')?'u:'+c.slice(3):c.slice(3)}}
+  const mine=ufList();mine.forEach(f=>ufEnsure(f.id));
   const pop=document.createElement('div');pop.className='fmt-pop fmt-fonts';pop.setAttribute('role','dialog');pop.setAttribute('aria-label','글꼴');
-  pop.innerHTML=`<div class="fmt-pop-h">글꼴</div><div class="fmt-fl">${['',...FF_KEYS].map(k=>{if(k)ensureFont(k);const [t,fam]=MOOD_FONTS[k];
+  pop.innerHTML=`<div class="fmt-pop-h uf-pop-h"><span>글꼴</span><button type="button" class="tbtn" data-uf-sheet>내 글꼴 ›</button></div><div class="fmt-fl">
+    <div class="uf-pop-mine">${mine.map(f=>`<button type="button" class="fmt-f${cur==='u:'+f.id?' on':''}" data-uf="${f.id}" aria-pressed="${cur==='u:'+f.id}"><b class="uf-${f.id}">${sample}</b><small>${esc(f.name)}</small></button>`).join('')}
+      <div class="uf-pop-acts"><button type="button" class="pill" data-uf-up>＋ 글꼴 올리기</button><button type="button" class="pill" data-uf-make>✎ 손글씨 만들기</button></div></div>
+    <div class="fmt-pop-h">기본 글꼴</div>${['',...FF_KEYS].map(k=>{if(k)ensureFont(k);const [t,fam]=MOOD_FONTS[k];
     return `<button type="button" class="fmt-f${k===cur?' on':''}" data-ff="${k}" aria-pressed="${k===cur}"><b style="${fam?`font-family:'${fam}',var(--f-body)`:''}">${sample}</b><small>${t}</small></button>`}).join('')}</div>`;
   document.body.appendChild(pop);const r=btn.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight;
   pop.style.left=Math.max(8,Math.min(innerWidth-pw-8,r.left))+'px';pop.style.top=(r.bottom+6+ph>innerHeight?Math.max(8,r.top-ph-6):r.bottom+6)+'px';
   const close=()=>{pop.remove();removeEventListener('pointerdown',out,true)};const out=e=>{if(!pop.contains(e.target)&&e.target!==btn)close()};
   pop.addEventListener('mousedown',e=>e.preventDefault());
   pop.querySelectorAll('[data-ff]').forEach(b=>b.onclick=()=>{const sel=getSelection();sel.removeAllRanges();if(rng)sel.addRange(rng);if(fmtApply(area,'ff',b.dataset.ff||null,rng))close()});
+  pop.querySelectorAll('[data-uf]').forEach(b=>b.onclick=()=>{const sel=getSelection();sel.removeAllRanges();if(rng)sel.addRange(rng);if(fmtApply(area,'uf',b.dataset.uf,rng))close()});
+  /* 올리거나 만든 뒤: 골라 둔 글자가 있으면 바로 그 글꼴로 */
+  const after=f=>{if(!f||!rng||rng.collapsed||!area||!document.contains(area))return;const sel=getSelection();sel.removeAllRanges();sel.addRange(rng);fmtApply(area,'uf',f.id,rng)};
+  pop.querySelector('[data-uf-up]').onclick=()=>{close();ufUpload(after)};
+  pop.querySelector('[data-uf-make]').onclick=()=>{close();fmOpen(null,after)};
+  pop.querySelector('[data-uf-sheet]').onclick=()=>{close();ufSheet()};
   setTimeout(()=>addEventListener('pointerdown',out,true),0)}
 function fmtColors(btn,area){document.querySelectorAll('.fmt-pop').forEach(n=>n.remove());const s=getSelection();const rng=s.rangeCount?s.getRangeAt(0).cloneRange():null;
   const pop=document.createElement('div');pop.className='fmt-pop';pop.setAttribute('role','dialog');pop.setAttribute('aria-label','글자 색');
@@ -6889,6 +6934,209 @@ function fmtColors(btn,area){document.querySelectorAll('.fmt-pop').forEach(n=>n.
   pop.querySelector('input[type=color]').addEventListener('change',e=>apply(e.target.value));
   setTimeout(()=>addEventListener('pointerdown',out,true),0)}
 const fmtSetup=edSetup;edSetup=function(ctx){fmtSetup(ctx);setTimeout(()=>fmtButtons(ctx),0)};
+/* ═════════ 내 글꼴: 올린 글꼴 · 손글씨로 만든 글꼴 (2026-11-02, 주인: "폰트를 혼자서 만들고, 쓰고 싶은 폰트를 외부에서도 다운받아 넣어서 쓰게 하고 싶어") ═════════
+   - 주인 결정: 올린 사람이 "남에게 보여 줘도 되는 글꼴"이라고 확인하면, 그 글꼴로 꾸민 글은 보는 사람에게도 그 글꼴로 보임(신고가 오면 내릴 수 있게).
+   - records.myFonts [{id, name, how:'upload'|'made', at, share, v, ext, bytes, aid?, glyphs?, w?, today?}]
+     · 올린 글꼴 원본은 크기가 커서(2~10MB) 이 기기 IndexedDB('mgd2-fonts')에 두고, 서버에는 media(kind 'font', 주인만 읽음)로 직접 올림(aid).
+       assets에는 서명 주소만 남겨 다른 기기에서 받아 옴. localStorage에는 넣지 않음.
+     · 만든 글꼴은 그린 획(glyphs {글자: [[굵기, x,y, x,y…]…]}, 0~1000)만 저장하고, 글꼴 파일은 그때그때 opentype.js로 만듦.
+   - 글에는 <span class="uf-글꼴id">만. 발행한 글에 쓰인 글자만 잘라 작은 글꼴 파일(asset, font/otf)을 만들어 post.fonts {글꼴id:{a, n, k}}에 적고,
+     그 글의 media_ids에 넣어 '그 글을 읽을 수 있는 사람만' 받게 함(사진과 같은 규칙). 원본 전체는 남에게 가지 않음.
+   - 서버에 2026-11-02_fonts.sql이 아직 없으면(글꼴 파일을 못 받음) 잘라 낸 글꼴을 만들지 않음(서버 저장이 막히지 않게).
+   - opentype.js(MIT)는 vendor/에 두고 필요할 때만 불러옴. 미리보기(파일 하나)에선 cdnjs에서. */
+let OT_P=null;
+function otLoad(){if(window.opentype)return Promise.resolve(window.opentype);if(OT_P)return OT_P;
+  OT_P=new Promise((res,rej)=>{const add=(src,next)=>{const s=document.createElement('script');s.src=src;s.onload=()=>window.opentype?res(window.opentype):next();s.onerror=next;document.head.appendChild(s)};
+    add('vendor/opentype-1.3.4.min.js',()=>add('https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js',()=>{OT_P=null;rej(new Error('opentype'))}))});return OT_P}
+const UF_ID=/^[a-z0-9]{4,24}$/;
+const ufList=()=>(Array.isArray(records&&records.myFonts)?records.myFonts:[]).filter(f=>f&&UF_ID.test(f.id||''));
+const ufFind=id=>ufList().find(f=>f.id===id);
+const ufNew=()=>'f'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+/* 이 기기 보관함(IndexedDB): 올린 글꼴 원본 */
+let UF_DBP=null;const ufDB=()=>UF_DBP||(UF_DBP=new Promise((res,rej)=>{try{const r=indexedDB.open('mgd2-fonts',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}));
+const ufTx=(mode,fn)=>ufDB().then(d=>new Promise((res,rej)=>{const t=d.transaction('f',mode);const st=t.objectStore('f');let out;const r=fn(st);if(r)r.onsuccess=()=>{out=r.result};t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error)}));
+const ufPut=(id,buf)=>ufTx('readwrite',st=>st.put(buf,id));const ufGet=id=>ufTx('readonly',st=>st.get(id));const ufDel=id=>ufTx('readwrite',st=>st.delete(id));
+const UF_BUF={},UF_PARSED={};
+function ab64(buf){let s='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
+async function ufBytes(f){const key=f.id+':'+(f.v||0);if(UF_BUF[key])return UF_BUF[key];
+  if(f.how==='made'){const ot=await otLoad();return UF_BUF[key]=fmFont(ot,f,null)}
+  let b=null;try{b=await ufGet(f.id)}catch(e){}
+  if(!b&&f.aid&&assets[f.aid]&&assets[f.aid].dataUrl){try{const r=await fetch(assets[f.aid].dataUrl);if(r.ok){b=await r.arrayBuffer();try{await ufPut(f.id,b)}catch(e){}}}catch(e){}}
+  return b?(UF_BUF[key]=b):null}
+/* 화면에 입히기: 주인은 원본(.uf-id), 글은 잘라 낸 글꼴(.ufp-파일id) */
+const UF_RULES={},UF_FACE={};
+function ufCss(){let st=document.getElementById('uf-css');if(!st){st=document.createElement('style');st.id='uf-css';document.head.appendChild(st)}
+  st.textContent=Object.entries(UF_RULES).map(([sel,fam])=>`${sel}{font-family:'${fam}',var(--f-body)}`).join('\n')}
+function ufFace(fam,src){if(UF_FACE[fam])return UF_FACE[fam];try{const ff=new FontFace(fam,src);document.fonts.add(ff);UF_FACE[fam]=ff.load().catch(()=>null)}catch(e){UF_FACE[fam]=Promise.resolve(null)}return UF_FACE[fam]}
+async function ufEnsure(fid){if(ui._peer)return;const f=ufFind(fid);if(!f)return;const fam='mgdu_'+fid+'_'+(f.v||0);if(UF_RULES['.uf-'+fid]===fam)return;
+  try{const buf=await ufBytes(f);if(!buf)return;await ufFace(fam,buf.slice(0));UF_RULES['.uf-'+fid]=fam;ufCss()}catch(e){console.warn('[mgd] font',e)}}
+const ufBody=renderBody;renderBody=function(p){let h=ufBody(p);if(!p||h.indexOf('uf-')<0)return h;const fs=(p.fonts&&typeof p.fonts==='object')?p.fonts:{};
+  const map={};Object.entries(fs).forEach(([fid,o])=>{if(!UF_ID.test(fid)||!o||!/^[\w-]{1,80}$/.test(o.a||''))return;const a=assets[o.a];if(!a||!a.dataUrl)return;
+    const cls='ufp-'+o.a;const fam='mgdp_'+o.a;if(!UF_FACE[fam])ufFace(fam,`url(${JSON.stringify(String(a.dataUrl))})`);if(!UF_RULES['.'+cls+'.'+cls]){UF_RULES['.'+cls+'.'+cls]=fam;ufCss()}map[fid]=cls});
+  h=h.replace(/class="([^"]*)"/g,(m,c)=>{const t=c.match(/\buf-([a-z0-9]{4,24})\b/);if(!t)return m;if(!ui._peer&&ufFind(t[1]))ufEnsure(t[1]);return map[t[1]]?`class="${c} ${map[t[1]]}"`:m});
+  return h};
+/* 글쓰기: 열 때 쓰인 내 글꼴 불러오기 */
+const ufSetup=edSetup;edSetup=function(ctx){ufSetup(ctx);setTimeout(()=>{try{(ctx.body.innerHTML.match(/\buf-[a-z0-9]{4,24}\b/g)||[]).forEach(c=>ufEnsure(c.slice(3)))}catch(e){}},0)};
+/* 글에 쓰인 글자 모으기 */
+function ufNeed(p){const need={};blocksOf(p).forEach(b=>{if(b.type!=='text'||!b.html||b.html.indexOf('uf-')<0)return;
+  const d=new DOMParser().parseFromString(`<body>${b.html}</body>`,'text/html');d.body.querySelectorAll('[class*="uf-"]').forEach(sp=>{const c=[...sp.classList].find(x=>/^uf-[a-z0-9]{4,24}$/.test(x));if(!c)return;
+    const id=c.slice(3);need[id]=(need[id]||'')+sp.textContent})});
+  Object.keys(need).forEach(k=>{need[k]=[...new Set([...need[k].replace(/\s/g,'')])].sort().join('')});return need}
+/* 서버가 글꼴 파일을 받는지(2026-11-02_fonts.sql을 실행했는지) 한 번 확인 */
+let UF_SRV=null;
+function ufServerOk(){if(!SB.on)return Promise.resolve(true);if(!SB.user)return Promise.resolve(false);if(UF_SRV)return UF_SRV;
+  UF_SRV=(async()=>{const id='fontcheck-'+SB.user.id.slice(0,8);try{const r=await SB.c.from('media').upsert({id,owner:SB.user.id,path:SB.user.id+'/'+id,kind:'font',mime:'font/otf',bytes:0});
+    if(r.error){console.warn('[mgd] 글꼴 서버 설정 전',r.error);return false}await SB.c.from('media').delete().eq('id',id);return true}catch(e){UF_SRV=null;return false}})();return UF_SRV}
+const ufPub=p=>p&&(p.status==='published'||p.published===true);
+async function ufSync(){if(ui._peer)return;if(ufSync.busy){ufSync.again=1;return}ufSync.busy=1;
+  try{const posts=(records.posts||[]).filter(p=>ufPub(p)&&(p.fonts||JSON.stringify(p.bodyJson||'').indexOf('uf-')>=0));if(!posts.length)return;
+    let srv=null;
+    for(const p of posts){const need=ufNeed(p),cur=(p.fonts&&typeof p.fonts==='object')?p.fonts:{},next={};let changed=false;
+      for(const [fid,chars] of Object.entries(need)){const f=ufFind(fid);
+        if(!f||!f.share){if(cur[fid]&&!f)next[fid]=cur[fid];else if(cur[fid])changed=true;continue}   /* 지운 글꼴: 예전에 잘라 둔 건 그대로 / 나만 보기로 바꾼 글꼴: 뺌 */
+        const k=hsh(chars)+'.'+(f.v||0);if(cur[fid]&&cur[fid].k===k&&assets[cur[fid].a]){next[fid]=cur[fid];continue}
+        if(srv===null)srv=await ufServerOk();if(!srv){if(cur[fid])next[fid]=cur[fid];continue}
+        let buf=null;try{buf=await ufSubset(f,chars)}catch(e){console.warn('[mgd] subset',e)}if(!buf){if(cur[fid])next[fid]=cur[fid];continue}
+        const aid=uid('asset');assets[aid]={id:aid,role:'font',mime:'font/otf',dataUrl:'data:font/otf;base64,'+ab64(buf)};next[fid]={a:aid,n:String(f.name||'').slice(0,40),k};changed=true}
+      if(Object.keys(cur).some(k=>!next[k]))changed=true;
+      if(changed){if(Object.keys(next).length)p.fonts=next;else delete p.fonts;persist()}}}
+  finally{ufSync.busy=0;if(ufSync.again){ufSync.again=0;setTimeout(ufSync,60)}}}
+const ufPersist=persist;persist=function(){const r=ufPersist.apply(this,arguments);if(!ui._peer){clearTimeout(ufSync.t);ufSync.t=setTimeout(()=>ufSync().catch(e=>console.warn('[mgd] font sync',e)),500)}return r};
+/* 잘라 낸 글꼴: 그 글에 쓴 글자만 */
+async function ufSubset(f,chars){const ot=await otLoad();if(f.how==='made')return fmFont(ot,f,chars);
+  const buf=await ufBytes(f);if(!buf)return null;const font=UF_PARSED[f.id]||(UF_PARSED[f.id]=ot.parse(buf));const em=font.unitsPerEm||1000;
+  const nd=font.glyphs.get(0);const glyphs=[new ot.Glyph({name:'.notdef',unicode:0,advanceWidth:nd&&nd.advanceWidth||em/2,path:new ot.Path()}),new ot.Glyph({name:'space',unicode:32,advanceWidth:(font.charToGlyph(' ')||{}).advanceWidth||em/4,path:new ot.Path()})];
+  for(const ch of chars){const g=font.charToGlyph(ch);if(!g||!g.index)continue;glyphs.push(new ot.Glyph({name:'u'+ch.codePointAt(0).toString(16),unicode:ch.codePointAt(0),advanceWidth:g.advanceWidth,path:g.path}))}
+  if(glyphs.length<3)return null;
+  return new ot.Font({familyName:'mgd',styleName:'Regular',unitsPerEm:em,ascender:font.ascender,descender:font.descender,glyphs}).toArrayBuffer()}
+/* 서버·글 목록에 잘라 낸 글꼴 파일도 */
+const ufRows=sbRows;sbRows=function(uid){const r=ufRows(uid);r.posts.forEach(row=>{const fs=row.data&&row.data.fonts;if(fs&&typeof fs==='object')row.media_ids=[...new Set([...(row.media_ids||[]),...Object.values(fs).map(o=>o&&o.a).filter(Boolean)])]});return r};
+const ufUsed=extraUsedIds;extraUsedIds=function(){const o=ufUsed();(records&&records.posts||[]).forEach(p=>{if(p&&p.fonts&&typeof p.fonts==='object')Object.values(p.fonts).forEach(x=>x&&x.a&&o.push(x.a))});ufList().forEach(f=>f.aid&&o.push(f.aid));return o};
+/* 남의 글: 정해 둔 모양만 */
+const ufScrub=peerScrub;peerScrub=function(st){ufScrub(st);((st.records&&st.records.posts)||[]).forEach(p=>{if(!p)return;const fs=p.fonts;delete p.fonts;if(!fs||typeof fs!=='object')return;const o={};
+  Object.entries(fs).forEach(([k,v])=>{if(UF_ID.test(k)&&v&&/^[\w-]{1,80}$/.test(v.a||''))o[k]={a:v.a,n:String(v.n||'').slice(0,40)}});if(Object.keys(o).length)p.fonts=o});
+  if(st.records)delete st.records.myFonts};
+/* ── 글꼴 올리기 ── */
+function ufUpload(after){const inp=document.createElement('input');inp.type='file';inp.accept='.ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff';inp.hidden=true;document.body.appendChild(inp);
+  inp.onchange=async()=>{const file=inp.files&&inp.files[0];inp.remove();if(!file)return;
+    if(/\.woff2$/i.test(file.name)){toast('woff2 파일은 아직 못 읽어요. 같은 글꼴의 ttf나 otf 파일로 올려 주세요.');return}
+    if(file.size>10*1024*1024){toast('글꼴 파일은 10MB까지 올릴 수 있어요.');return}
+    const buf=await file.arrayBuffer();let font;try{const ot=await otLoad();font=ot.parse(buf.slice(0))}catch(e){console.warn(e);toast('글꼴 파일을 읽지 못했어요. 다른 파일로 해 볼까요?');return}
+    const nn=font.names||{};const pick=o=>o&&(o.ko||o.en||Object.values(o)[0]);let nm=String(pick(nn.fullName)||pick(nn.fontFamily)||file.name.replace(/\.[^.]+$/,'')).trim().slice(0,40);
+    const g=font.charToGlyph('가');const hasKo=!!(g&&g.index);const ext=(file.name.match(/\.(ttf|otf|woff)$/i)||[,'ttf'])[1].toLowerCase();
+    const r=await ufConfirm(nm,hasKo);if(!r)return;
+    const f={id:ufNew(),name:r.name||nm,how:'upload',ext,bytes:file.size,at:new Date().toISOString(),share:r.share,v:0};
+    try{await ufPut(f.id,buf)}catch(e){toast('이 기기에 글꼴을 저장하지 못했어요. 저장 공간을 확인해 주세요.');return}
+    UF_PARSED[f.id]=font;records.myFonts=[...ufList(),f];persist();toast(`‘${f.name}’ 글꼴을 넣었어요.`);
+    await ufEnsure(f.id);after&&after(f);ufServerSave(f,buf)};
+  inp.click()}
+function ufConfirm(nm,hasKo){const p=modal(`<h3>글꼴 넣기</h3>
+    <label class="uf-fld"><span>이름</span><input type="text" id="uf-n" maxlength="40" value="${esc(nm)}"></label>
+    ${hasKo?'':'<p class="uf-sm">이 글꼴에는 한글이 없어요. 영어·숫자에만 입혀져요.</p>'}
+    <label class="uf-ok"><input type="checkbox" id="uf-ok"> <span>다른 사람에게 보여 줘도 되는 글꼴이에요<small>무료 배포·웹 사용 허락 등. 확인하지 않으면 나에게만 이 글꼴로 보여요.</small></span></label>
+    <p class="uf-sm">이 글꼴로 꾸민 글은 보는 사람에게도 이 글꼴로 보여요. 글꼴 파일 전체가 아니라 글에 쓴 글자만 보내요. 저작권 신고가 들어오면 그 글꼴은 내려갈 수 있어요.</p>
+    <div class="acts"><button class="btn" data-c>취소</button><button class="btn primary" data-o>나만 보기로 넣기</button></div>`);
+  const m=modal.cur,ok=m.querySelector('#uf-ok'),o=m.querySelector('[data-o]');ok.onchange=()=>{o.textContent=ok.checked?'넣기':'나만 보기로 넣기'};
+  m.querySelector('[data-c]').onclick=()=>m._done(null);o.onclick=()=>m._done({name:m.querySelector('#uf-n').value.trim().slice(0,40),share:ok.checked});return p}
+async function ufServerSave(f,buf){if(!SB.on||!SB.user||f.how!=='upload'||f.aid)return;if(!(await ufServerOk())){toast('서버가 아직 글꼴을 받을 준비가 안 됐어요. 이 기기에만 저장했어요.');return}
+  const aid='font-'+f.id,mime='font/'+f.ext,path=`${SB.user.id}/${aid}.${f.ext}`;
+  try{let r=await SB.c.storage.from('media').upload(path,new Blob([buf],{type:mime}),{upsert:false,contentType:mime});if(r.error&&!/exists|Duplicate|409/i.test(String(r.error.message||r.error.statusCode||'')))throw r.error;
+    r=await SB.c.from('media').upsert({id:aid,owner:SB.user.id,path,kind:'font',mime,bytes:buf.byteLength});if(r.error)throw r.error;
+    const su=await SB.c.storage.from('media').createSignedUrl(path,60*60*24*7);const cur=ufFind(f.id);if(!cur)return;
+    assets[aid]={id:aid,role:'font-src',mime,remote:path,dataUrl:(su&&su.data&&su.data.signedUrl)||''};cur.aid=aid;persist()}catch(e){console.warn('[mgd] font upload',e)}}
+function ufRemove(f){records.myFonts=ufList().filter(x=>x.id!==f.id);ufDel(f.id).catch(()=>{});if(f.aid)delete assets[f.aid];delete UF_RULES['.uf-'+f.id];ufCss();persist()}
+/* ── 내 글꼴 서랍 ── */
+function ufSheet(){const draw=()=>{const L=ufList();L.forEach(f=>ufEnsure(f.id));return `<h3>내 글꼴</h3><p class="uf-sm">올리거나 손글씨로 만든 글꼴이에요. 글쓰기에서 글자를 고르고 '글꼴'에서 입혀요.</p>
+    <div class="uf-acts"><button type="button" class="pill" data-uf-up>＋ 글꼴 올리기</button><button type="button" class="pill" data-uf-make>✎ 손글씨 글꼴 만들기</button></div>
+    ${L.length?`<ul class="uf-list">${L.map(f=>`<li data-id="${f.id}"><div class="uf-li-t"><b class="uf-${f.id}">${esc(f.name)}</b><small>${f.how==='made'?`손글씨 · ${Object.keys(f.glyphs||{}).length}자`:'올린 글꼴'} · ${f.share?'보는 사람에게도':'나에게만'}</small></div>
+      <div class="uf-li-a">${f.how==='made'?`<button type="button" class="tbtn" data-uf-draw>이어 그리기</button>`:''}<button type="button" class="tbtn" data-uf-share>${f.share?'나에게만 보이기':'보는 사람에게도'}</button><button type="button" class="tbtn" data-uf-ren>이름</button><button type="button" class="tbtn danger" data-uf-del>지우기</button></div></li>`).join('')}</ul>`
+      :'<p class="uf-empty">아직 내 글꼴이 없어요.</p>'}
+    <div class="acts"><button class="btn" data-c>닫기</button></div>`};
+  const p=modal(draw(),true);const m=modal.cur;const dlg=m.querySelector('.dialog');
+  const wire=()=>{dlg.querySelector('[data-c]').onclick=()=>m._done(null);
+    dlg.querySelector('[data-uf-up]').onclick=()=>{m._done(null);ufUpload(()=>ufSheet())};dlg.querySelector('[data-uf-make]').onclick=()=>{m._done(null);fmOpen(null,()=>ufSheet())};
+    dlg.querySelectorAll('.uf-list li').forEach(li=>{const f=ufFind(li.dataset.id);if(!f)return;const q=s=>li.querySelector(s);
+      q('[data-uf-draw]')&&(q('[data-uf-draw]').onclick=()=>{m._done(null);fmOpen(f.id,()=>ufSheet())});
+      q('[data-uf-share]').onclick=()=>{f.share=!f.share;persist();dlg.innerHTML=draw();wire();toast(f.share?'이 글꼴로 꾸민 글은 보는 사람에게도 이 글꼴로 보여요.':'이제 이 글꼴은 나에게만 보여요.')};
+      q('[data-uf-ren]').onclick=async()=>{m._done(null);const v=await askText('글꼴 이름',f.name);if(v&&v.trim()){f.name=v.trim().slice(0,40);persist()}ufSheet()};
+      q('[data-uf-del]').onclick=async()=>{m._done(null);const ok=await confirmDlg(`‘${f.name}’ 글꼴을 지울까요?`,'이미 발행한 글은 그대로 보여요. 글쓰기에서는 기본 글꼴로 바뀌어요.','지우기');if(ok){ufRemove(f);toast('글꼴을 지웠어요.')}ufSheet()}})};
+  wire();return p}
+/* ── 손글씨 글꼴 만들기 (오늘의 글자) ──
+   하루 열 자씩 '오늘의 글자'를 그려 내 글꼴을 모아 가요. 아직 안 그린 글자는 기본 글꼴로 보여요(그린 글자 수는 나만 봄).
+   그린 획 → 획마다 같은 굵기의 둥근 선 모양(마디마다 동그라미 + 사이를 잇는 네모)으로 바꿔 글꼴 파일을 만듦. */
+const FM_COMMON=[...new Set('이다는의에가을하고를한지로서도기으사대자리어나인그수정아해시라일만적부전것들게보거상있없되었주우제말면소장위원국동성년회경러데요구내까중모문분생방학여화체연관공발통신물실금개명저업간당계심행영세결합무두번진과선불조차각외민미점력식유양감속변법작품알목산람야또오늘하늘바람좋았네더잘못같은때음친엄마빠집밥먹었와죠맛길비눈꽃밤낮봄여름가을겨울책글쓰기너나우리사랑고마워안녕왜뭐어디언제누구처럼정말진짜조금많이다시함께혼자생각마음시간오후아침저녁커피차물빵'.replace(/\s/g,''))];
+const fmDay=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function fmToday(f){const day=fmDay();if(f.today&&f.today.d===day)return [...f.today.c];const done=f.glyphs||{};
+  const c=FM_COMMON.filter(c=>!done[c]).slice(0,10).join('');f.today={d:day,c};return [...c]}   /* 많이 쓰는 글자부터 열 자씩 */
+function fmSimplify(pts,eps){if(pts.length<3)return pts;const d=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy;if(!L)return Math.hypot(p[0]-a[0],p[1]-a[1]);const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/L));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)};
+  let mx=0,ix=0;for(let i=1;i<pts.length-1;i++){const v=d(pts[i],pts[0],pts[pts.length-1]);if(v>mx){mx=v;ix=i}}
+  return mx>eps?[...fmSimplify(pts.slice(0,ix+1),eps).slice(0,-1),...fmSimplify(pts.slice(ix),eps)]:[pts[0],pts[pts.length-1]]}
+const FM_ASC=880;
+function fmOutline(ot,strokes){const path=new ot.Path();let minX=1e9,maxX=-1e9;
+  const poly=arr=>{let a=0;for(let i=0;i<arr.length;i++){const p=arr[i],q=arr[(i+1)%arr.length];a+=p[0]*q[1]-q[0]*p[1]}if(a<0)arr.reverse();
+    path.moveTo(Math.round(arr[0][0]),Math.round(arr[0][1]));for(let i=1;i<arr.length;i++)path.lineTo(Math.round(arr[i][0]),Math.round(arr[i][1]));path.close();arr.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0])})};
+  (strokes||[]).forEach(s=>{if(!Array.isArray(s)||s.length<3)return;const r=Math.max(8,Math.min(160,+s[0]||70))/2;const pts=[];for(let i=1;i+1<s.length;i+=2)pts.push([+s[i]||0,FM_ASC-(+s[i+1]||0)]);
+    const circ=c=>{const n=10,arr=[];for(let k=0;k<n;k++){const t=k/n*Math.PI*2;arr.push([c[0]+r*Math.cos(t),c[1]+r*Math.sin(t)])}poly(arr)};
+    if(pts.length===1){circ(pts[0]);return}
+    for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);if(L<1)continue;const nx=-dy/L*r,ny=dx/L*r;poly([[a[0]+nx,a[1]+ny],[b[0]+nx,b[1]+ny],[b[0]-nx,b[1]-ny],[a[0]-nx,a[1]-ny]])}
+    pts.forEach((p,i)=>{if(i===0||i===pts.length-1){circ(p);return}const a=pts[i-1],b=pts[i+1];let d=Math.abs(Math.atan2(b[1]-p[1],b[0]-p[0])-Math.atan2(p[1]-a[1],p[0]-a[0]));d=Math.min(d,Math.PI*2-d);if(d>0.3)circ(p)})});
+  return {path,minX,maxX}}
+function fmFont(ot,f,chars){const G=f.glyphs||{};const list=chars?[...chars].filter(c=>G[c]):Object.keys(G);
+  const glyphs=[new ot.Glyph({name:'.notdef',unicode:0,advanceWidth:600,path:new ot.Path()}),new ot.Glyph({name:'space',unicode:32,advanceWidth:300,path:new ot.Path()})];
+  list.forEach(ch=>{const cp=ch.codePointAt(0);if(!cp||cp===32)return;const o=fmOutline(ot,G[ch]);const wide=cp>=0x1100;let aw=1000,path=o.path;
+    if(!wide&&o.maxX>o.minX){const sh=60-o.minX;aw=Math.round(o.maxX-o.minX+120);path=new ot.Path();o.path.commands.forEach(c=>{const n=Object.assign({},c);['x','x1','x2'].forEach(k=>{if(k in n)n[k]+=sh});path.commands.push(n)})}
+    glyphs.push(new ot.Glyph({name:'u'+cp.toString(16),unicode:cp,advanceWidth:aw,path}))});
+  return new ot.Font({familyName:'mgd hand',styleName:'Regular',unitsPerEm:1000,ascender:FM_ASC,descender:-(1000-FM_ASC),glyphs}).toArrayBuffer()}
+function fmOpen(fid,after){document.querySelectorAll('.fm').forEach(n=>n.remove());
+  const exist=fid&&ufFind(fid);const f=exist||{id:ufNew(),name:((records.profile&&records.profile.displayName)||'나')+'의 손글씨',how:'made',glyphs:{},w:80,share:true,v:0,at:new Date().toISOString()};
+  if(!f.glyphs)f.glyphs={};let added=!!exist;const today=fmToday(f);let want=[...new Set([...today,...(f.want||[])])];
+  let cur=today.find(c=>!f.glyphs[c])||today[0];let strokes=clone(f.glyphs[cur]||[]),undo=[],dirty=false,guide=true;
+  const el=document.createElement('div');el.className='fm';el.setAttribute('role','dialog');el.setAttribute('aria-label','손글씨 글꼴 만들기');
+  el.innerHTML=`<header class="fm-h"><button type="button" class="tbtn" data-fm-close>닫기</button><input class="fm-name" maxlength="40" aria-label="글꼴 이름" value="${esc(f.name)}"><button type="button" class="btn primary" data-fm-done>완료</button></header>
+    <div class="fm-body"><section class="fm-today"><div class="fm-lab"><b>오늘의 글자</b><small data-fm-prog></small></div><div class="fm-chips" data-fm-chips></div>
+      <form class="fm-add" data-fm-add><input type="text" maxlength="20" placeholder="그리고 싶은 글자 넣기 (예: 내 이름)" aria-label="그릴 글자 넣기"><button type="submit" class="pill">넣기</button></form></section>
+    <section class="fm-pad"><div class="fm-board"><span class="fm-ghost" aria-hidden="true"></span><canvas class="fm-cv" aria-label="글자 그리는 칸"></canvas></div>
+      <div class="fm-tools"><span class="fm-ws" role="group" aria-label="굵기">${[[50,'얇게'],[80,'보통'],[120,'굵게']].map(([w,t])=>`<button type="button" class="fm-w${(f.w||80)===w?' on':''}" data-fm-w="${w}" aria-label="${t}" title="${t}"><i style="width:${Math.round(w/10)}px;height:${Math.round(w/10)}px"></i></button>`).join('')}</span>
+        <button type="button" class="tbtn" data-fm-undo>되돌리기</button><button type="button" class="tbtn" data-fm-clear>다시 그리기</button><button type="button" class="tbtn" data-fm-guide aria-pressed="true">밑그림</button><button type="button" class="pill fm-next" data-fm-next>다음 글자 ›</button></div></section>
+    <section class="fm-try"><div class="fm-lab"><b>써 보기</b><small data-fm-count></small></div><input type="text" class="fm-try-in" value="오늘은 하늘이 정말 좋았다" aria-label="써 볼 글"><p class="fm-try-out" data-fm-out></p>
+      <small class="uf-sm">아직 안 그린 글자는 기본 글꼴로 보여요.</small></section></div>`;
+  document.body.appendChild(el);document.documentElement.classList.add('fm-open');
+  const $e=s=>el.querySelector(s),cv=$e('.fm-cv'),ctx=cv.getContext('2d');let size=0;
+  const fit=()=>{const b=$e('.fm-board').getBoundingClientRect();size=Math.round(b.width);const dpr=Math.min(3,devicePixelRatio||1);cv.width=size*dpr;cv.height=size*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);paint()};
+  const ink=()=>getComputedStyle(el).getPropertyValue('--ink').trim()||'#333';
+  function paint(){ctx.clearRect(0,0,size,size);ctx.strokeStyle=ink();ctx.lineCap='round';ctx.lineJoin='round';const k=size/1000;
+    strokes.forEach(s=>{ctx.lineWidth=s[0]*k;ctx.beginPath();ctx.moveTo(s[1]*k,s[2]*k);if(s.length===3)ctx.lineTo(s[1]*k+0.01,s[2]*k);for(let i=3;i+1<s.length;i+=2)ctx.lineTo(s[i]*k,s[i+1]*k);ctx.stroke()})}
+  const chips=()=>{const done=f.glyphs;$e('[data-fm-chips]').innerHTML=want.map(c=>`<button type="button" class="fm-chip${c===cur?' on':''}${done[c]?' done':''}" data-c="${esc(c)}" aria-pressed="${c===cur}">${esc(c)}</button>`).join('');
+    const n=today.filter(c=>done[c]).length;$e('[data-fm-prog]').textContent=`오늘 ${n}/${today.length}`;$e('[data-fm-count]').textContent=`그린 글자 ${Object.keys(done).length}자`;
+    $e('.fm-ghost').textContent=guide?cur:'';$e('.fm-ghost').hidden=!guide};
+  const save=()=>{if(!dirty)return;if(strokes.length)f.glyphs[cur]=clone(strokes);else delete f.glyphs[cur];f.v=(f.v||0)+1;f.at=new Date().toISOString();dirty=false;
+    if(!added&&Object.keys(f.glyphs).length){records.myFonts=[...ufList(),f];added=true}persist();tryOut()};
+  const go=c=>{save();cur=c;strokes=clone(f.glyphs[c]||[]);undo=[];paint();chips()};
+  let tryT=0;const tryOut=()=>{clearTimeout(tryT);tryT=setTimeout(async()=>{const out=$e('[data-fm-out]');out.textContent=$e('.fm-try-in').value;if(!Object.keys(f.glyphs).length){out.style.fontFamily='';return}
+    try{const ot=await otLoad();const fam='mgdu_'+f.id+'_'+(f.v||0);await ufFace(fam,fmFont(ot,f,null));if(document.contains(out))out.style.fontFamily=`'${fam}',var(--f-body)`;if(added){UF_RULES['.uf-'+f.id]=fam;ufCss()}}catch(e){console.warn(e)}},150)};
+  /* 그리기 */
+  let live=null;const at=e=>{const r=cv.getBoundingClientRect();return [Math.round(Math.max(0,Math.min(1000,(e.clientX-r.left)/r.width*1000))),Math.round(Math.max(0,Math.min(1000,(e.clientY-r.top)/r.height*1000)))]};
+  cv.addEventListener('pointerdown',e=>{e.preventDefault();cv.setPointerCapture(e.pointerId);live={id:e.pointerId,pts:[at(e)]};undo.push(clone(strokes));strokes.push([f.w||80,...live.pts[0]]);paint()});
+  cv.addEventListener('pointermove',e=>{if(!live||e.pointerId!==live.id)return;(e.getCoalescedEvents?e.getCoalescedEvents():[e]).forEach(ev=>{const p=at(ev),q=live.pts[live.pts.length-1];if(Math.hypot(p[0]-q[0],p[1]-q[1])>=4)live.pts.push(p)});
+    strokes[strokes.length-1]=[f.w||80,...live.pts.flat()];paint()});
+  const up=e=>{if(!live||e.pointerId!==live.id)return;const sp=fmSimplify(live.pts,5);strokes[strokes.length-1]=[f.w||80,...sp.flat()];live=null;dirty=true;paint();save();chips()};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);cv.style.touchAction='none';
+  /* 단추 */
+  el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.c){go(b.dataset.c)}
+    else if(b.dataset.fmW){f.w=+b.dataset.fmW;el.querySelectorAll('[data-fm-w]').forEach(x=>x.classList.toggle('on',x===b));persist()}
+    else if('fmUndo' in b.dataset){if(undo.length){strokes=undo.pop();dirty=true;save();paint();chips()}}
+    else if('fmClear' in b.dataset){if(strokes.length){undo.push(clone(strokes));strokes=[];dirty=true;save();paint();chips()}}
+    else if('fmGuide' in b.dataset){guide=!guide;b.setAttribute('aria-pressed',String(guide));chips()}
+    else if('fmNext' in b.dataset){const i=want.indexOf(cur);const nx=want.slice(i+1).find(c=>!f.glyphs[c])||want.find(c=>!f.glyphs[c]&&c!==cur)||want[(i+1)%want.length];go(nx)}
+    else if('fmClose' in b.dataset||'fmDone' in b.dataset){save();const nm=$e('.fm-name').value.trim().slice(0,40);if(nm&&nm!==f.name){f.name=nm;if(added)persist()}
+      el.remove();document.documentElement.classList.remove('fm-open');removeEventListener('resize',fit);
+      if(added){toast(`‘${f.name}’ · 그린 글자 ${Object.keys(f.glyphs).length}자`);ufEnsure(f.id);after&&after(f)}}});
+  $e('[data-fm-add]').addEventListener('submit',e=>{e.preventDefault();const inp=$e('.fm-add input');const cs=[...inp.value.replace(/\s/g,'')].filter(c=>!want.includes(c));if(!cs.length){inp.value='';return}
+    want=[...want,...cs];f.want=[...new Set([...(f.want||[]),...cs])].slice(-60);inp.value='';go(cs[0])});
+  $e('.fm-try-in').addEventListener('input',tryOut);$e('.fm-name').addEventListener('change',()=>{const nm=$e('.fm-name').value.trim().slice(0,40);if(nm){f.name=nm;if(added)persist()}});
+  addEventListener('resize',fit);requestAnimationFrame(()=>{fit();chips();tryOut()});return el}
+
 
 render();
 /* PC·모바일을 나란히 볼 때: 한쪽에서 저장하면 다른 쪽도 다시 그림 */
