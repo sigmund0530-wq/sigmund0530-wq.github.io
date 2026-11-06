@@ -1590,6 +1590,13 @@ body.sp-blog-edit .se-bar [data-se-add]{display:inline-flex!important}
 .mr-fh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.mr-fh h3{margin:0}.mr-fh .uf-acts{margin:0}
 .mr-fonts .uf-list{max-width:720px}
 /* 내 글꼴 · 글꼴 만들기 (2026-11-02) */
+.fm-shapes{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:8px}.fm-shapes[hidden]{display:none}.fm-shapes .uf-sm{width:100%;text-align:center;margin:2px 0 0}
+.fm-shp{width:38px;height:38px;border:0;border-radius:12px;background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--ink-2)}
+.fm-shp svg{width:22px;height:22px;fill:currentColor}.fm-shp[aria-pressed="true"]{background:var(--porc-in,var(--chrome-2));color:var(--ink)}
+.fm-svg{height:32px;font-size:12.5px;padding:0 12px;display:inline-flex;align-items:center;cursor:pointer}.fm-svg.on{background:var(--porc-in,var(--chrome-2));font-weight:600}
+.fm-syms{display:flex;align-items:center;gap:2px;flex-wrap:wrap;margin-top:8px}.fm-syms .uf-sm{margin:0 6px 0 0}
+.fm-sym{min-width:30px;height:30px;border:0;border-radius:8px;background:none;font:inherit;font-size:16px;color:var(--ink-2);cursor:pointer}.fm-sym:hover{background:var(--porc-in,var(--chrome-2));color:var(--ink)}
+
 .fm-base-jm b{letter-spacing:.02em}
 .fm-caps{display:flex;align-items:center;gap:4px;padding:6px 0 4px;font-size:14px}.fm-caps span{width:78px;flex:none}
 .fm-caps button{height:30px;padding:0 12px;border:0;border-radius:999px;background:none;color:var(--ink-2);font:inherit;font-size:13px;cursor:pointer}
@@ -7140,7 +7147,8 @@ async function fbGlyph(key,ch){if(!FM_BASES.some(b=>b[0]===key))return null;
   const fp=FB_SL[k]||(FB_SL[k]=(async()=>{const ot=await otLoad();return ot.parse(await fbFetch(k+'.woff'))})().catch(e=>{delete FB_SL[k];throw e}));
   const font=await fp;const g=font.charToGlyph(ch);return g&&g.index?{g,font}:null}
 const FM_ASC=880,FM_PAD=90,FM_SPAN=1180;   /* 고치는 칸: 글자 네모(1000) 둘레에 여백 */
-const fmP=f=>{const p=f.p||{};const n=(v,d,a,b)=>{v=+v;return isFinite(v)?Math.max(a,Math.min(b,v)):d};return {wt:n(p.wt,0,-20,40),wd:n(p.wd,100,70,130)/100,sl:n(p.sl,0,-12,12),rd:n(p.rd,0,0,40),sp:n(p.sp,0,-80,200),jw:n(p.jw,80,30,160),ct:n(p.ct,100,40,100)/100,cap:['round','square','flat'].includes(p.cap)?p.cap:'round'}};
+const fmP=f=>{const p=Object.assign({},f.p||{});if(f.mode==='jamo'){delete p.wt;delete p.rd}   /* 자소로 설계에는 그 막대가 없음(바탕에서 바꾼 값이 숨어 남지 않게) */
+  const n=(v,d,a,b)=>{v=+v;return isFinite(v)?Math.max(a,Math.min(b,v)):d};return {wt:n(p.wt,0,-20,40),wd:n(p.wd,100,70,130)/100,sl:n(p.sl,0,-12,12),rd:n(p.rd,0,0,40),sp:n(p.sp,0,-80,200),jw:n(p.jw,80,30,160),ct:n(p.ct,100,40,100)/100,cap:['round','square','flat'].includes(p.cap)?p.cap:'round'}};
 function fmFlatten(cmds){const out=[];let cur=null,px=0,py=0;const N=6;
   cmds.forEach(c=>{if(c.type==='M'){if(cur&&cur.length>2)out.push(cur);cur=[[c.x,c.y]];px=c.x;py=c.y}
     else if(c.type==='L'){cur&&cur.push([c.x,c.y]);px=c.x;py=c.y}
@@ -7231,11 +7239,18 @@ async function fmGlyph(f,ch,board){const P=fmP(f);const G=((f.glyphs||{})[ch])||
   if(!polys&&!G.length&&!P.wt&&!P.rd){cmds=base.map(c=>{const n={type:c.type};if('x' in c)[n.x,n.y]=T(c.x,c.y);if('x1' in c)[n.x1,n.y1]=T(c.x1,c.y1);if('x2' in c)[n.x2,n.y2]=T(c.x2,c.y2);return n})}   /* 곡선 그대로(파일이 작음) */
   else{const CL=await clLoad();const SC=4,toCL=poly=>poly.map(([x,y])=>{const [a,b]=T(x,y);return {X:Math.round(a*SC),Y:Math.round(b*SC)}});
     const run=(subj,clip,ct)=>{const c=new CL.Clipper();if(subj.length)c.AddPaths(subj,CL.PolyType.ptSubject,true);if(clip.length)c.AddPaths(clip,CL.PolyType.ptClip,true);const o=new CL.Paths();c.Execute(ct,o,CL.PolyFillType.pftNonZero,CL.PolyFillType.pftNonZero);return o};
-    const add=[],cut=[];G.forEach(s=>{(+s[0]<0?cut:add).push(...fmStrokePolys(s))});
-    let paths=run(base?fmFlatten(base).map(toCL):(polys||[]).map(toCL),add.map(toCL),CL.ClipType.ctUnion);
+    const add=[],cut=[],eos=[];const ccw=a=>{let z=0;for(let i=0;i<a.length;i++){const p=a[i],q=a[(i+1)%a.length];z+=p[0]*q[1]-q[0]*p[1]}return z<0?a.reverse():a};
+    G.forEach(s=>{if(Array.isArray(s)){(+s[0]<0?cut:add).push(...fmStrokePolys(s));return}
+      if(s&&Array.isArray(s.f)){const ps=s.f.map(fl=>{const o=[];for(let i=0;i+1<fl.length;i+=2)o.push([+fl[i]||0,FM_ASC-(+fl[i+1]||0)]);return o}).filter(o=>o.length>2);
+        if(s.eo){const c=new CL.Clipper();c.AddPaths(ps.map(toCL),CL.PolyType.ptSubject,true);const o=new CL.Paths();c.Execute(CL.ClipType.ctUnion,o,CL.PolyFillType.pftEvenOdd,CL.PolyFillType.pftEvenOdd);eos.push(...o)}
+        else add.push(...ps.map(ccw))}});
+    let paths=run(base?fmFlatten(base).map(toCL):(polys||[]).map(toCL),add.map(toCL),CL.ClipType.ctUnion);if(eos.length)paths=run(paths,eos,CL.ClipType.ctUnion);
     if(cut.length)paths=run(paths,cut.map(toCL),CL.ClipType.ctDifference);
     const off=(ps,d)=>{if(!ps.length)return ps;const co=new CL.ClipperOffset(2,1.5*SC);co.AddPaths(ps,CL.JoinType.jtRound,CL.EndType.etClosedPolygon);const o=new CL.Paths();co.Execute(o,d*SC);return o};
-    if(P.rd){paths=off(off(paths,-P.rd),P.rd);paths=off(off(paths,P.rd),-P.rd)}
+    /* 둥글기(2026-11-02 고침): 안으로 줄였다 다시 넓히면 반지름보다 가는 획이 통째로 사라졌음(주인이 본 깨진 ㅂ).
+       → 줄였다 넓힌 뒤 넓이가 3% 넘게 줄면 반지름을 반씩 줄여 다시. 가는 획은 덜 둥글게, 사라지지는 않게. */
+    const area=ps=>ps.reduce((a,q)=>a+CL.Clipper.Area(q),0);
+    if(P.rd){const A0=Math.abs(area(paths));let r=P.rd,got=null;for(let i=0;i<5&&r>=2;i++,r/=2){const t=off(off(off(off(paths,-r),r),r),-r);if(!A0||Math.abs(area(t))>=A0*0.97){got=t;break}}if(got)paths=got}
     if(P.wt)paths=off(paths,P.wt/2);
     paths=CL.Clipper.CleanPolygons(paths,0.6*SC);cmds=[];
     paths.forEach(p=>{if(p.length<3)return;cmds.push({type:'M',x:p[0].X/SC,y:p[0].Y/SC});for(let i=1;i<p.length;i++)cmds.push({type:'L',x:p[i].X/SC,y:p[i].Y/SC});cmds.push({type:'Z'})})}
@@ -7258,7 +7273,27 @@ function fmSimplify(pts,eps){if(pts.length<3)return pts;const d=(p,a,b)=>{const 
   let mx=0,ix=0;for(let i=1;i<pts.length-1;i++){const v=d(pts[i],pts[0],pts[pts.length-1]);if(v>mx){mx=v;ix=i}}
   return mx>eps?[...fmSimplify(pts.slice(0,ix+1),eps).slice(0,-1),...fmSimplify(pts.slice(ix),eps)]:[pts[0],pts[pts.length-1]]}
 const FM_SLIDERS=[['wt','굵기',-20,40,1,0],['wd','너비',70,130,1,100],['sl','기울기',-12,12,1,0],['rd','둥글기',0,40,1,0],['sp','자간',-80,200,5,0]];
-const FM_TOOLS=[['pen','펜'],['line','직선'],['circle','동그라미'],['rect','네모'],['erase','지우개'],['point','점']];
+const FM_TOOLS=[['pen','펜'],['line','직선'],['circle','동그라미'],['rect','네모'],['shape','모양'],['erase','지우개'],['point','점']];
+/* 모양 넣기(2026-11-02, 주인: "하트 문양 이런 것도 자유롭게, 사용자가 넣고 싶은 거 넣을 수 있게"): 채운 모양을 끌어 놓은 네모에 맞춰 넣음.
+   기본 모양 + 내가 가진 그림(SVG)을 가져와 넣기. 저장은 글자 획 목록에 {f:[[x,y,…]…], eo?}(채운 다각형, 0~1000). */
+const FM_SHAPES=(()=>{const P=(n,fn)=>{const o=[];for(let i=0;i<n;i++)o.push(fn(i/n*Math.PI*2));return o};const fit=pts=>{const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),w=Math.max(...xs)-x0||1,h=Math.max(...ys)-y0||1;return pts.map(([x,y])=>[(x-x0)/w,(y-y0)/h])};
+  return [['heart','하트',fit(P(96,t=>[16*Math.pow(Math.sin(t),3),-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))]))],
+    ['star','별',fit(P(10,t=>{const r=Math.round(t/(Math.PI/5))%2?0.4:1;return [r*Math.sin(t),-r*Math.cos(t)]}))],
+    ['spark','반짝이',fit(P(64,t=>{const r=Math.pow(Math.abs(Math.cos(2*t)),3)*0.88+0.12;return [r*Math.sin(t),-r*Math.cos(t)]}))],
+    ['flower','꽃',fit(P(120,t=>{const r=0.62+0.38*Math.abs(Math.cos(2.5*t));return [r*Math.sin(t),-r*Math.cos(t)]}))],
+    ['drop','물방울',fit(P(64,t=>[Math.sin(t)*Math.sin(t/2),-Math.cos(t)]))],
+    ['dot','동그라미',fit(P(48,t=>[Math.cos(t),Math.sin(t)]))],
+    ['moon','달',fit((()=>{const o=[];for(let i=0;i<=40;i++){const t=-Math.PI/2+i/40*Math.PI*2*0.5;o.push([Math.cos(t),Math.sin(t)])}for(let i=40;i>=0;i--){const t=-Math.PI/2+i/40*Math.PI;o.push([0.35+0.7*Math.cos(t)*0.92-0.35,Math.sin(t)*0.92])}return o})())]]})();
+const FM_SYMS='♥♡★☆♪♫✿❀☀☁☂✦✧☺♣♠♦✓→←↑↓○●□■△▲';
+/* SVG 그림 → 채운 다각형들(0~1 칸, 비율 유지·가운데). 그림 파일은 화면에 붙이지 않고, 모양 정보(d·points·x·y…)만 옮겨 길이를 재서 점으로 바꿈 */
+async function fmSvgPolys(file){const txt=await file.text();if(txt.length>2e6)throw new Error('big');const doc=new DOMParser().parseFromString(txt,'image/svg+xml');const NS='http://www.w3.org/2000/svg';
+  const tmp=document.createElementNS(NS,'svg');tmp.setAttribute('width','0');tmp.setAttribute('height','0');tmp.style.cssText='position:absolute;left:-9999px;top:0';document.body.appendChild(tmp);
+  const KEEP={path:['d'],polygon:['points'],polyline:['points'],rect:['x','y','width','height','rx','ry'],circle:['cx','cy','r'],ellipse:['cx','cy','rx','ry'],line:['x1','y1','x2','y2']};const polys=[];
+  try{doc.querySelectorAll(Object.keys(KEEP).join(',')).forEach(src=>{const tag=src.localName;if(!KEEP[tag]||tag==='line')return;const el=document.createElementNS(NS,tag);KEEP[tag].forEach(a=>{const v=src.getAttribute(a);if(v!=null&&v.length<500000)el.setAttribute(a,v)});tmp.appendChild(el);
+      let L=0;try{L=el.getTotalLength()}catch(e){}if(!(L>0))return;const n=Math.max(24,Math.min(800,Math.round(L/2))),step=L/n;let cur=[],last=null;
+      for(let i=0;i<=n;i++){const q=el.getPointAtLength(Math.min(L,i*step));if(last&&Math.hypot(q.x-last.x,q.y-last.y)>step*3){if(cur.length>2)polys.push(cur);cur=[]}cur.push([q.x,q.y]);last=q}if(cur.length>2)polys.push(cur)})}finally{tmp.remove()}
+  if(!polys.length)return null;const all=polys.flat(),xs=all.map(p=>p[0]),ys=all.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),S=Math.max(Math.max(...xs)-x0,Math.max(...ys)-y0)||1,ox=(S-(Math.max(...xs)-x0))/2,oy=(S-(Math.max(...ys)-y0))/2;
+  return polys.map(pl=>pl.map(([x,y])=>[(x-x0+ox)/S,(y-y0+oy)/S]))}
 const JM_SL=[['jw','획 두께',30,160,2,80],['ct','가로획 비율',40,100,1,100],['wd','너비',70,130,1,100],['sl','기울기',-12,12,1,0],['sp','자간',-80,200,5,0]];
 const JM_CAPS=[['round','둥글게'],['square','네모'],['flat','평평']];
 const hgJoin=(L,V,T)=>{const l=HG_L.indexOf(L),v=HG_V.indexOf(V),t=HG_T.indexOf(T||'');return l<0||v<0||t<0?'':String.fromCharCode(0xAC00+(l*21+v)*28+t)};
@@ -7305,9 +7340,12 @@ function fmOpen(fid,after,sample){document.querySelectorAll('.fm').forEach(n=>n.
           <div class="fm-tools"><button type="button" class="tbtn" data-ly-reset>이 꼴 처음으로</button></div><p class="fm-psample" data-ly-sample></p>
           <small class="uf-sm">상자를 끌어 옮기고 모서리를 끌어 크기를 바꿔요. 같은 꼴의 모든 글자에 적용돼요.</small></div></section>`:''}
       <section class="fm-glyph" data-fm-pane="glyph"><div class="fm-lab"><b>${f.base?'고칠 글자':'오늘의 글자'}</b><small data-fm-prog></small></div><div class="fm-chips" data-fm-chips></div>
-        <form class="fm-add" data-fm-add><input type="text" maxlength="20" placeholder="고칠 글자 넣기 (예: 내 이름)" aria-label="고칠 글자 넣기"><button type="submit" class="pill">넣기</button></form>
+        <form class="fm-add" data-fm-add><input type="text" maxlength="20" placeholder="고칠 글자·기호 넣기 (예: 내 이름, ♥)" aria-label="고칠 글자 넣기"><button type="submit" class="pill">넣기</button></form>
+        <div class="fm-syms" aria-label="기호 넣기"><span class="uf-sm">기호</span>${[...FM_SYMS].map(c=>`<button type="button" class="fm-sym" data-fm-sym="${c}">${c}</button>`).join('')}</div>
         <div class="fm-pad"><div class="fm-board${snap?' snap':''}"><span class="fm-ghost" aria-hidden="true"></span><canvas class="fm-cv" aria-label="글자 고치는 칸"></canvas></div>
           <div class="fm-toolset" role="group" aria-label="도구">${FM_TOOLS.map(([k,t])=>`<button type="button" data-fm-tool="${k}" aria-pressed="${k===tool}">${t}</button>`).join('')}</div>
+          <div class="fm-shapes" data-fm-shapes ${tool==='shape'?'':'hidden'}>${FM_SHAPES.map(([k,t,pts])=>`<button type="button" class="fm-shp" data-fm-shape="${k}" aria-pressed="${k===shapeK}" title="${t}" aria-label="${t}"><svg viewBox="-0.1 -0.1 1.2 1.2" aria-hidden="true"><path d="M${pts.map(([x,y])=>x.toFixed(3)+' '+y.toFixed(3)).join('L')}Z"/></svg></button>`).join('')}
+            <label class="pill fm-svg" title="내가 가진 그림(SVG)을 모양으로">그림 가져오기<input type="file" accept=".svg,image/svg+xml" data-fm-svg hidden></label><small class="uf-sm">모양을 고르고 칸에 끌어 놓아요.</small></div>
           <div class="fm-tools"><span class="fm-ws" role="group" aria-label="굵기">${[[40,'얇게'],[80,'보통'],[130,'굵게']].map(([w,t])=>`<button type="button" class="fm-w${(f.w||80)===w?' on':''}" data-fm-w="${w}" aria-label="${t}" title="${t}"><i style="width:${Math.round(w/12)+2}px;height:${Math.round(w/12)+2}px"></i></button>`).join('')}</span>
             <button type="button" class="tbtn" data-fm-snap aria-pressed="${snap}">자석</button><button type="button" class="tbtn" data-fm-undo>되돌리기</button><button type="button" class="tbtn" data-fm-clear>처음으로</button>
             ${f.base?`<button type="button" class="tbtn" data-fm-own aria-pressed="false">바탕 없이</button>`:`<button type="button" class="tbtn" data-fm-guide aria-pressed="${guide}">밑그림</button>`}<button type="button" class="pill fm-next" data-fm-next>다음 글자 ›</button></div></div>
@@ -7341,7 +7379,9 @@ function fmOpen(fid,after,sample){document.querySelectorAll('.fm').forEach(n=>n.
   function paint(){if(!ctx)return;const k=size/FM_SPAN,O=FM_PAD;ctx.clearRect(0,0,size,size);ctx.save();ctx.strokeStyle=col('--line');ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(0,(FM_ASC+O)*k);ctx.lineTo(size,(FM_ASC+O)*k);ctx.stroke();ctx.strokeRect(O*k,O*k,1000*k,1000*k);ctx.restore();
     if(snap){ctx.save();ctx.fillStyle=col('--ink-2');ctx.globalAlpha=.35;for(let x=50;x<1000;x+=50)for(let y=50;y<1000;y+=50)ctx.fillRect((x+O)*k-0.75,(y+O)*k-0.75,1.5,1.5);ctx.restore()}
     if(shown){ctx.fillStyle=col('--ink');ctx.beginPath();shown.cmds.forEach(c=>{const X=x=>(x+O)*k,Y=y=>(FM_ASC-y+O)*k;if(c.type==='M')ctx.moveTo(X(c.x),Y(c.y));else if(c.type==='L')ctx.lineTo(X(c.x),Y(c.y));else if(c.type==='Q')ctx.quadraticCurveTo(X(c.x1),Y(c.y1),X(c.x),Y(c.y));else if(c.type==='C')ctx.bezierCurveTo(X(c.x1),Y(c.y1),X(c.x2),Y(c.y2),X(c.x),Y(c.y));else if(c.type==='Z')ctx.closePath()});ctx.fill('nonzero')}
-    if(live&&live.s){const s=live.s;const P=fmP(f),tan=Math.tan(P.sl*Math.PI/180);ctx.save();ctx.strokeStyle=+s[0]<0?col('--danger'):col('--ink-2');ctx.globalAlpha=.75;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.abs(s[0])*k;ctx.beginPath();
+    if(live&&live.s&&!Array.isArray(live.s)){const P=fmP(f),tan=Math.tan(P.sl*Math.PI/180);ctx.save();ctx.fillStyle=col('--ink-2');ctx.globalAlpha=.5;ctx.beginPath();
+      live.s.f.forEach(fl=>{for(let i=0;i+1<fl.length;i+=2){const x=(fl[i]*P.wd+(FM_ASC-fl[i+1])*tan+FM_PAD)*k,y=(fl[i+1]+FM_PAD)*k;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath()});ctx.fill(live.s.eo?'evenodd':'nonzero');ctx.restore()}
+    else if(live&&live.s){const s=live.s;const P=fmP(f),tan=Math.tan(P.sl*Math.PI/180);ctx.save();ctx.strokeStyle=+s[0]<0?col('--danger'):col('--ink-2');ctx.globalAlpha=.75;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.abs(s[0])*k;ctx.beginPath();
       for(let i=1;i+1<s.length;i+=2){const fy=FM_ASC-s[i+1],x=(s[i]*P.wd+fy*tan+O)*k,y=(s[i+1]+O)*k;i===1?ctx.moveTo(x,y):ctx.lineTo(x,y)}if(s.length===3)ctx.lineTo((s[1]*P.wd+(FM_ASC-s[2])*tan+O)*k+0.01,(s[2]+O)*k);ctx.stroke();ctx.restore()}
     if(tool==='point'&&pe){const k2=size/FM_SPAN,O2=FM_PAD,X=x=>(x+O2)*k2,Y=y=>(FM_ASC-y+O2)*k2;ctx.save();ctx.strokeStyle=col('--ink-2');ctx.lineWidth=1;
       let px=0,py=0;pe.c.forEach(c=>{if('x1' in c){ctx.beginPath();ctx.moveTo(X(px),Y(py));ctx.lineTo(X(c.x1),Y(c.y1));ctx.stroke()}if('x2' in c){ctx.beginPath();ctx.moveTo(X(c.x),Y(c.y));ctx.lineTo(X(c.x2),Y(c.y2));ctx.stroke()}if('x' in c){px=c.x;py=c.y}});
@@ -7360,7 +7400,10 @@ function fmOpen(fid,after,sample){document.querySelectorAll('.fm').forEach(n=>n.
   const shape=(a,b)=>{const w=f.w||80;if(tool==='line')return [w,...a,...b];
     if(tool==='rect')return [w,a[0],a[1],b[0],a[1],b[0],b[1],a[0],b[1],a[0],a[1]];
     if(tool==='circle'){const r=Math.hypot(b[0]-a[0],b[1]-a[1]);const o=[w];for(let i=0;i<=32;i++){const t=i/32*Math.PI*2;o.push(Math.round(a[0]+r*Math.cos(t)),Math.round(a[1]+r*Math.sin(t)))}return o}
+    if(tool==='shape'){const x0=Math.min(a[0],b[0]),y0=Math.min(a[1],b[1]),x1=Math.max(a[0],b[0]),y1=Math.max(a[1],b[1]);const src=shapeK==='svg'?(svgPolys||[]):[(FM_SHAPES.find(x=>x[0]===shapeK)||FM_SHAPES[0])[2]];
+      return {f:src.map(pl=>pl.flatMap(([u,v])=>[Math.round(x0+u*(x1-x0)),Math.round(y0+v*(y1-y0))])),k:shapeK,eo:shapeK==='svg'?1:undefined,_b:[x1-x0,y1-y0]}}
     return [tool==='erase'?-Math.round(w*1.5):w,...a]};
+  let shapeK='heart',svgPolys=null;
   /* ── 자소 조각 고치기 ── */
   const pc={j:'ㄱ',si:-1,pi:-1,drag:null,last:0,lastXY:null};let pcv,pctx,psz=0;
   const pcArr=()=>{f.jamo=f.jamo||{};if(!Array.isArray(f.jamo[pc.j])||!f.jamo[pc.j].length)f.jamo[pc.j]=clone(JM_DEF[pc.j]);return f.jamo[pc.j]};
@@ -7425,6 +7468,10 @@ function fmOpen(fid,after,sample){document.querySelectorAll('.fm').forEach(n=>n.
       f.lay=f.lay||{};const cur2=jmLay(f,ly.form);f.lay[ly.form]={L:cur2.L.slice(),V:cur2.V.slice()};if(cur2.T)f.lay[ly.form].T=cur2.T.slice();f.lay[ly.form][D.n]=b.map(v=>Math.max(-50,Math.min(1050,v)));lyPaint()});
     const end=e=>{const D=ly.drag;if(!D||e.pointerId!==D.id)return;ly.drag=null;keep();lyGlyph();lySample();tryOut();el.querySelectorAll('[data-lyf]').forEach(b=>b.classList.toggle('done',!!(f.lay&&f.lay[b.dataset.lyf])))};lcv.addEventListener('pointerup',end);lcv.addEventListener('pointercancel',end)}
   function wire(){
+    const sv=$e('[data-fm-svg]');if(sv)sv.addEventListener('change',async()=>{const file=sv.files&&sv.files[0];sv.value='';if(!file)return;
+      try{const P=await fmSvgPolys(file);if(!P){toast('그림에서 모양을 찾지 못했어요. 선이 아니라 채운 모양이 있는 SVG로 해 봐요.');return}svgPolys=P;shapeK='svg';
+        el.querySelectorAll('[data-fm-shape]').forEach(x=>x.setAttribute('aria-pressed','false'));const lb=$e('.fm-svg');if(lb)lb.classList.add('on');toast('그림을 가져왔어요. 칸에 끌어 놓아요.')}
+      catch(e){console.warn(e);toast('그림을 읽지 못했어요.')}});
     $e('.fm-try-in').addEventListener('input',()=>{tryOut();if(f.base){chips()}});
     $e('.fm-name').addEventListener('change',()=>{const nm=$e('.fm-name').value.trim().slice(0,40);if(nm){f.name=nm;if(added)persist()}});
     el.querySelectorAll('[data-fm-p]').forEach(inp=>inp.addEventListener('input',()=>{f.p[inp.dataset.fmP]=+inp.value;outs();keep();tryOut();clearTimeout(wire.bt);wire.bt=setTimeout(board,120)}));
@@ -7441,7 +7488,9 @@ function fmOpen(fid,after,sample){document.querySelectorAll('.fm').forEach(n=>n.
       if(!live||e.pointerId!==live.id)return;if(tool==='pen'||tool==='erase'){(e.getCoalescedEvents?e.getCoalescedEvents():[e]).forEach(ev=>{const p=at(ev),q=live.pts[live.pts.length-1];if(Math.hypot(p[0]-q[0],p[1]-q[1])>=4)live.pts.push(p)});live.s=[shape(live.a,live.a)[0],...live.pts.flat()]}else live.s=shape(live.a,at(e));paint()});
     const up=e=>{if(peDrag&&e.pointerId===peDrag.id){peDrag=null;f.edit=f.edit||{};f.edit[cur]={c:pe.c.map(c=>Object.assign({},c)),aw:pe.aw};delete f.glyphs[cur];strokes=[];keep();chips();tryOut();paint();return}
       if(!live||e.pointerId!==live.id)return;let s=live.s;if(tool==='pen'||tool==='erase')s=[s[0],...fmSimplify(live.pts,4).flat()];live=null;
-      if(tool!=='pen'&&tool!=='erase'&&s.length<=5&&s[1]===s[3]&&s[2]===s[4])s=[s[0],s[1],s[2]];undo.push(clone(strokes));strokes.push(s);save()};
+      if(!Array.isArray(s)){if(!s||!s._b||s._b[0]<20||s._b[1]<20){paint();return}delete s._b;if(!s.eo)delete s.eo}   /* 너무 작게 끌면 넣지 않음 */
+      if(!Array.isArray(s)&&!strokes.length&&!f.own[cur]&&f.base&&!/[\p{L}\p{N}]/u.test(cur)){f.own[cur]=1;toast('바탕 글꼴의 기호는 빼고 내 모양으로 바꿨어요. ‘바탕 없이’를 끄면 다시 겹쳐요.')}   /* ♥ 같은 기호에 처음 모양을 넣을 때 */
+      else if(tool!=='pen'&&tool!=='erase'&&s.length<=5&&s[1]===s[3]&&s[2]===s[4])s=[s[0],s[1],s[2]];undo.push(clone(strokes));strokes.push(s);save()};
     cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up)}
   el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;const d=b.dataset;
     if('fmClose' in d)return close(false);if('fmDone' in d)return close(true);
@@ -7454,7 +7503,9 @@ function fmOpen(fid,after,sample){document.querySelectorAll('.fm').forEach(n=>n.
     if('pcAdd' in d||'pcDel' in d||'pcSmooth' in d||'pcClose' in d||'pcPtdel' in d||'pcReset' in d){pcCmd(d);return}
     if('lyReset' in d){if(f.lay)delete f.lay[ly.form];keep();lyPaint();lySample();tryOut();return}
     if(d.c){go(d.c);return}
-    if(d.fmTool){tool=d.fmTool;el.querySelectorAll('[data-fm-tool]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));pe=null;board();return}
+    if(d.fmTool){tool=d.fmTool;el.querySelectorAll('[data-fm-tool]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));const sh=$e('[data-fm-shapes]');if(sh)sh.hidden=tool!=='shape';pe=null;board();return}
+    if(d.fmShape){shapeK=d.fmShape;el.querySelectorAll('[data-fm-shape]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));const sv=$e('.fm-svg');if(sv)sv.classList.remove('on');return}
+    if(d.fmSym){const c=d.fmSym;if(!want.includes(c))want.push(c);f.want=[...new Set([...(f.want||[]),c])].slice(-60);go(c);return}
     if(d.fmW){f.w=+d.fmW;el.querySelectorAll('[data-fm-w]').forEach(x=>x.classList.toggle('on',x===b));if(added)persist();return}
     if('fmSnap' in d){snap=!snap;b.setAttribute('aria-pressed',String(snap));$e('.fm-glyph .fm-board').classList.toggle('snap',snap);paint();return}
     if('fmUndo' in d){if(undo.length){strokes=undo.pop();save()}return}
