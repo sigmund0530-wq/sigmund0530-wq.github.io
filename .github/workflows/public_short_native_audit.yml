@@ -19,30 +19,30 @@ jobs:
         run: |
           ffmpeg -version | head -1
           ffprobe -version | head -1
-          python -m pip install -q 'yt-dlp[default]' numpy
-      - name: Fetch one public YouTube Short, do not publish media
+          python -m pip install -q numpy
+      - name: Retrieve same source via private Cloudflare relay (signed URL kept secret)
         id: fetch
         shell: bash
         run: |
           set -eu
           mkdir -p short-audit/results
-          if python -m yt_dlp --ignore-config --no-playlist --no-progress \
-                --retries 2 --fragment-retries 2 --socket-timeout 25 \
-                --max-filesize 90M --merge-output-format mp4 \
-                -f "bv*+ba/b" \
-                --print after_move:filepath \
-                -o "short-audit/source.%(ext)s" \
-                "https://www.youtube.com/shorts/BaE0Meum0oc" \
-                > /tmp/downloaded-source-path.txt 2> /tmp/downloader-errors.txt
+          if curl --fail --silent --show-error --connect-timeout 20 --max-time 150 \
+              --output short-audit/source.mp4 \
+              "https://sf-video-audit-once-20261113.sigmund0530.workers.dev/9bGDZ_SQMsw-paUKtLLNx26WOYcgIvzzNswsKqQtvqhEd2NV"
           then
-            echo "download_success=true" >> "$GITHUB_OUTPUT"
+            BYTES="$(stat -c %s short-audit/source.mp4)"
+            if [ "$BYTES" = "14792711" ]; then
+              echo "download_success=true" >> "$GITHUB_OUTPUT"
+              printf '%s\n' "short-audit/source.mp4" > /tmp/downloaded-source-path.txt
+            else
+              echo "download_success=false" >> "$GITHUB_OUTPUT"
+              printf '{"status":"RELAY_SIZE_MISMATCH","bytes":%s,"frame_count":null}\n' "$BYTES" > short-audit/results/status.json
+              rm -f short-audit/source.mp4
+            fi
           else
             echo "download_success=false" >> "$GITHUB_OUTPUT"
-            echo 'YT_DLP_DOWNLOAD_FAILED; error class only:' >&2
-            grep -iE 'error|403|429|login|bot|sign' /tmp/downloader-errors.txt | tail -5 | \
-              sed -E 's#https?://[^ ]+#(redacted-url)#g' >&2 || true
-            printf '%s\n' '{"status":"SOURCE_DOWNLOAD_REJECTED","frame_count":null,"no_paid_services_used":true}' \
-              > short-audit/results/status.json
+            printf '%s\n' '{"status":"RELAY_FETCH_FAILED","frame_count":null}' > short-audit/results/status.json
+            rm -f short-audit/source.mp4
           fi
       - name: Measure exact original-source PTS and every decoded frame
         if: steps.fetch.outputs.download_success == 'true'
