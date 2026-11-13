@@ -1,0 +1,79 @@
+name: One-time public-source native-frame audit (free standard public runner)
+on:
+  push:
+    branches:
+      - gpt/public-one-shot-short-audit-20261113
+    paths:
+      - .github/workflows/public_short_native_audit.yml
+
+permissions:
+  contents: write
+
+jobs:
+  original-frame-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify free public source and runner tools
+        run: |
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
+          python -m pip install -q 'yt-dlp[default]' numpy
+      - name: Fetch one public YouTube Short, do not publish media
+        id: fetch
+        shell: bash
+        run: |
+          set -eu
+          mkdir -p short-audit/results
+          if python -m yt_dlp --ignore-config --no-playlist --no-progress \
+                --retries 2 --fragment-retries 2 --socket-timeout 25 \
+                --max-filesize 90M --merge-output-format mp4 \
+                -f "bv*+ba/b" \
+                --print after_move:filepath \
+                -o "short-audit/source.%(ext)s" \
+                "https://www.youtube.com/shorts/BaE0Meum0oc" \
+                > /tmp/downloaded-source-path.txt 2> /tmp/downloader-errors.txt
+          then
+            echo "download_success=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "download_success=false" >> "$GITHUB_OUTPUT"
+            echo 'YT_DLP_DOWNLOAD_FAILED; error class only:' >&2
+            grep -iE 'error|403|429|login|bot|sign' /tmp/downloader-errors.txt | tail -5 | \
+              sed -E 's#https?://[^ ]+#(redacted-url)#g' >&2 || true
+            printf '%s\n' '{"status":"SOURCE_DOWNLOAD_REJECTED","frame_count":null,"no_paid_services_used":true}' \
+              > short-audit/results/status.json
+          fi
+      - name: Measure exact original-source PTS and every decoded frame
+        if: steps.fetch.outputs.download_success == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="$(tail -1 /tmp/downloaded-source-path.txt)"
+          if [ ! -s "$SRC" ]; then echo 'empty source'; exit 2; fi
+          python short-audit/measure_public_short.py \
+            --video "$SRC" --out short-audit/results --video-id BaE0Meum0oc
+          test -s short-audit/results/frames.jsonl
+          test -s short-audit/results/features.jsonl
+          echo '{"status":"SOURCE_FULL_FRAMES_MEASURED","no_paid_services_used":true}' > short-audit/results/status.json
+      - name: Retain result sidecars only (never source video)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-shorts-frame-audit-BaE0Meum0oc
+          path: short-audit/results/
+          if-no-files-found: warn
+          retention-days: 1
+      - name: Persist small evidence report only to isolated branch
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          if [ ! -d short-audit/results ]; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add short-audit/results/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record one-time public Short frame audit (no media)'
+            git push origin HEAD:gpt/public-one-shot-short-audit-20261113
+          fi
