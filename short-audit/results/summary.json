@@ -1,0 +1,129 @@
+{
+  "video_id": "BaE0Meum0oc",
+  "media_sha256": "4004b302149f74fc0f10181da785d2a66a9b52a79dd0ccfb5a303a7c23a7c277",
+  "media_bytes": 14792711,
+  "duration_seconds": 20.085261,
+  "width": 1080,
+  "height": 1920,
+  "codec": "h264",
+  "avg_frame_rate": "5989/100",
+  "time_base": "1/11978",
+  "frame_count": 1198,
+  "ffprobe_count_frames": 1198,
+  "first_pts": 0,
+  "last_pts": 239400,
+  "frame_interval_median_s": 0.01669727834362999,
+  "frame_interval_min_s": 0.01669727834362999,
+  "frame_interval_max_s": 0.01669727834362999,
+  "is_vfr_observed": false,
+  "pixel_change_max": 0.2761326593137255,
+  "top_visual_change_candidates": [
+    {
+      "frame": 124,
+      "pts_s": 2.0704625146101185,
+      "change_mae": 0.276133
+    },
+    {
+      "frame": 974,
+      "pts_s": 16.263149106695607,
+      "change_mae": 0.246848
+    },
+    {
+      "frame": 325,
+      "pts_s": 5.426615461679746,
+      "change_mae": 0.232007
+    },
+    {
+      "frame": 1118,
+      "pts_s": 18.66755718817833,
+      "change_mae": 0.223861
+    },
+    {
+      "frame": 218,
+      "pts_s": 3.6400066789113374,
+      "change_mae": 0.207816
+    },
+    {
+      "frame": 758,
+      "pts_s": 12.656536984471531,
+      "change_mae": 0.196377
+    },
+    {
+      "frame": 897,
+      "pts_s": 14.9774586742361,
+      "change_mae": 0.178517
+    },
+    {
+      "frame": 609,
+      "pts_s": 10.168642511270663,
+      "change_mae": 0.176718
+    },
+    {
+      "frame": 270,
+      "pts_s": 4.508265152780097,
+      "change_mae": 0.173128
+    },
+    {
+      "frame": 505,
+      "pts_s": 8.432125563533145,
+      "change_mae": 0.163907
+    },
+    {
+      "frame": 475,
+      "pts_s": 7.931207213224244,
+      "change_mae": 0.151198
+    },
+    {
+      "frame": 443,
+      "pts_s": 7.396894306228085,
+      "change_mae": 0.134527
+    },
+    {
+      "frame": 489,
+      "pts_s": 8.164969110035065,
+      "change_mae": 0.131737
+    },
+    {
+      "frame": 33,
+      "pts_s": 0.5510101853397896,
+      "change_mae": 0.120224
+    },
+    {
+      "frame": 427,
+      "pts_s": 7.129737852730005,
+      "change_mae": 0.111859
+    },
+    {
+      "frame": 1171,
+      "pts_s": 19.552512940390717,
+      "change_mae": 0.111197
+    },
+    {
+      "frame": 663,
+      "pts_s": 11.070295541826683,
+      "change_mae": 0.105142
+    },
+    {
+      "frame": 515,
+      "pts_s": 8.599098346969445,
+      "change_mae": 0.105108
+    },
+    {
+      "frame": 661,
+      "pts_s": 11.036900985139422,
+      "change_mae": 0.103275
+    },
+    {
+      "frame": 517,
+      "pts_s": 8.632492903656704,
+      "change_mae": 0.096483
+    }
+  ],
+  "audio_20ms_windows": 1005,
+  "frame_sampling": "none",
+  "analysis_only": true,
+  "source_url": "https://www.youtube.com/shorts/BaE0Meum0oc",
+  "youtube_source_original_identity_verified": false,
+  "license_to_repost_verified": false,
+  "training_eligible": false
+}
